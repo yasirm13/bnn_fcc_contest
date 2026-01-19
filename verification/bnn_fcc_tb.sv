@@ -358,8 +358,22 @@ module bnn_fcc_tb #(
             expected_pred = model.compute_reference(current_img);
             expected_outputs.push_back(expected_pred);
 
+            // DEBUG: Print Reference Layer Outputs
+            $display("[REF] Image %0d Prediction: %0d", i, expected_pred);
+            for (int l = 0; l < model.num_layers; l++) begin
+                $display("[REF] Layer %0d First 10 Neurons:", l);
+                for (int n = 0; n < 10 && n < model.layer_outputs[l].size(); n++) begin
+                    $display("  N%0d: %0d", n, model.layer_outputs[l][n]);
+                end
+            end
+
+
             // Stream image into DUT.
             $display("[%0t] Streaming image %0d.", $realtime, i);
+            $write("REF_INPUT_DBG: First 16 bits: ");
+            for(int k=0; k<16; k++) $write("%b", (current_img[k]>=128));
+            $write("\n");
+
             for (int j = 0; j < current_img.size(); j += INPUTS_PER_CYCLE) begin
                 // Pack multiple pixels into a single AXI beat.
                 for (int k = 0; k < INPUTS_PER_CYCLE; k++) begin
