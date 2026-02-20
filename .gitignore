@@ -1,1 +1,11 @@
-./sim/work/*
+# Simulator generated files
+work/
+sim/work/
+transcript
+*.wlf
+*.log
+*.qdb
+*.qpg
+*.qtl
+@_opt/
+sim/transcript

@@ -94,79 +94,205 @@ module bnn_fcc #(
         if (PARALLEL_INPUTS != 8) $fatal(1, "bnn_fcc currently requires PARALLEL_INPUTS=8");
     end
 
-    config_manager #(
-        .BUS_WIDTH       (INPUT_BUS_WIDTH),
-        .LAYERS          (LAYERS),
-        .PARALLEL_INPUTS (PARALLEL_INPUTS),
-        .PARALLEL_NEURONS(PARALLEL_NEURONS)
-    ) config_manager (
-        .clk                  (clk),
-        .rst                  (rst),
-        .config_data_in       (config_data),
-        .config_valid         (config_valid),
-        .config_keep          (config_keep),
-        .config_last          (config_last),
-        .config_ready         (config_ready),
-        .weight_ram_wr_data   (weight_wr_data),
-        .weight_ram_wr_en     (weight_wr_en),
-        .threshold_ram_wr_data(threshold_wr_data),
-        .threshold_ram_wr_en  (threshold_wr_en)
+    // ==========================================
+    // Config Parser Instantiation
+    // ==========================================
+    logic [      TOTAL_LAYERS-1:0] layer_wr_en_weights;
+    logic [      TOTAL_LAYERS-1:0] layer_wr_en_thresholds;
+    logic [                  31:0] layer_wr_addr;
+    logic [  CONFIG_BUS_WIDTH-1:0] layer_wr_data;
+    logic [CONFIG_BUS_WIDTH/8-1:0] layer_wr_strb;
+
+    config_parser #(
+        .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
+        .TOTAL_LAYERS    (TOTAL_LAYERS)
+    ) config_parser_inst (
+        .clk                   (clk),
+        .rst                   (rst),
+        .config_valid          (config_valid),
+        .config_ready          (config_ready),
+        .config_data           (config_data),
+        .config_keep           (config_keep),
+        .config_last           (config_last),
+        .layer_wr_en_weights   (layer_wr_en_weights),
+        .layer_wr_en_thresholds(layer_wr_en_thresholds),
+        .layer_wr_addr         (layer_wr_addr),
+        .layer_wr_data         (layer_wr_data),
+        .layer_wr_strb         (layer_wr_strb)
     );
 
-    assign pixels = {<<INPUT_DATA_WIDTH{data_in_data}};
-    assign data_in_ready = bnn_ready && config_ready;
-
-    always_ff @(posedge clk) begin : binarization
-        if (data_in_ready) begin
-            for (int i = 0; i < INPUT_BUS_ELEMENTS; i++)
-            bnn_data_in[i] <= pixels[i] >= INPUT_BINARIZATION_THRESHOLD;
-            bnn_data_in_valid <= data_in_valid;
+    // ==========================================
+    // Image Input Binarization & Buffering
+    // ==========================================
+    always_comb begin
+        for (int i = 0; i < INPUT_BUS_ELEMENTS; i++) begin
+            pixels[i] = data_in_data[i*INPUT_DATA_WIDTH+:INPUT_DATA_WIDTH];
         end
     end
 
-    bnn #(
-        .LAYERS              (LAYERS),
-        .NUM_INPUTS          (TOPOLOGY[0]),
-        .NUM_NEURONS         (NUM_NEURONS),
-        .PARALLEL_INPUTS     (INPUT_BUS_WIDTH / 8),
-        .PARALLEL_NEURONS    (PARALLEL_NEURONS),
-        .MAX_PARALLEL_INPUTS (MAX_PARALLEL_INPUTS),
-        .THRESHOLD_DATA_WIDTH(THRESHOLD_DATA_WIDTH)
-    ) bnn_main (
-        .clk              (clk),
-        .rst              (rst),
-        .en               (data_out_ready),
-        .ready            (bnn_ready),
-        .weight_wr_data   (weight_wr_data),
-        .weight_wr_en     (weight_wr_en),
-        .threshold_wr_data(threshold_wr_data),
-        .threshold_wr_en  (threshold_wr_en),
-        .data_in          (bnn_data_in),
-        .data_in_valid    (bnn_data_in_valid),
-        .data_out         (),
-        .count_out        (bnn_count_out),
-        .data_out_valid   (bnn_count_valid)
-    );
+    // We assume the compute pipeline can take the data once it's fully buffered.
+    // For simplicity, we just assert data_in_ready when we are collecting an image.
+    // We need to collect TOPOLOGY[0] bits (784 bits for MNIST) into a buffer.
 
-    logic [THRESHOLD_DATA_WIDTH-1:0] max_count;
+    logic [TOPOLOGY[0]-1:0] input_buffer;
+    logic [31:0] input_bit_count;
+    logic image_ready;
 
-    always_comb begin : argmax
-        if (PARALLEL_NEURONS[LAYERS-1] != TOPOLOGY[LAYERS])
-            $fatal(
-                1, "bnn_fcc currently requires output layer neurons to match PARALLEL_NEURONS for that layer"
-            );
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            input_bit_count <= '0;
+            image_ready <= 1'b0;
+        end else begin
+            image_ready <= 1'b0;  // Pulse image_ready when a full image is collected
+            if (data_in_valid && data_in_ready) begin
+                for (int i = 0; i < INPUT_BUS_ELEMENTS; i++) begin
+                    if (data_in_keep[i] && (input_bit_count + i < TOPOLOGY[0])) begin
+                        input_buffer[input_bit_count+i] <= (pixels[i] >= INPUT_BINARIZATION_THRESHOLD);
+                    end
+                end
 
-        data_out_valid = bnn_count_valid;
+                begin
+                    int valid_bytes;
+                    valid_bytes = 0;
+                    for (int i = 0; i < INPUT_BUS_WIDTH / 8; i++) valid_bytes += data_in_keep[i];
 
-        // This is beyond horrible for synthesis and is solely intended to test the testbench framework.
-        max_count = bnn_count_out[0];
-        data_out_data = '0;
-        for (int i = 1; i < TOPOLOGY[LAYERS]; i++) begin
-            if (bnn_count_out[i] > max_count) begin
-                data_out_data = i;
-                max_count = bnn_count_out[i];
+                    input_bit_count <= input_bit_count + valid_bytes;
+
+                    if (data_in_last || (input_bit_count + valid_bytes >= TOPOLOGY[0])) begin
+                        image_ready <= 1'b1;
+                        input_bit_count <= '0;
+
+                        // DEBUG
+                        $display("HW_BIN_PIXELS: %b", input_buffer);
+                    end
+                end
             end
         end
     end
+
+    // Ready to receive if we are not busy computing and haven't just finished an image.
+    // In a real pipeline we could overlap, but here we wait for layer 1 to be IDLE.
+    logic layer_idle[1:LAYERS];
+    assign data_in_ready = layer_idle[1] && !image_ready;
+
+    // ==========================================
+    // Layer Pipeline Generation
+    // ==========================================
+
+    // Arrays for interconnection between layers
+    logic [32767:0] layer_activations[0:LAYERS];  // Large enough to hold max neurons (e.g. 256)
+    logic layer_start_pulse[1:LAYERS+1];
+
+    // Layer 0 is the input buffer
+    assign layer_activations[0][TOPOLOGY[0]-1:0] = input_buffer;
+    assign layer_start_pulse[1] = image_ready;
+
+    genvar l;
+    generate
+        for (l = 1; l <= LAYERS; l++) begin : gen_layers
+
+            // Wires for compute <-> memory interface
+            logic                        mem_layer_start;
+            logic                        mem_read_weight;
+            logic                        mem_read_thresh;
+            logic [CONFIG_BUS_WIDTH-1:0] mem_weight_data;
+            logic [                31:0] mem_thresh_data;
+
+            logic                        layer_done;
+            logic [  TOPOLOGY[l]*32-1:0] result_vector;
+
+            layer_memory #(
+                .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
+                .LAYER_INPUTS    (TOPOLOGY[l-1]),
+                .NUM_NEURONS     (TOPOLOGY[l]),
+                .PARALLEL_NEURONS(1),
+                .PARALLEL_INPUTS (PARALLEL_INPUTS)
+            ) mem_inst (
+                .clk              (clk),
+                .rst              (rst),
+                .wr_en_weights    (layer_wr_en_weights[l]),
+                .wr_en_thresholds (layer_wr_en_thresholds[l]),
+                .wr_addr          (layer_wr_addr),
+                .wr_data          (layer_wr_data),
+                .layer_start      (mem_layer_start),
+                .read_weight_chunk(mem_read_weight),
+                .read_threshold   (mem_read_thresh),
+                .rd_data_weights  (mem_weight_data),
+                .rd_data_threshold(mem_thresh_data)
+            );
+
+            compute_layer #(
+                .LAYER_ID        (l),
+                .LAYER_INPUTS    (TOPOLOGY[l-1]),
+                .NUM_NEURONS     (TOPOLOGY[l]),
+                .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
+                .PARALLEL_INPUTS (PARALLEL_INPUTS),
+                .IS_OUTPUT_LAYER ((l == LAYERS) ? 1'b1 : 1'b0)
+            ) comp_inst (
+                .clk              (clk),
+                .rst              (rst),
+                .start            (layer_start_pulse[l]),
+                .done             (layer_done),
+                .is_idle          (layer_idle[l]),
+                .result_vector    (result_vector),
+                .input_activations(layer_activations[l-1][TOPOLOGY[l-1]-1:0]),
+                .mem_layer_start  (mem_layer_start),
+                .mem_read_weight  (mem_read_weight),
+                .mem_read_thresh  (mem_read_thresh),
+                .mem_weight_data  (mem_weight_data),
+                .mem_thresh_data  (mem_thresh_data)
+            );
+
+            // Removed manual assign layer_idle = !mem_layer_start since the module now exports it.
+
+            // Register activations for next layer
+            always_ff @(posedge clk) begin
+                if (rst) begin
+                    layer_start_pulse[l+1] <= 1'b0;
+                end else begin
+                    layer_start_pulse[l+1] <= layer_done;
+                    if (layer_done) begin
+                        layer_activations[l] <= result_vector;
+                    end
+                end
+            end
+
+        end
+    endgenerate
+
+    // ==========================================
+    // Output Argmax
+    // ==========================================
+    logic [31:0] max_count;
+    logic out_valid_reg;
+    logic [OUTPUT_BUS_WIDTH-1:0] out_data_reg;
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            out_valid_reg <= 1'b0;
+            out_data_reg  <= '0;
+        end else begin
+            // Pulse data_out_valid when output layer is done
+            if (layer_start_pulse[LAYERS+1]) begin
+                out_valid_reg <= 1'b1;
+
+                max_count = layer_activations[LAYERS][31:0];
+                out_data_reg = 0;
+                for (int i = 1; i < TOPOLOGY[LAYERS]; i++) begin
+                    if ($signed(layer_activations[LAYERS][i*32+:32]) > $signed(max_count)) begin
+                        out_data_reg = i;
+                        max_count = layer_activations[LAYERS][i*32+:32];
+                    end
+                end
+            end else if (data_out_ready && out_valid_reg) begin
+                out_valid_reg <= 1'b0;  // Deassert after downstream accepts
+            end
+        end
+    end
+
+    assign data_out_valid = out_valid_reg;
+    assign data_out_data  = out_data_reg;
+    assign data_out_keep  = '1;  // Keep all valid bytes (1 byte)
+    assign data_out_last  = 1'b1;
 
 endmodule
