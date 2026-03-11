@@ -1,11 +1,12 @@
-# Simulator generated files
-work/
-sim/work/
-transcript
-*.wlf
-*.log
-*.qdb
-*.qpg
-*.qtl
-@_opt/
-sim/transcript
+# Ignore everything
+/*
+
+# Except these directories
+!/python/
+!/rtl/
+!/doc/
+!/verification/
+
+
+# Also don't ignore .gitignore itself
+!/.gitignore
