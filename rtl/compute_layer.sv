@@ -31,8 +31,9 @@ module compute_layer #(
     localparam int CHUNKS_PER_NEURON = (BITS_PER_NEURON + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
 
     // State
-    typedef enum logic [1:0] {
+    typedef enum logic [2:0] {
         IDLE,
+        PREFETCH,
         COMPUTE_NEURON,
         FINISH_NEURON,
         DONE_STATE
@@ -113,10 +114,17 @@ module compute_layer #(
             case (state)
                 IDLE: begin
                     if (start) begin
-                        state <= COMPUTE_NEURON;
+                        // Memory is synchronous (BRAM). Give it 1 cycle to prefetch
+                        // chunk 0 + threshold 0 after layer_start resets pointers.
+                        state <= PREFETCH;
                         neuron_cnt <= '0;
                         chunk_cnt <= '0;
                     end
+                end
+
+                PREFETCH: begin
+                    // One-cycle bubble so layer_memory's synchronous outputs become valid.
+                    state <= COMPUTE_NEURON;
                 end
 
                 COMPUTE_NEURON: begin
@@ -144,7 +152,9 @@ module compute_layer #(
                         if (neuron_cnt == NUM_NEURONS - 1) begin
                             state <= DONE_STATE;
                         end else begin
-                            state <= COMPUTE_NEURON;
+                            // After advancing to the next neuron's pointers, insert a
+                            // 1-cycle prefetch bubble for synchronous memory.
+                            state <= PREFETCH;
                             neuron_cnt <= neuron_cnt + 1;
                             chunk_cnt <= 0;
                         end
