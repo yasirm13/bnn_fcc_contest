@@ -27,39 +27,14 @@ module neural_processor #(
     localparam CALC = 1'b1;
 
     logic state, next_state;
-    integer i, stride;  // Loop variables declared here
-
-    // Temporary array for reduction tree
-
-    logic [$clog2(N):0] tree[N];
     logic [ACC_WIDTH-1:0] final_acc;  // Moved here for Yosys 0.9
 
     // popcount_out assigned below (uses popcount_extended/final_acc)
 
-    // Stage 1: Bitwise XNOR
+    // Stage 1 & 2: Bitwise XNOR and Popcount
     always_comb begin
         xnor_result = ~(x ^ w);
-    end
-
-    // Stage 2: Popcount (Parallel Adder Tree)
-    always_comb begin
-
-        // Initialize leaves
-        for (i = 0; i < N; i = i + 1) begin
-            tree[i] = {{($clog2(N)) {1'b0}}, xnor_result[i]};
-        end
-
-        // Reduction steps
-        // Stride doubles each step: 1, 2, 4... < N
-        for (stride = 1; stride < N; stride = stride * 2) begin
-            for (i = 0; i < N; i = i + 2 * stride) begin
-                if ((i + stride) < N) begin
-                    tree[i] = tree[i] + tree[i+stride];
-                end
-            end
-        end
-
-        popcount = {1'b0, tree[0]};  // Extend max tree value (clog2N+1 bits) to clog2N+2 bits
+        popcount = $countones(xnor_result);
     end
 
     // FSM State Register

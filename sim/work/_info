@@ -7,6 +7,20 @@ R0
 R1
 R0
 R1
+R0
+R1
+R0
+R1
+R0
+R1
+R0
+R1
+R0
+R1
+R0
+R1
+R0
+R1
 Z2 !s12c _opt
 R1
 R2
@@ -45,10 +59,10 @@ R3
 T_opt1
 !i145 1
 !i144 0
-!s110 1773227385
-VR_=JIE@TOSaR4HIDlMN`D3
+Z10 !s110 1773524509
+V2jDMW5f14gCJeQ0GObiBV1
 R4
-=1-183d2d8b556f-69b14d79-423be-1a6fb
+=1-183d2d8b556f-69b5d61d-cce04-2152
 R1
 R5
 R6
@@ -64,7 +78,7 @@ DXx6 sv_std 3 std 0 22 AD7iAPLo6nTIKk<N0eo=D3
 !i10b 1
 !s100 O:ZnM9Td>U[2H=HZ?@mBl2
 IRG4Rf@jDECA0hHI`Co<:73
-Z10 VDg1SIo80bB@j0V0VzS_@n1
+Z11 VDg1SIo80bB@j0V0VzS_@n1
 !s105 axi4_stream_if_sv_unit
 S1
 R3
@@ -83,9 +97,9 @@ r1
 o-sv
 R8
 vbnn_fcc
-Z11 2../rtl/bnn_fcc.sv|../rtl/bnn_types_pkg.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/bnn_fcc_tb_pkg.sv|../verification/bnn_fcc_tb.sv
-Z12 DXx6 sv_std 3 std 0 22 @5XbY]_OacJl=`ToSm<M^0
-Z13 !s110 1773227384
+Z12 2../rtl/bnn_fcc.sv|../rtl/bnn_types_pkg.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/bnn_fcc_tb_pkg.sv|../verification/bnn_fcc_tb.sv
+Z13 DXx6 sv_std 3 std 0 22 @5XbY]_OacJl=`ToSm<M^0
+R10
 !i10b 1
 !s100 Y=lIZ5[Z0O3iL]66Xgl9j2
 IPC[:I=diZ5ARQ>S<HYoD92
@@ -94,35 +108,35 @@ Z14 d/home/yasir/BNN/bnn_fcc_contest/sim
 w1771573949
 8../rtl/bnn_fcc.sv
 F../rtl/bnn_fcc.sv
-!i122 15
+!i122 22
 L0 12 287
-R10
+R11
 Z15 OL;L;2025.2;82
 r1
 !s85 0
 31
-Z16 !s108 1773227384.000000
+Z16 !s108 1773524508.000000
 Z17 !s107 ../verification/bnn_fcc_tb.sv|../verification/bnn_fcc_tb_pkg.sv|../rtl/neural_processor.sv|../rtl/layer_memory.sv|../rtl/config_parser.sv|../rtl/compute_layer.sv|../rtl/bnn_types_pkg.sv|../rtl/bnn_fcc.sv|
 Z18 !s90 -sv|../rtl/bnn_fcc.sv|../rtl/bnn_types_pkg.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/bnn_fcc_tb_pkg.sv|../verification/bnn_fcc_tb.sv|
 !i113 0
 Z19 o-sv -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
 R8
 vbnn_fcc_tb
-R11
 R12
-DXx4 work 14 bnn_fcc_tb_pkg 0 22 V558Fm>a@igJ@:iXkzHR_0
 R13
+DXx4 work 14 bnn_fcc_tb_pkg 0 22 V558Fm>a@igJ@:iXkzHR_0
+R10
 !i10b 1
 !s100 >S>d_M7YF6`YzFh?NQY5N1
 I7ENF5:<9VX1b]Ua>6>PB:0
 S1
 R14
-w1771571647
+w1773524507
 8../verification/bnn_fcc_tb.sv
 F../verification/bnn_fcc_tb.sv
-!i122 15
+!i122 22
 L0 85 402
-R10
+R11
 R15
 r1
 !s85 0
@@ -135,9 +149,9 @@ R19
 R8
 Xbnn_fcc_tb_pkg
 !i114 1
-R11
 R12
 R13
+R10
 !i10b 1
 !s100 C_6hNi[d3_T1Y03:mWgEo1
 IV558Fm>a@igJ@:iXkzHR_0
@@ -146,7 +160,7 @@ R14
 w1771571694
 8../verification/bnn_fcc_tb_pkg.sv
 F../verification/bnn_fcc_tb_pkg.sv
-!i122 15
+!i122 22
 L0 13 0
 VV558Fm>a@igJ@:iXkzHR_0
 R15
@@ -160,9 +174,9 @@ R18
 R19
 R8
 Xbnn_types_pkg
-R11
 R12
 R13
+R10
 !i10b 1
 !s100 CoHGABiZ[kQiN`M`?58PQ3
 I4lEaIAMWPfQ9LUIN@R3?^1
@@ -171,7 +185,7 @@ R14
 Z20 w1769655977
 8../rtl/bnn_types_pkg.sv
 F../rtl/bnn_types_pkg.sv
-!i122 15
+!i122 22
 L0 1 0
 V4lEaIAMWPfQ9LUIN@R3?^1
 R15
@@ -185,9 +199,9 @@ R18
 R19
 R8
 vcompute_layer
-R11
 R12
 R13
+R10
 !i10b 1
 !s100 Z[DAL2z^eSzP=oOGEFajB0
 Ie[3Rme7PhJCKF0kFMM[Z>3
@@ -196,9 +210,9 @@ R14
 w1773226752
 8../rtl/compute_layer.sv
 F../rtl/compute_layer.sv
-!i122 15
+!i122 22
 L0 1 169
-R10
+R11
 R15
 r1
 !s85 0
@@ -210,10 +224,10 @@ R18
 R19
 R8
 vconfig_parser
-R11
 R12
-DXx4 work 13 bnn_types_pkg 0 22 4lEaIAMWPfQ9LUIN@R3?^1
 R13
+DXx4 work 13 bnn_types_pkg 0 22 4lEaIAMWPfQ9LUIN@R3?^1
+R10
 !i10b 1
 !s100 ZdRJkmf1Tb`5lN6z0na^A0
 I3a]U40jgb2AI[eN]CiOS52
@@ -222,9 +236,9 @@ R14
 R20
 8../rtl/config_parser.sv
 F../rtl/config_parser.sv
-!i122 15
+!i122 22
 L0 1 184
-R10
+R11
 R15
 r1
 !s85 0
@@ -236,9 +250,9 @@ R18
 R19
 R8
 vlayer_memory
-R11
 R12
 R13
+R10
 !i10b 1
 !s100 RcK=30mTK:X?fc_ZzmkKH1
 In^f6^?HQ92UYZJ4^;7@>R1
@@ -247,9 +261,9 @@ R14
 R20
 8../rtl/layer_memory.sv
 F../rtl/layer_memory.sv
-!i122 15
+!i122 22
 L0 1 147
-R10
+R11
 R15
 r1
 !s85 0
@@ -261,20 +275,20 @@ R18
 R19
 R8
 vneural_processor
-R11
 R12
 R13
+R10
 !i10b 1
-!s100 I8?BEc4G>4MTYK7gO9P7o0
-I4?gPKHf[O]gQMoA8P1C;@0
+!s100 BD:PIVB^QhEg^XaM5]4g;0
+I@7CPF4F7`gF=?KL;ZRUEX0
 S1
 R14
-w1773227382
+w1773229262
 8../rtl/neural_processor.sv
 F../rtl/neural_processor.sv
-!i122 15
-L0 1 127
-R10
+!i122 22
+L0 1 102
+R11
 R15
 r1
 !s85 0
