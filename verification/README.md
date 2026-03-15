@@ -30,7 +30,16 @@ This folder contains a parameterized SystemVerilog testbench for verifying the f
 
 #### Script Mode
 
-TO BE UPDATED
+From the repository root:
+
+```bash
+./sim/run_sim.sh
+```
+
+This script:
+- Cleans `sim/work/` to avoid stale compiled units.
+- Compiles a simulation model for the Intel/Altera Reset Release IP (required because the DUT instantiates `altera_s10_user_rst_clkgate` for Agilex 5).
+- Runs the `bnn_fcc_tb` testbench in batch mode.
 
 <!--1. Open your simulator and navigate to the `sim/` directory.
 2. Compile the package, DUT, and testbench:
@@ -120,4 +129,3 @@ To fully verify your design's robustness against back-pressure and inputs gaps, 
 * `DATA_IN_VALID_PROBABILITY = 0.8`
 
 ---
-

@@ -59,34 +59,23 @@ module layer_memory #(
     // we duplicate the weight memory. This guarantees we can read `word_addr` and
     // `word_addr+1` in the same cycle using two independent 1R ports (at the cost
     // of 2x BRAM for weights).
-    (* ram_style = "block" *) logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [WEIGHT_MEM_DEPTH];
-    (* ram_style = "block" *) logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [WEIGHT_MEM_DEPTH];
+    //
+    // Quartus attribute note:
+    // - Intel uses `ramstyle` (not `ram_style`) for RAM block hints.
+    (* ramstyle = "M20K" *) logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [0:WEIGHT_MEM_DEPTH-1];
+    (* ramstyle = "M20K" *) logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [0:WEIGHT_MEM_DEPTH-1];
     // For thresholds, reading 32-bits from arbitrary 64-bit alignment is annoying.
     // Store as 32-bit words internally?
     // Config writes 64-bit. We can unpack on write.
     // Or just Keep 32-bit memory and write 2 words per clock if bus is 64?
     // Simplest: Store as written (CONFIG_BUS_WIDTH) and mux on read.
-    (* ram_style = "block" *) logic [CONFIG_BUS_WIDTH-1:0] mem_thresholds [THRESH_MEM_DEPTH];
+    (* ramstyle = "M20K" *) logic [CONFIG_BUS_WIDTH-1:0] mem_thresholds [0:THRESH_MEM_DEPTH-1];
 
     // Read Pointers and Logic
     logic [31:0] current_neuron_idx;
     logic [31:0] chunk_idx;
     logic [31:0] ptr_thresholds; // Word index
     logic [31:0] sub_ptr_thresholds; // Sub-word index (for 32-bit chunks)
-
-    // Write Logic
-    always_ff @(posedge clk) begin
-        if (wr_en_weights) begin
-            if (wr_addr < WEIGHT_MEM_DEPTH) begin
-                mem_weights_lo[wr_addr] <= wr_data;
-                mem_weights_hi[wr_addr] <= wr_data;
-            end
-        end
-        if (wr_en_thresholds) begin
-             if (wr_addr < THRESH_MEM_DEPTH)
-                mem_thresholds[wr_addr] <= wr_data;
-        end
-    end
 
     // Read Logic
     always_ff @(posedge clk) begin
@@ -140,7 +129,10 @@ module layer_memory #(
     logic [31:0] base_byte_addr_req;
     logic [31:0] current_byte_addr_req;
     logic [31:0] word_addr_req;
+    logic [31:0] word_addr_safe_req;
+    logic [31:0] word_addr_plus1_safe_req;
     logic [31:0] bit_offset_req;
+    logic [31:0] ptr_thresholds_safe_req;
 
     always_comb begin
         // Defaults: hold current pointers
@@ -180,11 +172,28 @@ module layer_memory #(
 
         // Word addressing into the packed weight stream (byte aligned per neuron)
         word_addr_req   = current_byte_addr_req / BUS_BYTES;
+        // Clamp to avoid out-of-range array indexing (e.g., after the final neuron
+        // when pointers may advance one step beyond the last valid entry).
+        if (word_addr_req < WEIGHT_MEM_DEPTH)
+            word_addr_safe_req = word_addr_req;
+        else
+            word_addr_safe_req = (WEIGHT_MEM_DEPTH == 0) ? '0 : (WEIGHT_MEM_DEPTH - 1);
+
+        if (word_addr_safe_req == (WEIGHT_MEM_DEPTH - 1))
+            word_addr_plus1_safe_req = word_addr_safe_req;
+        else
+            word_addr_plus1_safe_req = word_addr_safe_req + 1;
         bit_offset_req  = (current_byte_addr_req % BUS_BYTES) * 8;
+
+        if (ptr_thresholds_req < THRESH_MEM_DEPTH)
+            ptr_thresholds_safe_req = ptr_thresholds_req;
+        else
+            ptr_thresholds_safe_req = (THRESH_MEM_DEPTH == 0) ? '0 : (THRESH_MEM_DEPTH - 1);
     end
 
     logic [CONFIG_BUS_WIDTH-1:0] weights_word_lo_q;
-    logic [CONFIG_BUS_WIDTH-1:0] weights_word_hi_q;
+    logic [CONFIG_BUS_WIDTH-1:0] weights_word_hi_raw_q;
+    logic                        weights_hi_valid_q;
     logic [31:0]                 bit_offset_q;
 
     logic [CONFIG_BUS_WIDTH-1:0] thresh_word_q;
@@ -193,36 +202,41 @@ module layer_memory #(
     always_ff @(posedge clk) begin
         if (rst) begin
             weights_word_lo_q      <= '0;
-            weights_word_hi_q      <= '0;
+            weights_word_hi_raw_q  <= '0;
+            weights_hi_valid_q     <= 1'b0;
             bit_offset_q           <= '0;
             thresh_word_q          <= '0;
             sub_ptr_thresholds_q   <= '0;
         end else begin
-            // Prefetch weights (two consecutive words) for unaligned extraction
-            if (word_addr_req < WEIGHT_MEM_DEPTH)
-                weights_word_lo_q <= mem_weights_lo[word_addr_req];
-            else
-                weights_word_lo_q <= '0;
+            // Config writes (shared by both duplicated memories)
+            if (wr_en_weights && (wr_addr < WEIGHT_MEM_DEPTH)) begin
+                mem_weights_lo[wr_addr] <= wr_data;
+                mem_weights_hi[wr_addr] <= wr_data;
+            end
 
-            if (word_addr_req + 1 < WEIGHT_MEM_DEPTH)
-                weights_word_hi_q <= mem_weights_hi[word_addr_req + 1];
-            else
-                weights_word_hi_q <= '0;
+            if (wr_en_thresholds && (wr_addr < THRESH_MEM_DEPTH)) begin
+                mem_thresholds[wr_addr] <= wr_data;
+            end
+
+            // Prefetch weights (two consecutive words) for unaligned extraction.
+            // Keep the RAM read itself unconditional so Quartus can infer M20K.
+            weights_word_lo_q     <= mem_weights_lo[word_addr_safe_req];
+            weights_word_hi_raw_q <= mem_weights_hi[word_addr_plus1_safe_req];
+            weights_hi_valid_q    <= (word_addr_safe_req != (WEIGHT_MEM_DEPTH - 1));
 
             bit_offset_q <= bit_offset_req;
 
             // Prefetch the threshold word and the sub-index used to slice out 32 bits
-            if (ptr_thresholds_req < THRESH_MEM_DEPTH)
-                thresh_word_q <= mem_thresholds[ptr_thresholds_req];
-            else
-                thresh_word_q <= '0;
+            thresh_word_q <= mem_thresholds[ptr_thresholds_safe_req];
 
             sub_ptr_thresholds_q <= sub_ptr_thresholds_req;
         end
     end
 
     logic [2*CONFIG_BUS_WIDTH-1:0] double_word_q;
+    logic [CONFIG_BUS_WIDTH-1:0]   weights_word_hi_q;
     always_comb begin
+        weights_word_hi_q = weights_hi_valid_q ? weights_word_hi_raw_q : '0;
         double_word_q = {weights_word_hi_q, weights_word_lo_q};
     end
 

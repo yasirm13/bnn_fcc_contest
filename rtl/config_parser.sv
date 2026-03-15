@@ -35,7 +35,9 @@ module config_parser #(
 
     // Header Processing
     logic [127:0] header_shift_reg;
-    logic [7:0]   header_bits_count;
+    // Can reach 128 (bits), and we avoid tool "carry-out" truncation warnings by
+    // giving this counter an extra bit.
+    logic [8:0]   header_bits_count;
     config_header_t current_header;
 
     // Internal Signals
@@ -109,18 +111,18 @@ module config_parser #(
                          // Just act as a deserializer.
                          
                          // IF CONFIG_BUS_WIDTH == 64
-                         if (CONFIG_BUS_WIDTH == 64) begin
-                             if (header_bits_count == 0) header_shift_reg[63:0] <= config_data;
-                             if (header_bits_count == 64) header_shift_reg[127:64] <= config_data;
-                             header_bits_count <= header_bits_count + 64;
-                         end
-                         else if (CONFIG_BUS_WIDTH == 32) begin
-                             if (header_bits_count == 0) header_shift_reg[31:0] <= config_data;
-                             if (header_bits_count == 32) header_shift_reg[63:32] <= config_data;
-                             if (header_bits_count == 64) header_shift_reg[95:64] <= config_data;
-                             if (header_bits_count == 96) header_shift_reg[127:96] <= config_data;
-                             header_bits_count <= header_bits_count + 32;
-                         end
+	                         if (CONFIG_BUS_WIDTH == 64) begin
+	                             if (header_bits_count == 0) header_shift_reg[63:0] <= config_data;
+	                             if (header_bits_count == 64) header_shift_reg[127:64] <= config_data;
+	                             header_bits_count <= 9'(header_bits_count + 9'd64);
+	                         end
+	                         else if (CONFIG_BUS_WIDTH == 32) begin
+	                             if (header_bits_count == 0) header_shift_reg[31:0] <= config_data;
+	                             if (header_bits_count == 32) header_shift_reg[63:32] <= config_data;
+	                             if (header_bits_count == 64) header_shift_reg[95:64] <= config_data;
+	                             if (header_bits_count == 96) header_shift_reg[127:96] <= config_data;
+	                             header_bits_count <= 9'(header_bits_count + 9'd32);
+	                         end
                          // Add more if needed, or make generic using loop (synthesizable in SV usually if constant loop)
                          
                          if ((header_bits_count + CONFIG_BUS_WIDTH) >= 128) begin

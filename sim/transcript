@@ -1,8 +1,8 @@
 # ** Note: (vsim-220) '/home/yasir/altera_pro/25.3.1/questa_fe/linux_x86_64/../modelsim.ini' is used as the ini file.
 # vsim -c work.bnn_fcc_tb -do "run -all; quit" -gNUM_TEST_IMAGES=10 -gBASE_DIR=../python -gDATA_IN_VALID_PROBABILITY=0.8 
-# Start time: 19:03:14 on Mar 14,2026
-# ** Warning: (vsim-56) Problem with optimized design dependency file "/home/yasir/BNN/bnn_fcc_contest/sim/work/@_opt1/_deps" - file is inconsistent with version property. (Code 13)
-# ** Note: (vsim-8009) Loading existing optimized design _opt2
+# Start time: 04:17:28 on Mar 15,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-220) '/home/yasir/altera_pro/25.3.1/questa_fe/linux_x86_64/../modelsim.ini' is used as the ini file.
 # //  Questa Altera FPGA Edition-64
 # //  Version 2025.2 linux_x86_64 May 31 2025
 # //
@@ -5911,5 +5911,5 @@
 # Avg throughput (outputs/sec): 2424.8
 # Avg throughput (cycles/output): 41241.0
 #  quit
-# End time: 19:03:15 on Mar 14,2026, Elapsed time: 0:00:01
-# Errors: 0, Warnings: 1
+# End time: 04:17:30 on Mar 15,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 0

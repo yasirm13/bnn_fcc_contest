@@ -71,16 +71,18 @@ module bnn_fcc #(
 
     logic [    INPUT_DATA_WIDTH-1:0] pixels            [        INPUT_BUS_ELEMENTS];
 
-    logic [ MAX_PARALLEL_INPUTS-1:0] weight_wr_data;
-    logic [              LAYERS-1:0] weight_wr_en;
-    logic [THRESHOLD_DATA_WIDTH-1:0] threshold_wr_data;
-    logic [              LAYERS-1:0] threshold_wr_en;
+    // (legacy signals removed) - config_parser writes go directly into each
+    // layer_memory instance, and compute_layer consumes those memories.
 
-    logic                            bnn_ready;
-    logic [     PARALLEL_INPUTS-1:0] bnn_data_in;
-    logic                            bnn_data_in_valid;
-    logic [THRESHOLD_DATA_WIDTH-1:0] bnn_count_out     [PARALLEL_NEURONS[LAYERS-1]];
-    logic                            bnn_count_valid;
+    // Agilex 5 requirement: instantiate exactly one Reset Release IP.
+    // Hold internal logic in reset until configuration completes.
+    logic ninit_done;
+    logic rst_int;
+    assign rst_int = rst | ninit_done;
+
+    altera_s10_user_rst_clkgate reset_release_inst (
+        .ninit_done(ninit_done)
+    );
 
     initial begin
         if (INPUT_BUS_ELEMENTS != PARALLEL_INPUTS)
@@ -108,7 +110,7 @@ module bnn_fcc #(
         .TOTAL_LAYERS    (TOTAL_LAYERS)
     ) config_parser_inst (
         .clk                   (clk),
-        .rst                   (rst),
+        .rst                   (rst_int),
         .config_valid          (config_valid),
         .config_ready          (config_ready),
         .config_data           (config_data),
@@ -139,7 +141,7 @@ module bnn_fcc #(
     logic image_ready;
 
     always_ff @(posedge clk) begin
-        if (rst) begin
+        if (rst_int) begin
             input_bit_count <= '0;
             image_ready <= 1'b0;
         end else begin
@@ -207,13 +209,13 @@ module bnn_fcc #(
                 .NUM_NEURONS     (TOPOLOGY[l]),
                 .PARALLEL_NEURONS(1),
                 .PARALLEL_INPUTS (PARALLEL_INPUTS)
-            ) mem_inst (
-                .clk              (clk),
-                .rst              (rst),
-                .wr_en_weights    (layer_wr_en_weights[l]),
-                .wr_en_thresholds (layer_wr_en_thresholds[l]),
-                .wr_addr          (layer_wr_addr),
-                .wr_data          (layer_wr_data),
+	            ) mem_inst (
+	                .clk              (clk),
+	                .rst              (rst_int),
+	                .wr_en_weights    (layer_wr_en_weights[l]),
+	                .wr_en_thresholds (layer_wr_en_thresholds[l]),
+	                .wr_addr          (layer_wr_addr),
+	                .wr_data          (layer_wr_data),
                 .layer_start      (mem_layer_start),
                 .read_weight_chunk(mem_read_weight),
                 .read_threshold   (mem_read_thresh),
@@ -228,13 +230,13 @@ module bnn_fcc #(
                 .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
                 .PARALLEL_INPUTS (PARALLEL_INPUTS),
                 .IS_OUTPUT_LAYER ((l == LAYERS) ? 1'b1 : 1'b0)
-            ) comp_inst (
-                .clk              (clk),
-                .rst              (rst),
-                .start            (layer_start_pulse[l]),
-                .done             (layer_done),
-                .is_idle          (layer_idle[l]),
-                .result_vector    (result_vector),
+	            ) comp_inst (
+	                .clk              (clk),
+	                .rst              (rst_int),
+	                .start            (layer_start_pulse[l]),
+	                .done             (layer_done),
+	                .is_idle          (layer_idle[l]),
+	                .result_vector    (result_vector),
                 .input_activations(layer_activations[l-1][TOPOLOGY[l-1]-1:0]),
                 .mem_layer_start  (mem_layer_start),
                 .mem_read_weight  (mem_read_weight),
@@ -246,13 +248,13 @@ module bnn_fcc #(
             // Removed manual assign layer_idle = !mem_layer_start since the module now exports it.
 
             // Register activations for next layer
-            always_ff @(posedge clk) begin
-                if (rst) begin
-                    layer_start_pulse[l+1] <= 1'b0;
-                end else begin
-                    layer_start_pulse[l+1] <= layer_done;
-                    if (layer_done) begin
-                        layer_activations[l] <= result_vector;
+	            always_ff @(posedge clk) begin
+	                if (rst_int) begin
+	                    layer_start_pulse[l+1] <= 1'b0;
+	                end else begin
+	                    layer_start_pulse[l+1] <= layer_done;
+	                    if (layer_done) begin
+	                        layer_activations[l] <= result_vector;
                     end
                 end
             end
@@ -268,7 +270,7 @@ module bnn_fcc #(
     logic [OUTPUT_BUS_WIDTH-1:0] out_data_reg;
 
     always_ff @(posedge clk) begin
-        if (rst) begin
+        if (rst_int) begin
             out_valid_reg <= 1'b0;
             out_data_reg  <= '0;
         end else begin
@@ -292,7 +294,10 @@ module bnn_fcc #(
 
     assign data_out_valid = out_valid_reg;
     assign data_out_data  = out_data_reg;
-    assign data_out_keep  = '1;  // Keep all valid bytes (1 byte)
-    assign data_out_last  = 1'b1;
+    // AXI-Stream note: TKEEP/TLAST are only meaningful when TVALID is asserted.
+    // Driving them from `out_valid_reg` avoids "stuck at VCC" warnings and is
+    // friendlier to downstream logic that samples sideband signals with TVALID.
+    assign data_out_keep  = out_valid_reg ? '1 : '0;  // 1 beat = 1 byte
+    assign data_out_last  = out_valid_reg;
 
 endmodule

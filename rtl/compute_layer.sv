@@ -127,13 +127,13 @@ module compute_layer #(
                     state <= COMPUTE_NEURON;
                 end
 
-                COMPUTE_NEURON: begin
-                    if (chunk_cnt < CHUNKS_PER_NEURON - 1) begin
-                        chunk_cnt <= chunk_cnt + 1;
-                    end else begin
-                        state <= FINISH_NEURON;
-                    end
-                end
+	                COMPUTE_NEURON: begin
+	                    if (chunk_cnt < CHUNKS_PER_NEURON - 1) begin
+	                        chunk_cnt <= 16'(chunk_cnt + 16'd1);
+	                    end else begin
+	                        state <= FINISH_NEURON;
+	                    end
+	                end
 
                 FINISH_NEURON: begin
                     if (np_valid_out) begin
@@ -151,15 +151,15 @@ module compute_layer #(
 
                         if (neuron_cnt == NUM_NEURONS - 1) begin
                             state <= DONE_STATE;
-                        end else begin
-                            // After advancing to the next neuron's pointers, insert a
-                            // 1-cycle prefetch bubble for synchronous memory.
-                            state <= PREFETCH;
-                            neuron_cnt <= neuron_cnt + 1;
-                            chunk_cnt <= 0;
-                        end
-                    end
-                end
+	                        end else begin
+	                            // After advancing to the next neuron's pointers, insert a
+	                            // 1-cycle prefetch bubble for synchronous memory.
+	                            state <= PREFETCH;
+	                            neuron_cnt <= 16'(neuron_cnt + 16'd1);
+	                            chunk_cnt <= 16'd0;
+	                        end
+	                    end
+	                end
 
                 DONE_STATE: begin
                     state <= IDLE;
