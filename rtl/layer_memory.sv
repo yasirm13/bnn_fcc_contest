@@ -60,16 +60,14 @@ module layer_memory #(
     // `word_addr+1` in the same cycle using two independent 1R ports (at the cost
     // of 2x BRAM for weights).
     //
-    // Quartus attribute note:
-    // - Intel uses `ramstyle` (not `ram_style`) for RAM block hints.
-    (* ramstyle = "M20K" *) logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [0:WEIGHT_MEM_DEPTH-1];
-    (* ramstyle = "M20K" *) logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [0:WEIGHT_MEM_DEPTH-1];
+    logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [0:WEIGHT_MEM_DEPTH-1];
+    logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [0:WEIGHT_MEM_DEPTH-1];
     // For thresholds, reading 32-bits from arbitrary 64-bit alignment is annoying.
     // Store as 32-bit words internally?
     // Config writes 64-bit. We can unpack on write.
     // Or just Keep 32-bit memory and write 2 words per clock if bus is 64?
     // Simplest: Store as written (CONFIG_BUS_WIDTH) and mux on read.
-    (* ramstyle = "M20K" *) logic [CONFIG_BUS_WIDTH-1:0] mem_thresholds [0:THRESH_MEM_DEPTH-1];
+    logic [CONFIG_BUS_WIDTH-1:0] mem_thresholds [0:THRESH_MEM_DEPTH-1];
 
     // Read Pointers and Logic
     logic [31:0] current_neuron_idx;
@@ -219,7 +217,7 @@ module layer_memory #(
             end
 
             // Prefetch weights (two consecutive words) for unaligned extraction.
-            // Keep the RAM read itself unconditional so Quartus can infer M20K.
+            // Keep the RAM read itself unconditional to help inference of block RAM.
             weights_word_lo_q     <= mem_weights_lo[word_addr_safe_req];
             weights_word_hi_raw_q <= mem_weights_hi[word_addr_plus1_safe_req];
             weights_hi_valid_q    <= (word_addr_safe_req != (WEIGHT_MEM_DEPTH - 1));

@@ -61,15 +61,10 @@ module bnn_fcc #(
     // (legacy signals removed) - config_parser writes go directly into each
     // layer_memory instance, and compute_layer consumes those memories.
 
-    // Agilex 5 requirement: instantiate exactly one Reset Release IP.
-    // Hold internal logic in reset until configuration completes.
-    logic ninit_done;
+    // Internal reset used throughout the design.
+    // Keep this portable by deriving it only from the module's external reset.
     logic rst_int;
-    assign rst_int = rst | ninit_done;
-
-    altera_s10_user_rst_clkgate reset_release_inst (
-        .ninit_done(ninit_done)
-    );
+    assign rst_int = rst;
 
     initial begin
         if (INPUT_BUS_ELEMENTS != PARALLEL_INPUTS)
