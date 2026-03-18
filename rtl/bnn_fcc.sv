@@ -1,18 +1,7 @@
-// Layer 0 (F[0] inputs per neuron):
-//   Neuron 0: W0,0 ... W0,F[0]-1 | Threshold0
-//   Neuron 1: W1,0 ... W1,F[0]-1 | Threshold1
-//   ...
-//   Neuron N[0]-1: ...           | ThresholdN[0]-1
-
-// Layer 1 (F[1] inputs per neuron):
-//   Neuron 0: W0,0 ... W0,F[1]-1 | Threshold0
-//   Neuron 1: W1,0 ... W1,F[1]-1 | Threshold1
-//   ...
-
 module bnn_fcc #(
     parameter int INPUT_DATA_WIDTH  = 8,
     parameter int INPUT_BUS_WIDTH   = 64,
-    parameter int CONFIG_BUS_WIDTH  = 32,
+    parameter int CONFIG_BUS_WIDTH  = 64,
     parameter int OUTPUT_DATA_WIDTH = 4,
     parameter int OUTPUT_BUS_WIDTH  = 8,
 
@@ -26,9 +15,7 @@ module bnn_fcc #(
     },  // 0: input, TOTAL_LAYERS-1: output
 
     parameter int PARALLEL_INPUTS = 8,
-    parameter int PARALLEL_NEURONS[TOTAL_LAYERS-1] = '{default: 8},
-
-    localparam int THRESHOLD_DATA_WIDTH = 32
+    parameter int PARALLEL_NEURONS[TOTAL_LAYERS-1] = '{default: 8}
 ) (
     input logic clk,
     input logic rst,
