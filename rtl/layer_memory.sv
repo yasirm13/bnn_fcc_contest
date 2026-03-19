@@ -2,250 +2,150 @@ module layer_memory #(
     parameter int CONFIG_BUS_WIDTH = 64,
     parameter int LAYER_INPUTS = 784,
     parameter int NUM_NEURONS = 256,
-    parameter int PARALLEL_NEURONS = 1, // Only 1 supported for now in this simple implementation
+    parameter int PARALLEL_NEURONS = 1,
     parameter int PARALLEL_INPUTS = 64
-)(
+) (
     input logic clk,
     input logic rst,
-    
-    // Configuration Write Interface
+
     input logic wr_en_weights,
     input logic wr_en_thresholds,
-    input logic [31:0] wr_addr,  // From config parser (0-based index)
+    input logic [31:0] wr_addr,
     input logic [CONFIG_BUS_WIDTH-1:0] wr_data,
-    
-    // Compute Read Interface
-    input logic        layer_start,      // Reset pointers for a new inference pass
-    input logic        read_weight_chunk,// Advance weight pointer
-    input logic        read_threshold,   // Advance threshold pointer
-    
-    output logic [CONFIG_BUS_WIDTH-1:0] rd_data_weights,   // Output full width, consumer handles slicing
-    output logic [31:0]                 rd_data_threshold
+    input logic [CONFIG_BUS_WIDTH/8-1:0] wr_strb,
+
+    input logic layer_start,
+    input logic read_weight_chunk,
+    input logic read_threshold,
+
+    output logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] rd_data_weights,
+    output logic [PARALLEL_NEURONS-1:0][31:0]                 rd_data_threshold
 );
 
-    // Calculate depths
-    // Weights: Total bits = NUM_NEURONS * (aligned LAYER_INPUTS)
-    // Actually, config parser writes in CONFIG_BUS_WIDTH chunks.
-    // Total chunks approx = (NUM_NEURONS * BITS_PER_NEURON) / CONFIG_BUS_WIDTH
-    // Just use a sufficiently large memory or calculated depth.
-    // Since we don't have dynamic sizing easily without ceils, let's use a safe upper bound or simple math.
-    
-    // BITS_PER_NEURON: Inputs padded to byte boundary.
-    localparam int BITS_PER_NEURON_UNALIGNED = LAYER_INPUTS;
+    localparam int BUS_BYTES = CONFIG_BUS_WIDTH / 8;
     localparam int BYTES_PER_NEURON = (LAYER_INPUTS + 7) / 8;
-    localparam int BITS_PER_NEURON = BYTES_PER_NEURON * 8;
-    
-    localparam int TOTAL_WEIGHT_BITS = NUM_NEURONS * BITS_PER_NEURON;
+    localparam int TOTAL_WEIGHT_BITS = NUM_NEURONS * BYTES_PER_NEURON * 8;
     localparam int WEIGHT_MEM_DEPTH = (TOTAL_WEIGHT_BITS + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
-    
-    // Thresholds: 1 per neuron (32 bits).
-    // Config interface writes CONFIG_BUS_WIDTH bits.
-    // If CONFIG > 32, we pack multiple thresholds? 
-    // README: "For thresholds... payload provides a single 32-bit threshold for each neuron."
-    // Does it pack them? "payload provides... single... for each".
-    // Usually implies packing if bandwidth allows.
-    // Use the generic: "Following the payload is a series of total_bytes bytes".
-    // So yes, packed.
-    localparam int TOTAL_THRESH_BITS = NUM_NEURONS * 32;
-    localparam int THRESH_MEM_DEPTH = (TOTAL_THRESH_BITS + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
+    localparam int THRESH_WORDS_PER_BEAT = CONFIG_BUS_WIDTH / 32;
 
-    // Memory Arrays
-    //
-    // IMPORTANT: Weights are read in an unaligned fashion (can span two consecutive
-    // CONFIG_BUS_WIDTH words). FPGA BRAMs require synchronous reads; combinational
-    // reads will infer LUT/FF RAM.
-    //
-    // To keep reads BRAM-inferrable while supporting "two-word" fetches each cycle,
-    // we duplicate the weight memory. This guarantees we can read `word_addr` and
-    // `word_addr+1` in the same cycle using two independent 1R ports (at the cost
-    // of 2x BRAM for weights).
-    //
-    logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [0:WEIGHT_MEM_DEPTH-1];
-    logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [0:WEIGHT_MEM_DEPTH-1];
-    // For thresholds, reading 32-bits from arbitrary 64-bit alignment is annoying.
-    // Store as 32-bit words internally?
-    // Config writes 64-bit. We can unpack on write.
-    // Or just Keep 32-bit memory and write 2 words per clock if bus is 64?
-    // Simplest: Store as written (CONFIG_BUS_WIDTH) and mux on read.
-    logic [CONFIG_BUS_WIDTH-1:0] mem_thresholds [0:THRESH_MEM_DEPTH-1];
-
-    // Read Pointers and Logic
-    logic [31:0] current_neuron_idx;
+    logic [31:0] neuron_base_idx;
     logic [31:0] chunk_idx;
-    logic [31:0] ptr_thresholds; // Word index
-    logic [31:0] sub_ptr_thresholds; // Sub-word index (for 32-bit chunks)
 
-    // Read Logic
-    always_ff @(posedge clk) begin
-        if (rst || layer_start) begin
-            current_neuron_idx <= '0;
-            chunk_idx <= '0;
-            ptr_thresholds <= '0;
-            sub_ptr_thresholds <= '0;
-        end else begin
-            if (read_weight_chunk) begin
-                chunk_idx <= chunk_idx + 1;
-            end
-            
-            if (read_threshold) begin
-                // Neuron Done. Advance to next.
-                current_neuron_idx <= current_neuron_idx + 1;
-                chunk_idx <= 0; // Reset chunk counter for new neuron logic
-                
-                // Logic to advance to next 32-bit threshold
-                // Assuming CONFIG_BUS_WIDTH is multiple of 32
-                if (sub_ptr_thresholds == (CONFIG_BUS_WIDTH/32 - 1)) begin
-                    sub_ptr_thresholds <= '0;
-                    ptr_thresholds <= ptr_thresholds + 1;
-                end else begin
-                    sub_ptr_thresholds <= sub_ptr_thresholds + 1;
-                end
-            end
-        end
-    end
-
-    // ==========================
-    // Synchronous Read (BRAM)
-    // ==========================
-    //
-    // The compute pipeline uses `read_weight_chunk` as an "advance pointer" strobe:
-    // when asserted in cycle N, the next chunk should be available in cycle N+1.
-    // With synchronous RAM, we therefore PREFETCH the *next* chunk on the clock
-    // edge, and present it on outputs in the following cycle.
-    //
-    // Similarly, `read_threshold` advances to the next neuron's threshold; we
-    // prefetch that threshold on the same edge.
-
-    localparam int unsigned BUS_BYTES = CONFIG_BUS_WIDTH / 8;
-
-    // Next-state address calculations (combinational)
-    logic [31:0] neuron_idx_req;
+    logic [31:0] neuron_base_idx_req;
     logic [31:0] chunk_idx_req;
-    logic [31:0] ptr_thresholds_req;
-    logic [31:0] sub_ptr_thresholds_req;
 
-    logic [31:0] base_byte_addr_req;
-    logic [31:0] current_byte_addr_req;
-    logic [31:0] word_addr_req;
-    logic [31:0] word_addr_safe_req;
-    logic [31:0] word_addr_plus1_safe_req;
-    logic [31:0] bit_offset_req;
-    logic [31:0] ptr_thresholds_safe_req;
+    logic [PARALLEL_NEURONS-1:0][31:0] word_addr_safe_req;
+    logic [PARALLEL_NEURONS-1:0][31:0] word_addr_plus1_safe_req;
+    logic [PARALLEL_NEURONS-1:0][31:0] bit_offset_req;
+    logic [PARALLEL_NEURONS-1:0][31:0] threshold_idx_req;
+
+    logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] weights_word_lo_q;
+    logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] weights_word_hi_raw_q;
+    logic [PARALLEL_NEURONS-1:0]                       weights_hi_valid_q;
+    logic [PARALLEL_NEURONS-1:0][31:0]                bit_offset_q;
+
+    logic [31:0] threshold_mem [0:NUM_NEURONS-1];
 
     always_comb begin
-        // Defaults: hold current pointers
-        neuron_idx_req         = current_neuron_idx;
-        chunk_idx_req          = chunk_idx;
-        ptr_thresholds_req     = ptr_thresholds;
-        sub_ptr_thresholds_req = sub_ptr_thresholds;
+        neuron_base_idx_req = neuron_base_idx;
+        chunk_idx_req = chunk_idx;
 
-        // Apply pointer updates that happen at the upcoming edge, so the RAM read
-        // prefetches the value that will be needed in the next cycle.
         if (rst || layer_start) begin
-            neuron_idx_req         = '0;
-            chunk_idx_req          = '0;
-            ptr_thresholds_req     = '0;
-            sub_ptr_thresholds_req = '0;
-        end else begin
-            if (read_threshold) begin
-                // Next neuron starts at chunk 0
-                neuron_idx_req = current_neuron_idx + 1;
-                chunk_idx_req  = '0;
-
-                // Advance to next 32-bit threshold
-                if (sub_ptr_thresholds == (CONFIG_BUS_WIDTH/32 - 1)) begin
-                    sub_ptr_thresholds_req = '0;
-                    ptr_thresholds_req     = ptr_thresholds + 1;
-                end else begin
-                    sub_ptr_thresholds_req = sub_ptr_thresholds + 1;
-                    ptr_thresholds_req     = ptr_thresholds;
-                end
-            end else if (read_weight_chunk) begin
-                chunk_idx_req = chunk_idx + 1;
-            end
+            neuron_base_idx_req = '0;
+            chunk_idx_req = '0;
+        end else if (read_threshold) begin
+            neuron_base_idx_req = neuron_base_idx + PARALLEL_NEURONS;
+            chunk_idx_req = '0;
+        end else if (read_weight_chunk) begin
+            chunk_idx_req = chunk_idx + 1;
         end
 
-        base_byte_addr_req    = neuron_idx_req * BYTES_PER_NEURON;
-        current_byte_addr_req = base_byte_addr_req + (chunk_idx_req * BUS_BYTES);
+        for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+            int neuron_idx_req;
+            int current_byte_addr_req;
+            int word_addr_req;
 
-        // Word addressing into the packed weight stream (byte aligned per neuron)
-        word_addr_req   = current_byte_addr_req / BUS_BYTES;
-        // Clamp to avoid out-of-range array indexing (e.g., after the final neuron
-        // when pointers may advance one step beyond the last valid entry).
-        if (word_addr_req < WEIGHT_MEM_DEPTH)
-            word_addr_safe_req = word_addr_req;
-        else
-            word_addr_safe_req = (WEIGHT_MEM_DEPTH == 0) ? '0 : (WEIGHT_MEM_DEPTH - 1);
+            neuron_idx_req = neuron_base_idx_req + lane;
+            current_byte_addr_req = neuron_idx_req * BYTES_PER_NEURON + (chunk_idx_req * BUS_BYTES);
+            word_addr_req = current_byte_addr_req / BUS_BYTES;
+            bit_offset_req[lane] = (current_byte_addr_req % BUS_BYTES) * 8;
+            threshold_idx_req[lane] = neuron_idx_req;
 
-        if (word_addr_safe_req == (WEIGHT_MEM_DEPTH - 1))
-            word_addr_plus1_safe_req = word_addr_safe_req;
-        else
-            word_addr_plus1_safe_req = word_addr_safe_req + 1;
-        bit_offset_req  = (current_byte_addr_req % BUS_BYTES) * 8;
+            if (word_addr_req < WEIGHT_MEM_DEPTH)
+                word_addr_safe_req[lane] = word_addr_req;
+            else
+                word_addr_safe_req[lane] = (WEIGHT_MEM_DEPTH == 0) ? '0 : (WEIGHT_MEM_DEPTH - 1);
 
-        if (ptr_thresholds_req < THRESH_MEM_DEPTH)
-            ptr_thresholds_safe_req = ptr_thresholds_req;
-        else
-            ptr_thresholds_safe_req = (THRESH_MEM_DEPTH == 0) ? '0 : (THRESH_MEM_DEPTH - 1);
+            if (word_addr_safe_req[lane] == (WEIGHT_MEM_DEPTH - 1))
+                word_addr_plus1_safe_req[lane] = word_addr_safe_req[lane];
+            else
+                word_addr_plus1_safe_req[lane] = word_addr_safe_req[lane] + 1;
+        end
     end
-
-    logic [CONFIG_BUS_WIDTH-1:0] weights_word_lo_q;
-    logic [CONFIG_BUS_WIDTH-1:0] weights_word_hi_raw_q;
-    logic                        weights_hi_valid_q;
-    logic [31:0]                 bit_offset_q;
-
-    logic [CONFIG_BUS_WIDTH-1:0] thresh_word_q;
-    logic [31:0]                 sub_ptr_thresholds_q;
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            weights_word_lo_q      <= '0;
-            weights_word_hi_raw_q  <= '0;
-            weights_hi_valid_q     <= 1'b0;
-            bit_offset_q           <= '0;
-            thresh_word_q          <= '0;
-            sub_ptr_thresholds_q   <= '0;
+            neuron_base_idx <= '0;
+            chunk_idx <= '0;
+            for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                rd_data_threshold[lane] <= '0;
+            end
         end else begin
-            // Config writes (shared by both duplicated memories)
-            if (wr_en_weights && (wr_addr < WEIGHT_MEM_DEPTH)) begin
-                mem_weights_lo[wr_addr] <= wr_data;
-                mem_weights_hi[wr_addr] <= wr_data;
+            neuron_base_idx <= neuron_base_idx_req;
+            chunk_idx <= chunk_idx_req;
+
+            if (wr_en_thresholds) begin
+                for (int word = 0; word < THRESH_WORDS_PER_BEAT; word++) begin
+                    int thresh_idx;
+                    thresh_idx = wr_addr * THRESH_WORDS_PER_BEAT + word;
+                    if ((thresh_idx < NUM_NEURONS) && (&wr_strb[word*4 +: 4])) begin
+                        threshold_mem[thresh_idx] <= wr_data[word*32 +: 32];
+                    end
+                end
             end
 
-            if (wr_en_thresholds && (wr_addr < THRESH_MEM_DEPTH)) begin
-                mem_thresholds[wr_addr] <= wr_data;
+            for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                if (threshold_idx_req[lane] < NUM_NEURONS)
+                    rd_data_threshold[lane] <= threshold_mem[threshold_idx_req[lane]];
+                else
+                    rd_data_threshold[lane] <= '0;
             end
-
-            // Prefetch weights (two consecutive words) for unaligned extraction.
-            // Keep the RAM read itself unconditional to help inference of block RAM.
-            weights_word_lo_q     <= mem_weights_lo[word_addr_safe_req];
-            weights_word_hi_raw_q <= mem_weights_hi[word_addr_plus1_safe_req];
-            weights_hi_valid_q    <= (word_addr_safe_req != (WEIGHT_MEM_DEPTH - 1));
-
-            bit_offset_q <= bit_offset_req;
-
-            // Prefetch the threshold word and the sub-index used to slice out 32 bits
-            thresh_word_q <= mem_thresholds[ptr_thresholds_safe_req];
-
-            sub_ptr_thresholds_q <= sub_ptr_thresholds_req;
         end
     end
 
-    logic [2*CONFIG_BUS_WIDTH-1:0] double_word_q;
-    logic [CONFIG_BUS_WIDTH-1:0]   weights_word_hi_q;
-    always_comb begin
-        weights_word_hi_q = weights_hi_valid_q ? weights_word_hi_raw_q : '0;
-        double_word_q = {weights_word_hi_q, weights_word_lo_q};
-    end
+    for (genvar lane = 0; lane < PARALLEL_NEURONS; lane++) begin : gen_weight_ports
+        logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [0:WEIGHT_MEM_DEPTH-1];
+        logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [0:WEIGHT_MEM_DEPTH-1];
 
-    // Extract chunk with dynamic bit offset (registered data path)
-    logic [2*CONFIG_BUS_WIDTH-1:0] shifted_double_word_q;
-    always_comb begin
-        shifted_double_word_q = (double_word_q >> bit_offset_q);
-    end
-    assign rd_data_weights = shifted_double_word_q[CONFIG_BUS_WIDTH-1:0];
+        always_ff @(posedge clk) begin
+            if (rst) begin
+                weights_word_lo_q[lane] <= '0;
+                weights_word_hi_raw_q[lane] <= '0;
+                weights_hi_valid_q[lane] <= 1'b0;
+                bit_offset_q[lane] <= '0;
+            end else begin
+                if (wr_en_weights && (wr_addr < WEIGHT_MEM_DEPTH)) begin
+                    mem_weights_lo[wr_addr] <= wr_data;
+                    mem_weights_hi[wr_addr] <= wr_data;
+                end
 
-    // Extract the correct 32-bit slice from the registered threshold word
-    assign rd_data_threshold = thresh_word_q[sub_ptr_thresholds_q*32 +: 32];
+                weights_word_lo_q[lane] <= mem_weights_lo[word_addr_safe_req[lane]];
+                weights_word_hi_raw_q[lane] <= mem_weights_hi[word_addr_plus1_safe_req[lane]];
+                weights_hi_valid_q[lane] <= (word_addr_safe_req[lane] != (WEIGHT_MEM_DEPTH - 1));
+                bit_offset_q[lane] <= bit_offset_req[lane];
+            end
+        end
+
+        always_comb begin
+            logic [CONFIG_BUS_WIDTH-1:0] weights_word_hi_q;
+            logic [2*CONFIG_BUS_WIDTH-1:0] double_word_q;
+            logic [2*CONFIG_BUS_WIDTH-1:0] shifted_double_word_q;
+
+            weights_word_hi_q = weights_hi_valid_q[lane] ? weights_word_hi_raw_q[lane] : '0;
+            double_word_q = {weights_word_hi_q, weights_word_lo_q[lane]};
+            shifted_double_word_q = (double_word_q >> bit_offset_q[lane]);
+            rd_data_weights[lane] = shifted_double_word_q[CONFIG_BUS_WIDTH-1:0];
+        end
+    end
 
 endmodule

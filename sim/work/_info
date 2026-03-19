@@ -10,23 +10,23 @@ Z0 !s99 nomlopt
 !i10e 25
 !i10f 100
 cModel Technology
-Z1 d/home/UFAD/ymahmud/bnn_fcc_contest/sim
+Z1 d/ecel/UFAD/ymahmud/bnn_fcc_contest/sim
 T_opt
-!s110 1773818876
-VWOl];OPn;@8^JBOi>3V@:2
+!s110 1773900478
+Vl9CBLUGKYlh3cO2ZNPG_C2
 04 10 4 work bnn_fcc_tb fast 0
-=1-0050568b881c-69ba53fc-846ad-9a52
+=1-0050568b881c-69bb92be-142d0-b1923
 R0
 !s12b OEM100
 !s124 OEM100
-o-quiet -auto_acc_if_foreign -work work -G NUM_TEST_IMAGES=100 -G VERIFY_MODEL=0 +acc
+o-quiet -auto_acc_if_foreign -work work +acc
 Z2 tCvgOpt 0
 n@_opt
 OL;O;2023.3;77
 Yaxi4_stream_if
 Z3 2../rtl/bnn_fcc.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/axi4_stream_if.sv|../verification/bnn_fcc_tb.sv
 Z4 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
-Z5 !s110 1773818875
+Z5 !s110 1773900477
 !i10b 1
 !s100 Z7DNHI7]VnhS@@X9DMkmX1
 Igdg]MHhXmNdaHAa;E7hW@2
@@ -42,7 +42,7 @@ Z7 OL;L;2023.3;77
 r1
 !s85 0
 31
-Z8 !s108 1773818875.000000
+Z8 !s108 1773900477.000000
 Z9 !s107 ../verification/bnn_fcc_tb.sv|../verification/axi4_stream_if.sv|../rtl/neural_processor.sv|../rtl/layer_memory.sv|../rtl/config_parser.sv|../rtl/compute_layer.sv|../rtl/bnn_fcc.sv|
 Z10 !s90 -work|work|-sv|-mfcu|+incdir+../rtl|+incdir+../verification|../rtl/bnn_fcc.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/axi4_stream_if.sv|../verification/bnn_fcc_tb.sv|
 !i113 0
@@ -54,15 +54,15 @@ R3
 R4
 R5
 !i10b 1
-!s100 g00V3fz9gb;:YdBbGleTc1
-I8hJEUambA:ammnVNcna1S3
+!s100 9`PA2Q9[aFRF2Yn9c6P883
+I13K?LDl;HVcU:ARE2=7PV1
 S1
 R1
-w1773818595
+w1773900454
 8../rtl/bnn_fcc.sv
 F../rtl/bnn_fcc.sv
 !i122 1
-L0 1 285
+L0 1 304
 R6
 R7
 r1
@@ -159,15 +159,15 @@ R3
 R4
 R5
 !i10b 1
-!s100 JI21aI45VcSlz>i;^0ODm0
-I3KI=][R2_=IH[085hQDGa0
+!s100 `0fYm2YTz@[?TL^RUBm6b0
+IeZ@g_:Uz7fX@>6QJCRL;=2
 S1
 R1
-R17
+w1773897927
 8../rtl/compute_layer.sv
 F../rtl/compute_layer.sv
 !i122 1
-L0 1 179
+L0 1 164
 R6
 R7
 r1
@@ -212,15 +212,15 @@ R3
 R4
 R5
 !i10b 1
-!s100 VAXEneSYSJ>klEHKE^Nka3
-IaSk<g;FQhzZ8C;5Wd?;TV3
+!s100 fMUH2EhWoKn7fZog2FZ780
+Ijz6iV6U@kY`J[;LN9L9[N0
 S1
 R1
-w1773818600
+w1773897334
 8../rtl/layer_memory.sv
 F../rtl/layer_memory.sv
 !i122 1
-L0 1 251
+L0 1 151
 R6
 R7
 r1
