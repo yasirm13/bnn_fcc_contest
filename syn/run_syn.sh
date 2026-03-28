@@ -81,7 +81,7 @@ pass_name="$(sanitize_pass_name "${pass_name}")"
 timestamp="$(date +%Y%m%d_%H%M%S)"
 
 if [[ -z "${csv_rel}" ]]; then
-  csv_rel="syn/timing_${pass_name}_${timestamp}.csv"
+  csv_rel="syn/results.csv"
 fi
 
 if (( clean )); then
@@ -122,13 +122,25 @@ fi
 # paths inside the YAML resolve as expected.
 pushd "${ROOT_DIR}/openflex" >/dev/null
 
-echo "[run_syn] Running: openflex $(basename "${yml_abs}") -c ${csv_abs}"
-openflex "$(basename "${yml_abs}")" -c "${csv_abs}" > "${SYN_DIR}/run.log" 2>&1
+echo "[run_syn] Running: openflex $(basename "${yml_abs}") -c temp.csv"
+openflex "$(basename "${yml_abs}")" -c "temp.csv" > "${SYN_DIR}/run.log" 2>&1
 
 popd >/dev/null
 
-if [[ -f "${csv_abs}" ]]; then
-  echo "[run_syn] Synthesis completed. Results: ${csv_abs}"
+if [[ -f "${ROOT_DIR}/openflex/temp.csv" ]]; then
+  echo "[run_syn] Synthesis completed."
+  
+  if [[ ! -f "${csv_abs}" ]]; then
+    # Create the result CSV with header
+    head -n 1 "${ROOT_DIR}/openflex/temp.csv" | awk 'BEGIN{FS=OFS=","} {print "--pass-name", $0}' > "${csv_abs}"
+  fi
+  
+  # Append the data row(s) to the result CSV
+  tail -n +2 "${ROOT_DIR}/openflex/temp.csv" | awk -v pass="${pass_name}" 'BEGIN{FS=OFS=","} {print pass, $0}' >> "${csv_abs}"
+  
+  rm -f "${ROOT_DIR}/openflex/temp.csv"
+  
+  echo "[run_syn] Results appended to: ${csv_abs}"
   echo "[run_syn] Log: ${SYN_DIR}/run.log"
 else
   echo "[run_syn] Synthesis did not produce CSV output. See: ${SYN_DIR}/run.log" >&2
