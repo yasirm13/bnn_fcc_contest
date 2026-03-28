@@ -31,8 +31,9 @@ module compute_layer #(
     localparam int NEURON_BASE_WIDTH = (NUM_NEURONS + PARALLEL_NEURONS > 1) ? $clog2(NUM_NEURONS + PARALLEL_NEURONS) : 1;
     localparam int CHUNK_COUNT_WIDTH = (CHUNKS_PER_NEURON > 1) ? $clog2(CHUNKS_PER_NEURON) : 1;
 
-    typedef enum logic [1:0] {
+    typedef enum logic [2:0] {
         IDLE,
+        PRELOAD_BATCH,
         COMPUTE_BATCH,
         FINISH_BATCH,
         DONE_STATE
@@ -140,10 +141,14 @@ module compute_layer #(
             case (state)
                 IDLE: begin
                     if (start) begin
-                        state <= COMPUTE_BATCH;
+                        state <= PRELOAD_BATCH;
                         neuron_base_cnt <= '0;
                         chunk_cnt <= '0;
                     end
+                end
+
+                PRELOAD_BATCH: begin
+                    state <= COMPUTE_BATCH;
                 end
 
                 COMPUTE_BATCH: begin
@@ -169,7 +174,7 @@ module compute_layer #(
                         if (last_batch) begin
                             state <= DONE_STATE;
                         end else begin
-                            state <= COMPUTE_BATCH;
+                            state <= PRELOAD_BATCH;
                             neuron_base_cnt <= NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS);
                             chunk_cnt <= '0;
                         end
@@ -183,7 +188,9 @@ module compute_layer #(
         end
     end
 
-    assign mem_read_weight = (state == COMPUTE_BATCH) && (chunk_cnt < CHUNKS_PER_NEURON - 1);
+    assign mem_read_weight = ((state == PRELOAD_BATCH) && (CHUNKS_PER_NEURON > 1)) ||
+                             ((state == COMPUTE_BATCH) && (CHUNKS_PER_NEURON > 2) &&
+                              (chunk_cnt < (CHUNKS_PER_NEURON - 2)));
     assign mem_read_thresh = (state == FINISH_BATCH) && batch_valid_out && !last_batch;
 
 endmodule
