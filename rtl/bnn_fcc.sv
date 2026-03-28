@@ -45,8 +45,8 @@ module bnn_fcc #(
     localparam int OUTPUT_LAYER = TOTAL_LAYERS - 1;
     localparam int OUTPUT_NEURONS = TOPOLOGY[OUTPUT_LAYER];
     localparam int OUTPUT_INDEX_WIDTH = (OUTPUT_NEURONS > 1) ? $clog2(OUTPUT_NEURONS) : 1;
-    localparam int INPUT_COUNT_STEP_MAX = (INPUT_BUS_ELEMENTS > (INPUT_BUS_WIDTH / 8)) ? INPUT_BUS_ELEMENTS : (INPUT_BUS_WIDTH / 8);
-    localparam int INPUT_COUNT_WIDTH = (TOPOLOGY[0] + INPUT_COUNT_STEP_MAX > 1) ? $clog2(TOPOLOGY[0] + INPUT_COUNT_STEP_MAX) : 1;
+    localparam int INPUT_BUFFER_WORDS = (TOPOLOGY[0] + INPUT_BUS_ELEMENTS - 1) / INPUT_BUS_ELEMENTS;
+    localparam int INPUT_WORD_IDX_WIDTH = (INPUT_BUFFER_WORDS > 1) ? $clog2(INPUT_BUFFER_WORDS) : 1;
 
     function automatic int calc_activation_storage_bits();
         int max_bits;
@@ -65,6 +65,7 @@ module bnn_fcc #(
     localparam int ACTIVATION_STORAGE_BITS = calc_activation_storage_bits();
 
     logic [INPUT_DATA_WIDTH-1:0] pixels[INPUT_BUS_ELEMENTS];
+    logic [INPUT_BUS_ELEMENTS-1:0] binarized_pixels;
     logic rst_int;
     assign rst_int = rst;
 
@@ -104,37 +105,28 @@ module bnn_fcc #(
     always_comb begin
         for (int i = 0; i < INPUT_BUS_ELEMENTS; i++) begin
             pixels[i] = data_in_data[i*INPUT_DATA_WIDTH+:INPUT_DATA_WIDTH];
+            binarized_pixels[i] = data_in_keep[i] && (pixels[i] >= INPUT_BINARIZATION_THRESHOLD);
         end
     end
 
-    logic [TOPOLOGY[0]-1:0] input_buffer;
-    logic [INPUT_COUNT_WIDTH-1:0] input_bit_count;
+    logic [INPUT_BUS_ELEMENTS-1:0] input_buffer_words[0:INPUT_BUFFER_WORDS-1];
+    logic [INPUT_WORD_IDX_WIDTH-1:0] input_word_idx;
     logic image_ready;
 
     always_ff @(posedge clk) begin
         if (rst_int) begin
-            input_bit_count <= '0;
+            input_word_idx <= '0;
             image_ready <= 1'b0;
         end else begin
             image_ready <= 1'b0;
             if (data_in_valid && data_in_ready) begin
-                for (int i = 0; i < INPUT_BUS_ELEMENTS; i++) begin
-                    if (data_in_keep[i] && (input_bit_count + i < TOPOLOGY[0])) begin
-                        input_buffer[input_bit_count+i] <= (pixels[i] >= INPUT_BINARIZATION_THRESHOLD);
-                    end
-                end
+                input_buffer_words[input_word_idx] <= binarized_pixels;
 
-                begin
-                    int valid_bytes;
-                    valid_bytes = 0;
-                    for (int i = 0; i < INPUT_BUS_WIDTH / 8; i++) valid_bytes += data_in_keep[i];
-
-                    input_bit_count <= INPUT_COUNT_WIDTH'(input_bit_count + valid_bytes);
-
-                    if (data_in_last || (input_bit_count + valid_bytes >= TOPOLOGY[0])) begin
-                        image_ready <= 1'b1;
-                        input_bit_count <= '0;
-                    end
+                if (data_in_last || (input_word_idx == INPUT_WORD_IDX_WIDTH'(INPUT_BUFFER_WORDS - 1))) begin
+                    image_ready <= 1'b1;
+                    input_word_idx <= '0;
+                end else begin
+                    input_word_idx <= INPUT_WORD_IDX_WIDTH'(input_word_idx + 1'b1);
                 end
             end
         end
@@ -146,7 +138,16 @@ module bnn_fcc #(
     logic [ACTIVATION_STORAGE_BITS-1:0] layer_activations[0:LAYERS];
     logic layer_start_pulse[1:LAYERS+1];
 
-    assign layer_activations[0][TOPOLOGY[0]-1:0] = input_buffer;
+    if (ACTIVATION_STORAGE_BITS > TOPOLOGY[0]) begin : gen_input_pad_zero
+        assign layer_activations[0][ACTIVATION_STORAGE_BITS-1:TOPOLOGY[0]] = '0;
+    end
+
+    for (genvar input_word = 0; input_word < INPUT_BUFFER_WORDS; input_word++) begin : gen_input_buffer_flatten
+        localparam int WORD_LO = input_word * INPUT_BUS_ELEMENTS;
+        localparam int WORD_BITS = ((WORD_LO + INPUT_BUS_ELEMENTS) <= TOPOLOGY[0]) ?
+            INPUT_BUS_ELEMENTS : (TOPOLOGY[0] - WORD_LO);
+        assign layer_activations[0][WORD_LO +: WORD_BITS] = input_buffer_words[input_word][0 +: WORD_BITS];
+    end
     assign layer_start_pulse[1] = image_ready;
 
     genvar l;
