@@ -28,6 +28,8 @@ module compute_layer #(
     localparam int BITS_PER_NEURON = BYTES_PER_NEURON * 8;
     localparam int CHUNKS_PER_NEURON = (BITS_PER_NEURON + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
     localparam int RESULT_WIDTH = IS_OUTPUT_LAYER ? (NUM_NEURONS * 32) : NUM_NEURONS;
+    localparam int NEURON_BASE_WIDTH = (NUM_NEURONS + PARALLEL_NEURONS > 1) ? $clog2(NUM_NEURONS + PARALLEL_NEURONS) : 1;
+    localparam int CHUNK_COUNT_WIDTH = (CHUNKS_PER_NEURON > 1) ? $clog2(CHUNKS_PER_NEURON) : 1;
 
     typedef enum logic [1:0] {
         IDLE,
@@ -38,8 +40,8 @@ module compute_layer #(
 
     state_t state;
 
-    logic [15:0] neuron_base_cnt;
-    logic [15:0] chunk_cnt;
+    logic [NEURON_BASE_WIDTH-1:0] neuron_base_cnt;
+    logic [CHUNK_COUNT_WIDTH-1:0] chunk_cnt;
 
     logic [RESULT_WIDTH-1:0] results;
     assign result_vector = results;
@@ -146,7 +148,7 @@ module compute_layer #(
 
                 COMPUTE_BATCH: begin
                     if (chunk_cnt < CHUNKS_PER_NEURON - 1) begin
-                        chunk_cnt <= 16'(chunk_cnt + 16'd1);
+                        chunk_cnt <= CHUNK_COUNT_WIDTH'(chunk_cnt + 1'b1);
                     end else begin
                         state <= FINISH_BATCH;
                     end
@@ -168,7 +170,7 @@ module compute_layer #(
                             state <= DONE_STATE;
                         end else begin
                             state <= COMPUTE_BATCH;
-                            neuron_base_cnt <= 16'(neuron_base_cnt + PARALLEL_NEURONS);
+                            neuron_base_cnt <= NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS);
                             chunk_cnt <= '0;
                         end
                     end

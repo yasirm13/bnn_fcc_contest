@@ -45,6 +45,8 @@ module bnn_fcc #(
     localparam int OUTPUT_LAYER = TOTAL_LAYERS - 1;
     localparam int OUTPUT_NEURONS = TOPOLOGY[OUTPUT_LAYER];
     localparam int OUTPUT_INDEX_WIDTH = (OUTPUT_NEURONS > 1) ? $clog2(OUTPUT_NEURONS) : 1;
+    localparam int INPUT_COUNT_STEP_MAX = (INPUT_BUS_ELEMENTS > (INPUT_BUS_WIDTH / 8)) ? INPUT_BUS_ELEMENTS : (INPUT_BUS_WIDTH / 8);
+    localparam int INPUT_COUNT_WIDTH = (TOPOLOGY[0] + INPUT_COUNT_STEP_MAX > 1) ? $clog2(TOPOLOGY[0] + INPUT_COUNT_STEP_MAX) : 1;
 
     function automatic int calc_activation_storage_bits();
         int max_bits;
@@ -106,7 +108,7 @@ module bnn_fcc #(
     end
 
     logic [TOPOLOGY[0]-1:0] input_buffer;
-    logic [31:0] input_bit_count;
+    logic [INPUT_COUNT_WIDTH-1:0] input_bit_count;
     logic image_ready;
 
     always_ff @(posedge clk) begin
@@ -127,7 +129,7 @@ module bnn_fcc #(
                     valid_bytes = 0;
                     for (int i = 0; i < INPUT_BUS_WIDTH / 8; i++) valid_bytes += data_in_keep[i];
 
-                    input_bit_count <= input_bit_count + valid_bytes;
+                    input_bit_count <= INPUT_COUNT_WIDTH'(input_bit_count + valid_bytes);
 
                     if (data_in_last || (input_bit_count + valid_bytes >= TOPOLOGY[0])) begin
                         image_ready <= 1'b1;

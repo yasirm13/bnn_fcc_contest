@@ -40,12 +40,12 @@ module layer_memory #(
     localparam int THRESH_ADDR_WIDTH = (THRESH_MEM_DEPTH > 1) ? $clog2(THRESH_MEM_DEPTH) : 1;
     localparam int THRESH_SUBWORD_WIDTH = (THRESH_WORDS_PER_BEAT > 1) ? $clog2(THRESH_WORDS_PER_BEAT) : 1;
 
-    logic [31:0] neuron_base_idx;
+    logic [THRESH_IDX_WIDTH-1:0] neuron_base_idx;
     logic [WEIGHT_ADDR_WIDTH-1:0] neuron_base_word_addr;
     logic [BYTE_OFFSET_WIDTH-1:0] neuron_base_byte_offset;
     logic [CHUNK_OFFSET_WIDTH-1:0] chunk_word_offset;
 
-    logic [31:0] neuron_base_idx_req;
+    logic [THRESH_IDX_WIDTH-1:0] neuron_base_idx_req;
     logic [WEIGHT_ADDR_WIDTH-1:0] neuron_base_word_addr_req;
     logic [BYTE_OFFSET_WIDTH-1:0] neuron_base_byte_offset_req;
     logic [CHUNK_OFFSET_WIDTH-1:0] chunk_word_offset_req;
@@ -106,7 +106,7 @@ module layer_memory #(
             chunk_word_offset_req = '0;
         end else if (read_threshold) begin
             base_byte_sum = neuron_base_byte_offset + BYTE_OFFSET_WIDTH'(NEURON_STRIDE_REM_BYTES);
-            neuron_base_idx_req = neuron_base_idx + PARALLEL_NEURONS;
+            neuron_base_idx_req = THRESH_IDX_WIDTH'(neuron_base_idx + PARALLEL_NEURONS);
             neuron_base_word_addr_req = neuron_base_word_addr + WEIGHT_ADDR_WIDTH'(NEURON_STRIDE_WORDS);
             if (base_byte_sum >= BUS_BYTES) begin
                 neuron_base_word_addr_req = neuron_base_word_addr_req + WEIGHT_ADDR_WIDTH'(1);
