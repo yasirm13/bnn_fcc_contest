@@ -28,6 +28,7 @@ module compute_layer #(
     localparam int BITS_PER_NEURON = BYTES_PER_NEURON * 8;
     localparam int CHUNKS_PER_NEURON = (BITS_PER_NEURON + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
     localparam int RESULT_WIDTH = IS_OUTPUT_LAYER ? (NUM_NEURONS * 32) : NUM_NEURONS;
+    localparam int NP_ACC_WIDTH = (LAYER_INPUTS > 1) ? $clog2(LAYER_INPUTS + 1) : 1;
     localparam int NEURON_BASE_WIDTH = (NUM_NEURONS + PARALLEL_NEURONS > 1) ? $clog2(NUM_NEURONS + PARALLEL_NEURONS) : 1;
     localparam int CHUNK_COUNT_WIDTH = (CHUNKS_PER_NEURON > 1) ? $clog2(CHUNKS_PER_NEURON) : 1;
 
@@ -95,7 +96,7 @@ module compute_layer #(
     for (genvar lane = 0; lane < PARALLEL_NEURONS; lane++) begin : gen_np
         neural_processor #(
             .N(CONFIG_BUS_WIDTH),
-            .ACC_WIDTH(32)
+            .ACC_WIDTH(NP_ACC_WIDTH)
         ) np_inst (
             .clk(clk),
             .rst(rst),

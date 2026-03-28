@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" work.bnn_fcc_tb -do "run -all; quit -f" 
-# Start time: 11:19:40 on Mar 28,2026
+# Start time: 11:46:05 on Mar 28,2026
 # ** Note: (vsim-3813) Design is being optimized due to module recompilation...
 # ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
 # ** Note: (vopt-143) Recognized 1 FSM in module "compute_layer(fast__2)".
@@ -33,6 +33,7 @@
 # Loading work.neural_processor(fast)
 # Loading work.layer_memory(fast__1)
 # Loading work.compute_layer(fast__1)
+# Loading work.neural_processor(fast__1)
 # Loading work.layer_memory(fast__2)
 # Loading work.compute_layer(fast__2)
 # run -all
@@ -440,7 +441,7 @@
 #   N7: 135
 #   N8: 131
 #   N9: 118
-# [63315 ns] Streaming image 2.
+# [63635 ns] Streaming image 2.
 # [REF] Image 3 Prediction: 0
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -475,7 +476,7 @@
 #   N7: 122
 #   N8: 102
 #   N9: 107
-# [69935 ns] Streaming image 3.
+# [70575 ns] Streaming image 3.
 # [REF] Image 4 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -510,7 +511,7 @@
 #   N7: 137
 #   N8: 107
 #   N9: 158
-# [76645 ns] Streaming image 4.
+# [77605 ns] Streaming image 4.
 # [REF] Image 5 Prediction: 1
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -545,7 +546,7 @@
 #   N7: 150
 #   N8: 156
 #   N9: 131
-# [83305 ns] Streaming image 5.
+# [84585 ns] Streaming image 5.
 # [REF] Image 6 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -580,7 +581,7 @@
 #   N7: 137
 #   N8: 135
 #   N9: 164
-# [89915 ns] Streaming image 6.
+# [91515 ns] Streaming image 6.
 # [REF] Image 7 Prediction: 9
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -615,7 +616,7 @@
 #   N7: 127
 #   N8: 135
 #   N9: 194
-# [96595 ns] Streaming image 7.
+# [98515 ns] Streaming image 7.
 # [REF] Image 8 Prediction: 6
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -650,7 +651,7 @@
 #   N7: 108
 #   N8: 122
 #   N9: 119
-# [103275 ns] Streaming image 8.
+# [105515 ns] Streaming image 8.
 # [REF] Image 9 Prediction: 9
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -685,7 +686,7 @@
 #   N7: 151
 #   N8: 131
 #   N9: 190
-# [109975 ns] Streaming image 9.
+# [112535 ns] Streaming image 9.
 # [REF] Image 10 Prediction: 0
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -720,7 +721,7 @@
 #   N7: 102
 #   N8: 132
 #   N9: 101
-# [116775 ns] Streaming image 10.
+# [119655 ns] Streaming image 10.
 # [REF] Image 11 Prediction: 6
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -755,7 +756,7 @@
 #   N7: 110
 #   N8: 124
 #   N9: 95
-# [123505 ns] Streaming image 11.
+# [126705 ns] Streaming image 11.
 # [REF] Image 12 Prediction: 9
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -790,7 +791,7 @@
 #   N7: 141
 #   N8: 121
 #   N9: 200
-# [130195 ns] Streaming image 12.
+# [133715 ns] Streaming image 12.
 # [REF] Image 13 Prediction: 0
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -825,7 +826,7 @@
 #   N7: 102
 #   N8: 134
 #   N9: 125
-# [136955 ns] Streaming image 13.
+# [140795 ns] Streaming image 13.
 # [REF] Image 14 Prediction: 1
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -860,7 +861,7 @@
 #   N7: 134
 #   N8: 150
 #   N9: 143
-# [143545 ns] Streaming image 14.
+# [147705 ns] Streaming image 14.
 # [REF] Image 15 Prediction: 5
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -895,7 +896,7 @@
 #   N7: 98
 #   N8: 160
 #   N9: 79
-# [150225 ns] Streaming image 15.
+# [154705 ns] Streaming image 15.
 # [REF] Image 16 Prediction: 9
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -930,7 +931,7 @@
 #   N7: 153
 #   N8: 121
 #   N9: 194
-# [156805 ns] Streaming image 16.
+# [161605 ns] Streaming image 16.
 # [REF] Image 17 Prediction: 7
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -965,7 +966,7 @@
 #   N7: 186
 #   N8: 112
 #   N9: 137
-# [163485 ns] Streaming image 17.
+# [168605 ns] Streaming image 17.
 # [REF] Image 18 Prediction: 3
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1000,7 +1001,7 @@
 #   N7: 121
 #   N8: 133
 #   N9: 74
-# [170255 ns] Streaming image 18.
+# [175695 ns] Streaming image 18.
 # [REF] Image 19 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1035,7 +1036,7 @@
 #   N7: 124
 #   N8: 110
 #   N9: 145
-# [176845 ns] Streaming image 19.
+# [182605 ns] Streaming image 19.
 # [REF] Image 20 Prediction: 9
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1070,7 +1071,7 @@
 #   N7: 151
 #   N8: 133
 #   N9: 190
-# [183525 ns] Streaming image 20.
+# [189605 ns] Streaming image 20.
 # [REF] Image 21 Prediction: 6
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -1105,7 +1106,7 @@
 #   N7: 86
 #   N8: 136
 #   N9: 105
-# [190145 ns] Streaming image 21.
+# [196545 ns] Streaming image 21.
 # [REF] Image 22 Prediction: 6
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -1140,7 +1141,7 @@
 #   N7: 132
 #   N8: 114
 #   N9: 103
-# [196805 ns] Streaming image 22.
+# [203525 ns] Streaming image 22.
 # [REF] Image 23 Prediction: 5
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1175,7 +1176,7 @@
 #   N7: 85
 #   N8: 141
 #   N9: 104
-# [203455 ns] Streaming image 23.
+# [210495 ns] Streaming image 23.
 # [REF] Image 24 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1210,7 +1211,7 @@
 #   N7: 138
 #   N8: 90
 #   N9: 157
-# [210135 ns] Streaming image 24.
+# [217495 ns] Streaming image 24.
 # [REF] Image 25 Prediction: 0
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -1245,7 +1246,7 @@
 #   N7: 112
 #   N8: 128
 #   N9: 113
-# [216825 ns] Streaming image 25.
+# [224505 ns] Streaming image 25.
 # [REF] Image 26 Prediction: 7
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1280,7 +1281,7 @@
 #   N7: 199
 #   N8: 113
 #   N9: 162
-# [223625 ns] Streaming image 26.
+# [231625 ns] Streaming image 26.
 # [REF] Image 27 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1315,7 +1316,7 @@
 #   N7: 119
 #   N8: 117
 #   N9: 162
-# [230435 ns] Streaming image 27.
+# [238755 ns] Streaming image 27.
 # [REF] Image 28 Prediction: 0
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -1350,7 +1351,7 @@
 #   N7: 115
 #   N8: 123
 #   N9: 110
-# [237085 ns] Streaming image 28.
+# [245725 ns] Streaming image 28.
 # [REF] Image 29 Prediction: 1
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1385,7 +1386,7 @@
 #   N7: 131
 #   N8: 153
 #   N9: 122
-# [243785 ns] Streaming image 29.
+# [252745 ns] Streaming image 29.
 # [REF] Image 30 Prediction: 3
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1420,7 +1421,7 @@
 #   N7: 131
 #   N8: 131
 #   N9: 140
-# [250535 ns] Streaming image 30.
+# [259815 ns] Streaming image 30.
 # [REF] Image 31 Prediction: 1
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1455,7 +1456,7 @@
 #   N7: 154
 #   N8: 128
 #   N9: 155
-# [257185 ns] Streaming image 31.
+# [266785 ns] Streaming image 31.
 # [REF] Image 32 Prediction: 3
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1490,7 +1491,7 @@
 #   N7: 99
 #   N8: 153
 #   N9: 112
-# [263935 ns] Streaming image 32.
+# [273855 ns] Streaming image 32.
 # [REF] Image 33 Prediction: 6
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1525,7 +1526,7 @@
 #   N7: 103
 #   N8: 109
 #   N9: 116
-# [270575 ns] Streaming image 33.
+# [280815 ns] Streaming image 33.
 # [REF] Image 34 Prediction: 7
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1560,7 +1561,7 @@
 #   N7: 192
 #   N8: 116
 #   N9: 145
-# [277255 ns] Streaming image 34.
+# [287815 ns] Streaming image 34.
 # [REF] Image 35 Prediction: 2
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -1595,7 +1596,7 @@
 #   N7: 103
 #   N8: 131
 #   N9: 86
-# [283925 ns] Streaming image 35.
+# [294805 ns] Streaming image 35.
 # [REF] Image 36 Prediction: 7
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1630,7 +1631,7 @@
 #   N7: 197
 #   N8: 121
 #   N9: 138
-# [290575 ns] Streaming image 36.
+# [301775 ns] Streaming image 36.
 # [REF] Image 37 Prediction: 1
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1665,7 +1666,7 @@
 #   N7: 137
 #   N8: 147
 #   N9: 128
-# [297235 ns] Streaming image 37.
+# [308755 ns] Streaming image 37.
 # [REF] Image 38 Prediction: 2
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1700,7 +1701,7 @@
 #   N7: 96
 #   N8: 150
 #   N9: 95
-# [303895 ns] Streaming image 38.
+# [315735 ns] Streaming image 38.
 # [REF] Image 39 Prediction: 1
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -1735,7 +1736,7 @@
 #   N7: 125
 #   N8: 167
 #   N9: 120
-# [310545 ns] Streaming image 39.
+# [322705 ns] Streaming image 39.
 # [REF] Image 40 Prediction: 2
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1770,7 +1771,7 @@
 #   N7: 147
 #   N8: 109
 #   N9: 126
-# [317155 ns] Streaming image 40.
+# [329635 ns] Streaming image 40.
 # [REF] Image 41 Prediction: 7
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1805,7 +1806,7 @@
 #   N7: 174
 #   N8: 110
 #   N9: 153
-# [323845 ns] Streaming image 41.
+# [336645 ns] Streaming image 41.
 # [REF] Image 42 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1840,7 +1841,7 @@
 #   N7: 146
 #   N8: 132
 #   N9: 167
-# [330605 ns] Streaming image 42.
+# [343725 ns] Streaming image 42.
 # [REF] Image 43 Prediction: 2
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1875,7 +1876,7 @@
 #   N7: 86
 #   N8: 142
 #   N9: 109
-# [337315 ns] Streaming image 43.
+# [350755 ns] Streaming image 43.
 # [REF] Image 44 Prediction: 3
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1910,7 +1911,7 @@
 #   N7: 131
 #   N8: 129
 #   N9: 126
-# [343955 ns] Streaming image 44.
+# [357715 ns] Streaming image 44.
 # [REF] Image 45 Prediction: 5
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1945,7 +1946,7 @@
 #   N7: 74
 #   N8: 154
 #   N9: 117
-# [350655 ns] Streaming image 45.
+# [364735 ns] Streaming image 45.
 # [REF] Image 46 Prediction: 1
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -1980,7 +1981,7 @@
 #   N7: 131
 #   N8: 139
 #   N9: 124
-# [357275 ns] Streaming image 46.
+# [371675 ns] Streaming image 46.
 # [REF] Image 47 Prediction: 2
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -2015,7 +2016,7 @@
 #   N7: 110
 #   N8: 114
 #   N9: 97
-# [363925 ns] Streaming image 47.
+# [378645 ns] Streaming image 47.
 # [REF] Image 48 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 1
@@ -2050,7 +2051,7 @@
 #   N7: 130
 #   N8: 130
 #   N9: 151
-# [370615 ns] Streaming image 48.
+# [385655 ns] Streaming image 48.
 # [REF] Image 49 Prediction: 4
 # [REF] Layer 0 First 10 Neurons:
 #   N0: 0
@@ -2085,15 +2086,15 @@
 #   N7: 136
 #   N8: 110
 #   N9: 143
-# [377335 ns] Streaming image 49.
-# [383955 ns] All images loaded, waiting for outputs.
-# [392245 ns] SUCCESS: all 50 tests completed successfully.
+# [392695 ns] Streaming image 49.
+# [399635 ns] All images loaded, waiting for outputs.
+# [408585 ns] SUCCESS: all 50 tests completed successfully.
 # 
 # Stats:
-# Avg latency (cycles) per image: 9466.4 cycles
-# Avg latency (time) per image: 94664.0 ns
-# Avg throughput (outputs/sec): 14847.4
-# Avg throughput (cycles/output): 6735.2
+# Avg latency (cycles) per image: 10118.0 cycles
+# Avg latency (time) per image: 101180.0 ns
+# Avg throughput (outputs/sec): 14160.3
+# Avg throughput (cycles/output): 7062.0
 #  quit -f
-# End time: 11:19:42 on Mar 28,2026, Elapsed time: 0:00:02
+# End time: 11:46:08 on Mar 28,2026, Elapsed time: 0:00:03
 # Errors: 0, Warnings: 1
