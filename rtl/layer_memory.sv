@@ -23,33 +23,36 @@ module layer_memory #(
 );
 
     localparam int BUS_BYTES = CONFIG_BUS_WIDTH / 8;
-    localparam int BUS_BYTE_SHIFT = $clog2(BUS_BYTES);
     localparam int BYTES_PER_NEURON = (LAYER_INPUTS + 7) / 8;
     localparam int CHUNKS_PER_NEURON = (BYTES_PER_NEURON + BUS_BYTES - 1) / BUS_BYTES;
     localparam int TOTAL_WEIGHT_BITS = NUM_NEURONS * BYTES_PER_NEURON * 8;
     localparam int WEIGHT_MEM_DEPTH = (TOTAL_WEIGHT_BITS + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
+    localparam int WEIGHT_ADDR_WIDTH = (WEIGHT_MEM_DEPTH > 1) ? $clog2(WEIGHT_MEM_DEPTH) : 1;
     localparam int THRESH_WORDS_PER_BEAT = CONFIG_BUS_WIDTH / 32;
     localparam int THRESH_MEM_DEPTH = (NUM_NEURONS + THRESH_WORDS_PER_BEAT - 1) / THRESH_WORDS_PER_BEAT;
     localparam int NEURON_STRIDE_BYTES = PARALLEL_NEURONS * BYTES_PER_NEURON;
-    localparam int MAX_NEURON_INDEX = (NUM_NEURONS > 0) ? (NUM_NEURONS + PARALLEL_NEURONS - 2) : 0;
-    localparam int MAX_CHUNK_OFFSET = (CHUNKS_PER_NEURON > 0) ? ((CHUNKS_PER_NEURON - 1) * BUS_BYTES) : 0;
-    localparam int MAX_BYTE_ADDR = (MAX_NEURON_INDEX * BYTES_PER_NEURON) + MAX_CHUNK_OFFSET;
-    localparam int BYTE_ADDR_WIDTH = (MAX_BYTE_ADDR > 0) ? $clog2(MAX_BYTE_ADDR + 1) : 1;
+    localparam int NEURON_STRIDE_WORDS = NEURON_STRIDE_BYTES / BUS_BYTES;
+    localparam int NEURON_STRIDE_REM_BYTES = NEURON_STRIDE_BYTES % BUS_BYTES;
+    localparam int BYTE_OFFSET_WIDTH = (BUS_BYTES > 1) ? $clog2(BUS_BYTES) : 1;
+    localparam int BIT_OFFSET_WIDTH = (CONFIG_BUS_WIDTH > 1) ? $clog2(CONFIG_BUS_WIDTH) : 1;
+    localparam int CHUNK_OFFSET_WIDTH = (CHUNKS_PER_NEURON > 1) ? $clog2(CHUNKS_PER_NEURON) : 1;
     localparam int THRESH_IDX_WIDTH = (NUM_NEURONS + PARALLEL_NEURONS > 1) ? $clog2(NUM_NEURONS + PARALLEL_NEURONS) : 1;
     localparam int THRESH_ADDR_WIDTH = (THRESH_MEM_DEPTH > 1) ? $clog2(THRESH_MEM_DEPTH) : 1;
     localparam int THRESH_SUBWORD_WIDTH = (THRESH_WORDS_PER_BEAT > 1) ? $clog2(THRESH_WORDS_PER_BEAT) : 1;
 
     logic [31:0] neuron_base_idx;
-    logic [BYTE_ADDR_WIDTH-1:0] neuron_base_byte_addr;
-    logic [BYTE_ADDR_WIDTH-1:0] chunk_byte_offset;
+    logic [WEIGHT_ADDR_WIDTH-1:0] neuron_base_word_addr;
+    logic [BYTE_OFFSET_WIDTH-1:0] neuron_base_byte_offset;
+    logic [CHUNK_OFFSET_WIDTH-1:0] chunk_word_offset;
 
     logic [31:0] neuron_base_idx_req;
-    logic [BYTE_ADDR_WIDTH-1:0] neuron_base_byte_addr_req;
-    logic [BYTE_ADDR_WIDTH-1:0] chunk_byte_offset_req;
+    logic [WEIGHT_ADDR_WIDTH-1:0] neuron_base_word_addr_req;
+    logic [BYTE_OFFSET_WIDTH-1:0] neuron_base_byte_offset_req;
+    logic [CHUNK_OFFSET_WIDTH-1:0] chunk_word_offset_req;
 
-    logic [PARALLEL_NEURONS-1:0][31:0] word_addr_safe_req;
-    logic [PARALLEL_NEURONS-1:0][31:0] word_addr_plus1_safe_req;
-    logic [PARALLEL_NEURONS-1:0][31:0] bit_offset_req;
+    logic [PARALLEL_NEURONS-1:0][WEIGHT_ADDR_WIDTH-1:0] word_addr_safe_req;
+    logic [PARALLEL_NEURONS-1:0][WEIGHT_ADDR_WIDTH-1:0] word_addr_plus1_safe_req;
+    logic [PARALLEL_NEURONS-1:0][BIT_OFFSET_WIDTH-1:0] bit_offset_req;
     logic [PARALLEL_NEURONS-1:0][THRESH_IDX_WIDTH-1:0] threshold_idx_req;
     logic [PARALLEL_NEURONS-1:0][THRESH_ADDR_WIDTH-1:0] threshold_word_addr_req;
     logic [PARALLEL_NEURONS-1:0][THRESH_SUBWORD_WIDTH-1:0] threshold_subword_req;
@@ -57,7 +60,7 @@ module layer_memory #(
     logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] weights_word_lo_q;
     logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] weights_word_hi_raw_q;
     logic [PARALLEL_NEURONS-1:0]                       weights_hi_valid_q;
-    logic [PARALLEL_NEURONS-1:0][31:0]                bit_offset_q;
+    logic [PARALLEL_NEURONS-1:0][BIT_OFFSET_WIDTH-1:0] bit_offset_q;
 
     // Pack thresholds into bus-width words so the config path writes one aligned
     // memory word at a time instead of updating many individual 32-bit registers.
@@ -89,65 +92,102 @@ module layer_memory #(
     endfunction
 
     always_comb begin
+        logic [BYTE_OFFSET_WIDTH:0] base_byte_sum;
+
         neuron_base_idx_req = neuron_base_idx;
-        neuron_base_byte_addr_req = neuron_base_byte_addr;
-        chunk_byte_offset_req = chunk_byte_offset;
+        neuron_base_word_addr_req = neuron_base_word_addr;
+        neuron_base_byte_offset_req = neuron_base_byte_offset;
+        chunk_word_offset_req = chunk_word_offset;
 
         if (rst || layer_start) begin
             neuron_base_idx_req = '0;
-            neuron_base_byte_addr_req = '0;
-            chunk_byte_offset_req = '0;
+            neuron_base_word_addr_req = '0;
+            neuron_base_byte_offset_req = '0;
+            chunk_word_offset_req = '0;
         end else if (read_threshold) begin
+            base_byte_sum = neuron_base_byte_offset + BYTE_OFFSET_WIDTH'(NEURON_STRIDE_REM_BYTES);
             neuron_base_idx_req = neuron_base_idx + PARALLEL_NEURONS;
-            neuron_base_byte_addr_req = neuron_base_byte_addr + BYTE_ADDR_WIDTH'(NEURON_STRIDE_BYTES);
-            chunk_byte_offset_req = '0;
+            neuron_base_word_addr_req = neuron_base_word_addr + WEIGHT_ADDR_WIDTH'(NEURON_STRIDE_WORDS);
+            if (base_byte_sum >= BUS_BYTES) begin
+                neuron_base_word_addr_req = neuron_base_word_addr_req + WEIGHT_ADDR_WIDTH'(1);
+                neuron_base_byte_offset_req = BYTE_OFFSET_WIDTH'(base_byte_sum - BUS_BYTES);
+            end else begin
+                neuron_base_byte_offset_req = BYTE_OFFSET_WIDTH'(base_byte_sum);
+            end
+            chunk_word_offset_req = '0;
         end else if (read_weight_chunk) begin
-            chunk_byte_offset_req = chunk_byte_offset + BYTE_ADDR_WIDTH'(BUS_BYTES);
+            chunk_word_offset_req = chunk_word_offset + CHUNK_OFFSET_WIDTH'(1);
         end
+    end
 
-        for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-            logic [THRESH_IDX_WIDTH-1:0] neuron_idx_req;
-            logic [BYTE_ADDR_WIDTH-1:0] lane_byte_addr_req;
-            logic [31:0] word_addr_req;
-            logic [31:0] thresh_word_addr_full;
+    for (genvar lane = 0; lane < PARALLEL_NEURONS; lane++) begin : gen_req_addrs
+        localparam int LANE_BYTE_OFFSET = lane * BYTES_PER_NEURON;
+        localparam int LANE_WORD_OFFSET = LANE_BYTE_OFFSET / BUS_BYTES;
+        localparam int LANE_REM_BYTES = LANE_BYTE_OFFSET % BUS_BYTES;
 
-            neuron_idx_req = neuron_base_idx_req + lane;
-            lane_byte_addr_req = neuron_base_byte_addr_req + BYTE_ADDR_WIDTH'(lane * BYTES_PER_NEURON) + chunk_byte_offset_req;
-            word_addr_req = (lane_byte_addr_req >> BUS_BYTE_SHIFT);
-            thresh_word_addr_full = neuron_idx_req / THRESH_WORDS_PER_BEAT;
-            bit_offset_req[lane] = {26'd0, lane_byte_addr_req[BUS_BYTE_SHIFT-1:0], 3'b000};
-            threshold_idx_req[lane] = neuron_idx_req;
-            threshold_subword_req[lane] = THRESH_SUBWORD_WIDTH'(neuron_idx_req % THRESH_WORDS_PER_BEAT);
+        always_comb begin
+            logic [THRESH_ADDR_WIDTH-1:0] threshold_word_addr_tmp;
+            logic [THRESH_SUBWORD_WIDTH-1:0] threshold_subword_tmp;
+            logic [BYTE_OFFSET_WIDTH:0] lane_byte_sum;
+            logic [BYTE_OFFSET_WIDTH-1:0] lane_byte_offset_mod;
+            logic [WEIGHT_ADDR_WIDTH:0] neuron_base_word_addr_ext;
+            logic [WEIGHT_ADDR_WIDTH:0] chunk_word_offset_ext;
+            logic [WEIGHT_ADDR_WIDTH:0] word_addr_req_ext;
+            logic [WEIGHT_ADDR_WIDTH:0] word_addr_plus1_req_ext;
 
-            if (word_addr_req < WEIGHT_MEM_DEPTH)
-                word_addr_safe_req[lane] = word_addr_req;
+            threshold_word_addr_tmp = '0;
+            threshold_subword_tmp = '0;
+            lane_byte_sum = neuron_base_byte_offset_req + BYTE_OFFSET_WIDTH'(LANE_REM_BYTES);
+            lane_byte_offset_mod = BYTE_OFFSET_WIDTH'(lane_byte_sum);
+            neuron_base_word_addr_ext = {1'b0, neuron_base_word_addr_req};
+            chunk_word_offset_ext = {{(WEIGHT_ADDR_WIDTH + 1 - CHUNK_OFFSET_WIDTH) {1'b0}}, chunk_word_offset_req};
+            word_addr_req_ext = neuron_base_word_addr_ext + chunk_word_offset_ext + (WEIGHT_ADDR_WIDTH + 1)'(LANE_WORD_OFFSET);
+
+            if (lane_byte_sum >= BUS_BYTES) begin
+                word_addr_req_ext = word_addr_req_ext + WEIGHT_ADDR_WIDTH'(1);
+                lane_byte_offset_mod = BYTE_OFFSET_WIDTH'(lane_byte_sum - BUS_BYTES);
+            end
+
+            threshold_idx_req[lane] = THRESH_IDX_WIDTH'(neuron_base_idx_req + lane);
+            if (THRESH_WORDS_PER_BEAT > 1) begin
+                threshold_word_addr_tmp = THRESH_ADDR_WIDTH'(threshold_idx_req[lane] / THRESH_WORDS_PER_BEAT);
+                threshold_subword_tmp = THRESH_SUBWORD_WIDTH'(threshold_idx_req[lane] % THRESH_WORDS_PER_BEAT);
+            end else begin
+                threshold_word_addr_tmp = THRESH_ADDR_WIDTH'(threshold_idx_req[lane]);
+            end
+
+            bit_offset_req[lane] = BIT_OFFSET_WIDTH'(lane_byte_offset_mod << 3);
+
+            if (word_addr_req_ext < WEIGHT_MEM_DEPTH)
+                word_addr_safe_req[lane] = WEIGHT_ADDR_WIDTH'(word_addr_req_ext);
             else
-                word_addr_safe_req[lane] = (WEIGHT_MEM_DEPTH == 0) ? '0 : (WEIGHT_MEM_DEPTH - 1);
+                word_addr_safe_req[lane] = WEIGHT_ADDR_WIDTH'(WEIGHT_MEM_DEPTH - 1);
 
-            if (word_addr_safe_req[lane] == (WEIGHT_MEM_DEPTH - 1))
-                word_addr_plus1_safe_req[lane] = word_addr_safe_req[lane];
+            word_addr_plus1_req_ext = word_addr_req_ext + WEIGHT_ADDR_WIDTH'(1);
+            if (word_addr_plus1_req_ext < WEIGHT_MEM_DEPTH)
+                word_addr_plus1_safe_req[lane] = WEIGHT_ADDR_WIDTH'(word_addr_plus1_req_ext);
             else
-                word_addr_plus1_safe_req[lane] = word_addr_safe_req[lane] + 1;
+                word_addr_plus1_safe_req[lane] = WEIGHT_ADDR_WIDTH'(WEIGHT_MEM_DEPTH - 1);
 
-            if (thresh_word_addr_full < THRESH_MEM_DEPTH)
-                threshold_word_addr_req[lane] = THRESH_ADDR_WIDTH'(thresh_word_addr_full);
-            else
-                threshold_word_addr_req[lane] = (THRESH_MEM_DEPTH == 0) ? '0 : THRESH_ADDR_WIDTH'(THRESH_MEM_DEPTH - 1);
+            threshold_word_addr_req[lane] = threshold_word_addr_tmp;
+            threshold_subword_req[lane] = threshold_subword_tmp;
         end
     end
 
     always_ff @(posedge clk) begin
         if (rst) begin
             neuron_base_idx <= '0;
-            neuron_base_byte_addr <= '0;
-            chunk_byte_offset <= '0;
+            neuron_base_word_addr <= '0;
+            neuron_base_byte_offset <= '0;
+            chunk_word_offset <= '0;
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
                 rd_data_threshold[lane] <= '0;
             end
         end else begin
             neuron_base_idx <= neuron_base_idx_req;
-            neuron_base_byte_addr <= neuron_base_byte_addr_req;
-            chunk_byte_offset <= chunk_byte_offset_req;
+            neuron_base_word_addr <= neuron_base_word_addr_req;
+            neuron_base_byte_offset <= neuron_base_byte_offset_req;
+            chunk_word_offset <= chunk_word_offset_req;
 
             if (wr_en_thresholds && (wr_addr < THRESH_MEM_DEPTH)) begin
                 threshold_mem[wr_addr] <= apply_byte_wstrb(threshold_mem[wr_addr], wr_data, wr_strb);
