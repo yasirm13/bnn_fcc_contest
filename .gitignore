@@ -10,3 +10,4 @@
 
 # Also don't ignore .gitignore itself
 !/.gitignore
+!/syn/
