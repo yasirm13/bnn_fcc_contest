@@ -43,8 +43,7 @@ module config_parser #(
     // Internal Signals
     logic header_complete;
     logic [31:0] payload_cnt; // To count bytes for message delineation
-    logic [31:0] remaining_bytes; // To count down remaining bytes
-    logic [4:0] bytes_this_beat; // Changed to 5-bit to fit 8
+    logic [31:0] bytes_this_beat;
     
     // Assign outputs
     assign layer_wr_data = config_data;
@@ -130,11 +129,6 @@ module config_parser #(
                              state <= ST_PAYLOAD;
                              layer_wr_addr <= '0; // Reset address for payload
                              payload_cnt <= '0;   // Reset byte count
-                             if (CONFIG_BUS_WIDTH == 64) begin
-                                 remaining_bytes <= config_data[31:0]; // [95:64] comes from config_data[31:0]
-                             end else begin
-                                 remaining_bytes <= config_data; // fallback for 32-bit if it matches the beat
-                             end
                              
                              // Debug Header
                              // Note: header_shift_reg might not be fully updated yet if we assume sequential?
@@ -160,18 +154,17 @@ module config_parser #(
                         // Use TLAST as an override, but primarily use byte counting from header
                         // $countones is generic.
                         bytes_this_beat = 0;
-                        for(int i=0; i<CONFIG_BUS_WIDTH/8; i++) bytes_this_beat += 5'(config_keep[i]);
+                        for(int i=0; i<CONFIG_BUS_WIDTH/8; i++) bytes_this_beat += config_keep[i];
                         
-                        payload_cnt <= payload_cnt + 32'(bytes_this_beat);
-                        remaining_bytes <= remaining_bytes - 32'(bytes_this_beat);
+                        payload_cnt <= payload_cnt + bytes_this_beat;
                         
                         // Debug every 100 cycles/beats
                         if ((payload_cnt & 127) == 0) begin
                              $display("PAYLOAD DBG: Cnt %d Beat %d Total %d Keep %x", payload_cnt, bytes_this_beat, current_header.total_bytes, config_keep);
                         end
 
-                        if (config_last || (32'(bytes_this_beat) >= remaining_bytes)) begin
-                            $display("PAYLOAD DONE: Cnt %d Total %d", payload_cnt + 32'(bytes_this_beat), current_header.total_bytes);
+                        if (config_last || (payload_cnt + bytes_this_beat >= current_header.total_bytes)) begin
+                            $display("PAYLOAD DONE: Cnt %d Total %d", payload_cnt + bytes_this_beat, current_header.total_bytes);
                             state <= ST_HEADER;
                             header_bits_count <= '0;
                             // Ensure we don't start shifting header this cycle?

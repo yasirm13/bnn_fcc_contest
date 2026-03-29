@@ -237,107 +237,62 @@ module bnn_fcc #(
         end
     endgenerate
 
-    // Pipelined Argmax Tree for OUTPUT_NEURONS (Assumed up to 16 for simplicity, currently 10)
-    logic [OUTPUT_INDEX_WIDTH-1:0]  argmax_l1_idx   [0:7];
-    logic signed [31:0]             argmax_l1_score [0:7];
-    logic                           argmax_l1_valid;
-
-    logic [OUTPUT_INDEX_WIDTH-1:0]  argmax_l2_idx   [0:3];
-    logic signed [31:0]             argmax_l2_score [0:3];
-    logic                           argmax_l2_valid;
-
-    logic [OUTPUT_INDEX_WIDTH-1:0]  argmax_l3_idx   [0:1];
-    logic signed [31:0]             argmax_l3_score [0:1];
-    logic                           argmax_l3_valid;
-    
+    logic                         argmax_active;
+    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_scan_idx;
+    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_best_idx;
+    logic signed [31:0]            argmax_best_score;
+    logic signed [31:0]            argmax_scan_score;
+    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_next_best_idx;
+    logic signed [31:0]            argmax_next_best_score;
     logic                          out_valid_reg;
     logic [OUTPUT_BUS_WIDTH-1:0]   out_data_reg;
 
+    always_comb begin
+        if (argmax_scan_idx < OUTPUT_NEURONS)
+            argmax_scan_score = $signed(layer_activations[LAYERS][argmax_scan_idx*32 +: 32]);
+        else
+            argmax_scan_score = '0;
+
+        argmax_next_best_idx = argmax_best_idx;
+        argmax_next_best_score = argmax_best_score;
+        if (argmax_scan_score > argmax_best_score) begin
+            argmax_next_best_idx = argmax_scan_idx;
+            argmax_next_best_score = argmax_scan_score;
+        end
+    end
+
     always_ff @(posedge clk) begin
         if (rst_int) begin
-            argmax_l1_valid <= 1'b0;
-            argmax_l2_valid <= 1'b0;
-            argmax_l3_valid <= 1'b0;
-            out_valid_reg   <= 1'b0;
+            argmax_active <= 1'b0;
+            argmax_scan_idx <= '0;
+            argmax_best_idx <= '0;
+            argmax_best_score <= '0;
+            out_valid_reg <= 1'b0;
+            out_data_reg  <= '0;
         end else begin
-            // Level 1: Pairs (0-1, 2-3, 4-5, 6-7, 8-9)
             if (layer_start_pulse[LAYERS+1]) begin
-                for (int i = 0; i < 8; i++) begin
-                    int idx0;
-                    int idx1;
-                    logic signed [31:0] score0;
-                    logic signed [31:0] score1;
-                    
-                    idx0 = i * 2;
-                    idx1 = i * 2 + 1;
-                    score0 = (idx0 < OUTPUT_NEURONS) ? $signed(layer_activations[LAYERS][idx0*32 +: 32]) : $signed({32{1'b1}}<<31); // -inf
-                    score1 = (idx1 < OUTPUT_NEURONS) ? $signed(layer_activations[LAYERS][idx1*32 +: 32]) : $signed({32{1'b1}}<<31); // -inf
-                    
-                    if (score1 > score0) begin
-                        argmax_l1_score[i] <= score1;
-                        argmax_l1_idx[i]   <= OUTPUT_INDEX_WIDTH'(idx1);
-                    end else begin
-                        argmax_l1_score[i] <= score0;
-                        argmax_l1_idx[i]   <= OUTPUT_INDEX_WIDTH'(idx0);
-                    end
-                end
-                argmax_l1_valid <= 1'b1;
-            end else begin
-                argmax_l1_valid <= 1'b0;
-            end
+                argmax_active <= 1'b1;
+                argmax_scan_idx <= OUTPUT_INDEX_WIDTH'(1);
+                argmax_best_idx <= '0;
+                argmax_best_score <= $signed(layer_activations[LAYERS][31:0]);
+                out_valid_reg <= 1'b0;
+            end else if (argmax_active) begin
+                if (argmax_scan_idx < OUTPUT_NEURONS) begin
+                    argmax_best_idx <= argmax_next_best_idx;
+                    argmax_best_score <= argmax_next_best_score;
 
-            // Level 2: Pairs of L1 (0-1, 2-3, 4-5, 6-7)
-            if (argmax_l1_valid) begin
-                for (int i = 0; i < 4; i++) begin
-                    logic signed [31:0] score0;
-                    logic signed [31:0] score1;
-                    
-                    score0 = argmax_l1_score[i*2];
-                    score1 = argmax_l1_score[i*2+1];
-                    
-                    if (score1 > score0) begin
-                        argmax_l2_score[i] <= score1;
-                        argmax_l2_idx[i]   <= argmax_l1_idx[i*2+1];
+                    if (argmax_scan_idx == OUTPUT_NEURONS - 1) begin
+                        argmax_active <= 1'b0;
+                        out_valid_reg <= 1'b1;
+                        out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_next_best_idx);
                     end else begin
-                        argmax_l2_score[i] <= score0;
-                        argmax_l2_idx[i]   <= argmax_l1_idx[i*2];
+                        argmax_scan_idx <= argmax_scan_idx + OUTPUT_INDEX_WIDTH'(1);
                     end
-                end
-                argmax_l2_valid <= 1'b1;
-            end else begin
-                argmax_l2_valid <= 1'b0;
-            end
-
-            // Level 3: Pairs of L2 (0-1, 2-3)
-            if (argmax_l2_valid) begin
-                for (int i = 0; i < 2; i++) begin
-                    logic signed [31:0] score0;
-                    logic signed [31:0] score1;
-                    
-                    score0 = argmax_l2_score[i*2];
-                    score1 = argmax_l2_score[i*2+1];
-                    
-                    if (score1 > score0) begin
-                        argmax_l3_score[i] <= score1;
-                        argmax_l3_idx[i]   <= argmax_l2_idx[i*2+1];
-                    end else begin
-                        argmax_l3_score[i] <= score0;
-                        argmax_l3_idx[i]   <= argmax_l2_idx[i*2];
-                    end
-                end
-                argmax_l3_valid <= 1'b1;
-            end else begin
-                argmax_l3_valid <= 1'b0;
-            end
-
-            // Level 4: Final winner
-            if (argmax_l3_valid) begin
-                if (argmax_l3_score[1] > argmax_l3_score[0]) begin
-                    out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_l3_idx[1]);
                 end else begin
-                    out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_l3_idx[0]);
+                    argmax_active <= 1'b0;
+                    out_valid_reg <= 1'b1;
+                    out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_best_idx);
                 end
-                out_valid_reg <= 1'b1;
             end else if (data_out_ready && out_valid_reg) begin
                 out_valid_reg <= 1'b0;
             end

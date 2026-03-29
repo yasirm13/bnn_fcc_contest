@@ -1,26 +1,28 @@
 m255
 K4
 z2
-Z0 !s12c _opt1
-Z1 !s99 nomlopt
+!s12c _opt2
+Z0 !s99 nomlopt
+Z1 !s12c _opt1
 R0
 R1
+R0
 Z2 !s12c _opt
-R1
+R0
 R2
-R1
+R0
 R2
-R1
+R0
 R2
-R1
+R0
 R2
-R1
+R0
 R2
-R1
+R0
 R2
-R1
+R0
 R2
-R1
+R0
 !s11f vlog 2023.3 2023.07, Jul 17 2023
 13
 !s112 1.1
@@ -34,7 +36,7 @@ T_opt
 VH[Ez`j@aV43lGQBBl9`md1
 Z4 04 10 4 work bnn_fcc_tb fast 0
 =1-0050568b881c-69c819cd-6d0c7-22eaad
-R1
+R0
 Z5 !s12b OEM100
 Z6 !s124 OEM100
 Z7 o-quiet -auto_acc_if_foreign -work work +acc
@@ -47,7 +49,7 @@ T_opt1
 VSL=eV_T<dLG1JLfziFDb90
 R4
 =1-0050568b881c-69c86c7c-47bf3-337a7f
-R1
+R0
 R5
 R6
 R7
@@ -55,10 +57,22 @@ R8
 n@_opt1
 R9
 R3
+T_opt2
+!s110 1774749133
+VX<VDQEM0CUgT0i<^nMR[d3
+R4
+=1-0050568b881c-69c885cc-b4009-3b208d
+R0
+R5
+R6
+R7
+R8
+n@_opt2
+R9
 Yaxi4_stream_if
 Z10 2../rtl/bnn_fcc.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/axi4_stream_if.sv|../verification/bnn_fcc_tb.sv
 Z11 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
-Z12 !s110 1774742738
+Z12 !s110 1774749131
 !i10b 1
 !s100 Z7DNHI7]VnhS@@X9DMkmX1
 Igdg]MHhXmNdaHAa;E7hW@2
@@ -67,45 +81,45 @@ Z13 d/home/UFAD/ymahmud/bnn_fcc_contest/sim
 w1773816726
 8../verification/axi4_stream_if.sv
 F../verification/axi4_stream_if.sv
-!i122 31
+!i122 33
 L0 8 0
 Z14 VDg1SIo80bB@j0V0VzS_@n1
 Z15 OL;L;2023.3;77
 r1
 !s85 0
 31
-Z16 !s108 1774742738.000000
-!s107 ../verification/bnn_fcc_tb.sv|../verification/axi4_stream_if.sv|../rtl/neural_processor.sv|../rtl/layer_memory.sv|../rtl/config_parser.sv|../rtl/compute_layer.sv|../rtl/bnn_fcc.sv|
-Z17 !s90 -work|work|-sv|-mfcu|+incdir+../rtl|+incdir+../verification|../rtl/bnn_fcc.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/axi4_stream_if.sv|../verification/bnn_fcc_tb.sv|
+Z16 !s108 1774749131.000000
+Z17 !s107 ../verification/bnn_fcc_tb.sv|../verification/axi4_stream_if.sv|../rtl/neural_processor.sv|../rtl/layer_memory.sv|../rtl/config_parser.sv|../rtl/compute_layer.sv|../rtl/bnn_fcc.sv|
+Z18 !s90 -work|work|-sv|-mfcu|+incdir+../rtl|+incdir+../verification|../rtl/bnn_fcc.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../rtl/neural_processor.sv|../verification/axi4_stream_if.sv|../verification/bnn_fcc_tb.sv|
 !i113 0
-Z18 o-work work -sv -mfcu -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
-Z19 !s92 -work work -sv -mfcu +incdir+../rtl +incdir+../verification -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z19 o-work work -sv -mfcu -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z20 !s92 -work work -sv -mfcu +incdir+../rtl +incdir+../verification -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
 R8
 vbnn_fcc
 R10
 R11
 R12
 !i10b 1
-!s100 moHKL34LJdNRSRCmeIeak3
-I`I^TnaI9aIG^?gU:L8zV^1
+!s100 h441bz>hj2]8n[YXKlTUl2
+IdV8KiJ927E?8O[nB17Rj^3
 S1
 R13
-w1774742646
+w1774749086
 8../rtl/bnn_fcc.sv
 F../rtl/bnn_fcc.sv
-!i122 31
-L0 1 352
+!i122 33
+L0 1 307
 R14
 R15
 r1
 !s85 0
 31
 R16
-Z20 !s107 ../verification/bnn_fcc_tb.sv|../verification/axi4_stream_if.sv|../rtl/neural_processor.sv|../rtl/layer_memory.sv|../rtl/config_parser.sv|../rtl/compute_layer.sv|../rtl/bnn_fcc.sv|
 R17
-!i113 0
 R18
+!i113 0
 R19
+R20
 R8
 vbnn_fcc_tb
 R10
@@ -120,7 +134,7 @@ R13
 Z21 w1773816467
 8../verification/bnn_fcc_tb.sv
 F../verification/bnn_fcc_tb.sv
-!i122 31
+!i122 33
 L0 85 402
 R14
 R15
@@ -128,11 +142,11 @@ r1
 !s85 0
 31
 R16
-R20
 R17
-!i113 0
 R18
+!i113 0
 R19
+R20
 R8
 Xbnn_fcc_tb_pkg
 Z22 2../rtl/bnn_types_pkg.sv|../verification/bnn_fcc_tb_pkg.sv
@@ -146,7 +160,7 @@ R13
 R21
 8../verification/bnn_fcc_tb_pkg.sv
 F../verification/bnn_fcc_tb_pkg.sv
-!i122 30
+!i122 32
 L0 13 0
 VEFih<ImV^@YIJO3?oZ@KU1
 R15
@@ -157,8 +171,8 @@ R16
 Z23 !s107 ../verification/bnn_fcc_tb_pkg.sv|../rtl/bnn_types_pkg.sv|
 Z24 !s90 -work|work|-sv|-mfcu|+incdir+../rtl|+incdir+../verification|../rtl/bnn_types_pkg.sv|../verification/bnn_fcc_tb_pkg.sv|
 !i113 0
-R18
 R19
+R20
 R8
 Xbnn_types_pkg
 R22
@@ -172,7 +186,7 @@ R13
 w1773816466
 8../rtl/bnn_types_pkg.sv
 F../rtl/bnn_types_pkg.sv
-!i122 30
+!i122 32
 L0 1 0
 V46j@2H3NdMha3d:FelNH^3
 R15
@@ -183,8 +197,8 @@ R16
 R23
 R24
 !i113 0
-R18
 R19
+R20
 R8
 vcompute_layer
 R10
@@ -198,7 +212,7 @@ R13
 w1774712758
 8../rtl/compute_layer.sv
 F../rtl/compute_layer.sv
-!i122 31
+!i122 33
 L0 1 197
 R14
 R15
@@ -206,11 +220,11 @@ r1
 !s85 0
 31
 R16
-R20
 R17
-!i113 0
 R18
+!i113 0
 R19
+R20
 R8
 vconfig_parser
 R10
@@ -218,26 +232,26 @@ R11
 DXx4 work 13 bnn_types_pkg 0 22 46j@2H3NdMha3d:FelNH^3
 R12
 !i10b 1
-!s100 U4V`j?`HS8k6cCi92BmRT2
-I4OaE8=oVC4ciF08zSYn5i1
+!s100 8=0>O>ahL^0@:z[g<`Adf2
+I2imLR?>iMkD`neKklo`lh0
 S1
 R13
-w1774742566
+w1774749005
 8../rtl/config_parser.sv
 F../rtl/config_parser.sv
-!i122 31
-L0 1 193
+!i122 33
+L0 1 186
 R14
 R15
 r1
 !s85 0
 31
 R16
-R20
 R17
-!i113 0
 R18
+!i113 0
 R19
+R20
 R8
 vlayer_memory
 R10
@@ -248,10 +262,10 @@ R12
 IUYXS<_AaDH:3ZO[ZPBMVj2
 S1
 R13
-w1774730034
+w1774747111
 8../rtl/layer_memory.sv
 F../rtl/layer_memory.sv
-!i122 31
+!i122 33
 L0 1 260
 R14
 R15
@@ -259,11 +273,11 @@ r1
 !s85 0
 31
 R16
-R20
 R17
-!i113 0
 R18
+!i113 0
 R19
+R20
 R8
 vneural_processor
 R10
@@ -277,7 +291,7 @@ R13
 w1774712754
 8../rtl/neural_processor.sv
 F../rtl/neural_processor.sv
-!i122 31
+!i122 33
 L0 1 82
 R14
 R15
@@ -285,9 +299,9 @@ r1
 !s85 0
 31
 R16
-R20
 R17
-!i113 0
 R18
+!i113 0
 R19
+R20
 R8
