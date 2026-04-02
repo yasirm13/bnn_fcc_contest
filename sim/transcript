@@ -1,13 +1,9 @@
 # vsim -c -voptargs="+acc" work.bnn_fcc_tb -do "run -all; quit -f" 
-# Start time: 21:52:12 on Mar 28,2026
+# Start time: 21:33:47 on Apr 01,2026
 # ** Warning: (vsim-56) Problem with optimized design dependency file "/ecel/UFAD/ymahmud/bnn_fcc_contest/sim/work/@_opt/_deps" - file is inconsistent with version property.
 # ** Warning: (vsim-56) Problem with optimized design dependency file "/ecel/UFAD/ymahmud/bnn_fcc_contest/sim/work/@_opt1/_deps" - file is inconsistent with version property.
-# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
 # ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
-# ** Note: (vopt-143) Recognized 1 FSM in module "compute_layer(fast__2)".
-# ** Note: (vopt-143) Recognized 1 FSM in module "compute_layer(fast)".
-# ** Note: (vopt-143) Recognized 1 FSM in module "compute_layer(fast__1)".
-# ** Note: (vopt-143) Recognized 1 FSM in module "config_parser(fast)".
 # ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=3.
 # //  Questa Sim-64
 # //  Version 2023.3 linux_x86_64 Jul 17 2023
@@ -2099,5 +2095,5 @@
 # Avg throughput (outputs/sec): 14160.3
 # Avg throughput (cycles/output): 7062.0
 #  quit -f
-# End time: 21:52:15 on Mar 28,2026, Elapsed time: 0:00:03
+# End time: 21:33:50 on Apr 01,2026, Elapsed time: 0:00:03
 # Errors: 0, Warnings: 3

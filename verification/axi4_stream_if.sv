@@ -31,8 +31,22 @@ interface axi4_stream_if #(
 
     // Validate required properties of AXI: once tvalid is asserted, it must remain asserted until
     // tready is asserted.
-    assert property (@(posedge aclk) disable iff (!aresetn) $fell(tvalid) |-> $past(tready, 1))
-    else $error("tvalid must be asserted continuously until tready is asserted.");
+    logic tvalid_q;
+    logic tready_q;
+
+    always_ff @(posedge aclk or negedge aresetn) begin
+        if (!aresetn) begin
+            tvalid_q <= 1'b0;
+            tready_q <= 1'b0;
+        end else begin
+            if (tvalid_q && !tvalid && !tready_q) begin
+                $error("tvalid must be asserted continuously until tready is asserted.");
+            end
+
+            tvalid_q <= tvalid;
+            tready_q <= tready;
+        end
+    end
 
 endinterface
 
