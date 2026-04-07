@@ -3,6 +3,15 @@
 module bnn_fcc_coverage_tb #(
     parameter int    SCENARIO_ID = 0,
     parameter string BASE_DIR    = "../python",
+    parameter bit    USE_CUSTOM_TOPOLOGY = 1'b0,
+    parameter int    CUSTOM_LAYERS = 4,
+    parameter int    CUSTOM_TOPOLOGY[CUSTOM_LAYERS] = '{13, 17, 11, 7},
+    parameter int    RANDOM_SEED = 32'h1BAD_F00D,
+    parameter int    RANDOM_STRESS_ITERATIONS = 24,
+    parameter int    RANDOM_VECTOR_POOL = 64,
+    parameter int    RANDOM_MAX_IDLE_GAP = 5,
+    parameter int    RANDOM_MAX_OUTPUT_STALL = 5,
+    parameter int    RANDOM_RESET_PROBABILITY_PCT = 12,
 
     parameter int CONFIG_BUS_WIDTH = 64,
     parameter int INPUT_BUS_WIDTH  = 64,
@@ -16,11 +25,14 @@ module bnn_fcc_coverage_tb #(
     import bnn_fcc_tb_pkg::*;
     import bnn_fcc_cov_pkg::*;
 
-    localparam int TOTAL_LAYERS = 4;
-    localparam int TOPOLOGY[TOTAL_LAYERS] = '{784, 256, 256, 10};
+    localparam int TRAINED_LAYERS = 4;
+    localparam int TRAINED_TOPOLOGY[TRAINED_LAYERS] = '{784, 256, 256, 10};
+    localparam int TOTAL_LAYERS = USE_CUSTOM_TOPOLOGY ? CUSTOM_LAYERS : TRAINED_LAYERS;
+    localparam int TOPOLOGY[TOTAL_LAYERS] = USE_CUSTOM_TOPOLOGY ? CUSTOM_TOPOLOGY :
+        TRAINED_TOPOLOGY;
     localparam int NON_INPUT_LAYERS = TOTAL_LAYERS - 1;
     localparam int PARALLEL_INPUTS = 8;
-    localparam int PARALLEL_NEURONS[NON_INPUT_LAYERS] = '{8, 8, 10};
+    localparam int PARALLEL_NEURONS[NON_INPUT_LAYERS] = '{default: 8};
     localparam int INPUTS_PER_CYCLE = INPUT_BUS_WIDTH / INPUT_DATA_WIDTH;
     localparam int BYTES_PER_INPUT = INPUT_DATA_WIDTH / 8;
     localparam int CONFIG_KEEP_WIDTH = CONFIG_BUS_WIDTH / 8;
@@ -147,6 +159,19 @@ module bnn_fcc_coverage_tb #(
         forever #HALF_CLK_PERIOD clk <= ~clk;
     end
 
+    initial begin : parameter_sanity
+        if (TOTAL_LAYERS < 2) begin
+            $fatal(1, "Coverage TB requires at least an input layer and one output layer.");
+        end
+        if (OUTPUT_CLASSES > (1 << OUTPUT_DATA_WIDTH)) begin
+            $fatal(1, "Coverage TB requires OUTPUT_DATA_WIDTH=%0d to encode %0d classes.",
+                OUTPUT_DATA_WIDTH, OUTPUT_CLASSES);
+        end
+        if (RANDOM_STRESS_ITERATIONS <= 0) begin
+            $fatal(1, "Coverage TB requires RANDOM_STRESS_ITERATIONS > 0.");
+        end
+    end
+
     function automatic string scenario_name(int id);
         case (id)
             0: return "full_reordered";
@@ -155,8 +180,45 @@ module bnn_fcc_coverage_tb #(
             3: return "partial_subset_reconfig";
             4: return "reset_mid_config";
             5: return "reset_mid_image_and_output";
+            6: return "randomized_stress";
             default: return "unknown";
         endcase
+    endfunction
+
+    function automatic bit chance_pct(input int pct);
+        if (pct <= 0) begin
+            return 1'b0;
+        end
+        if (pct >= 100) begin
+            return 1'b1;
+        end
+        return ($urandom_range(99, 0) < pct);
+    endfunction
+
+    function automatic int random_range_inclusive(input int low, input int high);
+        if (high <= low) begin
+            return low;
+        end
+        return $urandom_range(high, low);
+    endfunction
+
+    function automatic gap_style_e random_gap_style();
+        return gap_style_e'(random_range_inclusive(GAP_CONTINUOUS, GAP_BURSTY));
+    endfunction
+
+    function automatic ready_relation_e random_ready_relation();
+        return ready_relation_e'(random_range_inclusive(READY_BEFORE_VALID, READY_AFTER_VALID));
+    endfunction
+
+    function automatic ready_style_e random_ready_style();
+        return ready_style_e'(random_range_inclusive(READY_STYLE_CONTINUOUS, READY_STYLE_BURSTY));
+    endfunction
+
+    function automatic int random_output_stall(input ready_relation_e relation);
+        if (relation == READY_AFTER_VALID) begin
+            return random_range_inclusive(0, RANDOM_MAX_OUTPUT_STALL);
+        end
+        return 0;
     endfunction
 
     function automatic int count_ones_keep(input logic [255:0] keep_bus, input int keep_width);
@@ -363,11 +425,31 @@ module bnn_fcc_coverage_tb #(
         dataset_cursor = 0;
     endtask
 
+    task automatic load_random_assets();
+        baseline_model = new();
+        baseline_model.create_random(TOPOLOGY);
+        sample_model_profile(baseline_model);
+
+        stim_helper = new(TOPOLOGY[0]);
+        stim_helper.generate_random_vectors(RANDOM_VECTOR_POOL);
+
+        active_model = baseline_model;
+        dataset_cursor = 0;
+    endtask
+
     task automatic get_dataset_image(output image_t img);
         int vector_idx;
         vector_idx = dataset_cursor % stim_helper.get_num_vectors();
         stim_helper.get_vector(vector_idx, img);
         dataset_cursor++;
+    endtask
+
+    task automatic get_random_image(output image_t img);
+        if (stim_helper.get_num_vectors() != 0 && chance_pct(50)) begin
+            stim_helper.get_vector(random_range_inclusive(0, stim_helper.get_num_vectors() - 1), img);
+        end else begin
+            stim_helper.get_random_vector(img);
+        end
     endtask
 
     task automatic clone_model(
@@ -654,6 +736,149 @@ module bnn_fcc_coverage_tb #(
         completed = 1'b1;
     endtask
 
+    task automatic send_layer_message_randomized(
+        input  BNN_FCC_Model #(CONFIG_BUS_WIDTH) model,
+        input  int layer_idx,
+        input  bit is_threshold,
+        input  cfg_scope_e scope,
+        input  bit mutate_threshold_fields,
+        output bit completed,
+        input  int reset_probability_pct = 0,
+        input  post_reset_cfg_e post_reset_cfg = POST_RESET_DIFFERENT_CONFIG
+    );
+        config_stream_t stream;
+        config_keep_stream_t keep_stream;
+        cfg_order_e order_kind;
+        int forced_reset_beat;
+
+        completed = 1'b0;
+        model.get_layer_config(layer_idx, is_threshold, stream, keep_stream);
+        if (is_threshold && mutate_threshold_fields) begin
+            mutate_threshold_header(stream);
+        end
+
+        order_kind = cfg_order_e'(classify_order(layer_idx, is_threshold));
+        collector.sample_config_message(is_threshold, layer_idx, scope, order_kind,
+            is_threshold && mutate_threshold_fields);
+        prev_config_layer = layer_idx;
+        prev_config_is_threshold = is_threshold;
+        config_message_count++;
+        forced_reset_beat = chance_pct(reset_probability_pct) ?
+            random_range_inclusive(0, stream.size() - 1) : -1;
+
+        for (int beat = 0; beat < stream.size(); beat++) begin
+            int gap_cycles;
+            int keep_ones;
+            bit last_beat;
+
+            gap_cycles = random_range_inclusive(0, RANDOM_MAX_IDLE_GAP);
+            last_beat = (beat == stream.size() - 1);
+
+            repeat (gap_cycles) begin
+                config_in.tvalid = 1'b0;
+                @(posedge clk);
+            end
+
+            config_in.tvalid = 1'b1;
+            config_in.tdata  = stream[beat];
+            config_in.tkeep  = keep_stream[beat];
+            config_in.tlast  = last_beat;
+
+            do begin
+                @(posedge clk);
+            end while (!config_in.tready);
+
+            keep_ones = count_ones_keep({248'd0, keep_stream[beat]}, CONFIG_KEEP_WIDTH);
+            collector.sample_config_beat(gap_cycles, keep_class(keep_ones, CONFIG_KEEP_WIDTH),
+                last_beat);
+
+            if (beat == forced_reset_beat) begin
+                clear_input_drives();
+                perform_reset(RESET_PHASE_DURING_CONFIG, last_beat, WORKLOAD_CONFIG_ONLY,
+                    post_reset_cfg);
+                return;
+            end
+        end
+
+        clear_input_drives();
+        completed = 1'b1;
+        @(posedge clk);
+    endtask
+
+    task automatic send_image_randomized(
+        input  image_t img,
+        input  int inter_image_gap,
+        input  int image_count_bucket,
+        input  ready_relation_e ready_relation,
+        input  ready_style_e ready_style,
+        input  int stall_cycles,
+        input  bit queue_expected,
+        output bit completed,
+        input  int reset_probability_pct = 0,
+        input  post_reset_cfg_e post_reset_cfg = POST_RESET_DIFFERENT_CONFIG
+    );
+        int forced_reset_beat;
+
+        if (queue_expected) begin
+            int expected_pred;
+            expected_pred = active_model.compute_reference(img);
+            queue_output_expectation(expected_pred, ready_relation, ready_style, stall_cycles);
+        end
+
+        completed = 1'b0;
+        forced_reset_beat = chance_pct(reset_probability_pct) ?
+            random_range_inclusive(0, ((img.size() + INPUTS_PER_CYCLE - 1) / INPUTS_PER_CYCLE) - 1) :
+            -1;
+        repeat (inter_image_gap) @(posedge clk);
+
+        for (int base = 0; base < img.size(); base += INPUTS_PER_CYCLE) begin
+            int gap_cycles;
+            logic [INPUT_BUS_WIDTH-1:0] beat_data;
+            logic [INPUT_KEEP_WIDTH-1:0] beat_keep;
+            bit last_beat;
+
+            beat_data = '0;
+            beat_keep = '0;
+            last_beat = (base + INPUTS_PER_CYCLE >= img.size());
+
+            for (int lane = 0; lane < INPUTS_PER_CYCLE; lane++) begin
+                if (base + lane < img.size()) begin
+                    beat_data[lane*INPUT_DATA_WIDTH +: INPUT_DATA_WIDTH] = img[base + lane];
+                    beat_keep[lane*BYTES_PER_INPUT +: BYTES_PER_INPUT] = '1;
+                end
+            end
+
+            gap_cycles = random_range_inclusive(0, RANDOM_MAX_IDLE_GAP);
+            repeat (gap_cycles) begin
+                data_in.tvalid = 1'b0;
+                @(posedge clk);
+            end
+
+            data_in.tvalid = 1'b1;
+            data_in.tdata  = beat_data;
+            data_in.tkeep  = beat_keep;
+            data_in.tlast  = last_beat;
+
+            do begin
+                @(posedge clk);
+            end while (!data_in.tready);
+
+            collector.sample_image(gap_cycles,
+                keep_class(count_ones_keep({248'd0, beat_keep}, INPUT_KEEP_WIDTH), INPUT_KEEP_WIDTH),
+                last_beat, inter_image_gap, image_count_bucket);
+
+            if ((base / INPUTS_PER_CYCLE) == forced_reset_beat) begin
+                clear_input_drives();
+                perform_reset(RESET_PHASE_DURING_IMAGE, last_beat, WORKLOAD_PARTIAL_IMAGE,
+                    post_reset_cfg);
+                return;
+            end
+        end
+
+        clear_input_drives();
+        completed = 1'b1;
+    endtask
+
     task automatic reset_while_output_pending(
         input post_reset_cfg_e post_reset_cfg
     );
@@ -669,24 +894,213 @@ module bnn_fcc_coverage_tb #(
         input bit mutate_threshold_fields
     );
         bit done_ok;
-
-        send_layer_message(model, 0, 1'b0, scope, weight_gap_style, 1'b0, done_ok);
-        send_layer_message(model, 0, 1'b1, scope, threshold_gap_style, mutate_threshold_fields,
-            done_ok);
-        send_layer_message(model, 1, 1'b0, scope, weight_gap_style, 1'b0, done_ok);
-        send_layer_message(model, 1, 1'b1, scope, threshold_gap_style, mutate_threshold_fields,
-            done_ok);
-        send_layer_message(model, 2, 1'b0, scope, weight_gap_style, 1'b0, done_ok);
+        for (int l = 0; l < NON_INPUT_LAYERS; l++) begin
+            send_layer_message(model, l, 1'b0, scope, weight_gap_style, 1'b0, done_ok);
+            if (l < NON_INPUT_LAYERS - 1) begin
+                send_layer_message(model, l, 1'b1, scope, threshold_gap_style,
+                    mutate_threshold_fields, done_ok);
+            end
+        end
     endtask
 
     task automatic send_full_config_reordered(input BNN_FCC_Model #(CONFIG_BUS_WIDTH) model);
         bit done_ok;
+        for (int l = NON_INPUT_LAYERS - 2; l >= 0; l--) begin
+            send_layer_message(model, l, 1'b1, CFG_SCOPE_FULL,
+                (l % 2) ? GAP_INTERMITTENT : GAP_BURSTY, (l == NON_INPUT_LAYERS - 2), done_ok);
+        end
+        for (int l = 0; l < NON_INPUT_LAYERS; l++) begin
+            send_layer_message(model, l, 1'b0, CFG_SCOPE_FULL,
+                (l == 0) ? GAP_CONTINUOUS : ((l % 2) ? GAP_INTERMITTENT : GAP_BURSTY),
+                1'b0, done_ok);
+        end
+    endtask
 
-        send_layer_message(model, 1, 1'b1, CFG_SCOPE_FULL, GAP_INTERMITTENT, 1'b1, done_ok);
-        send_layer_message(model, 0, 1'b1, CFG_SCOPE_FULL, GAP_BURSTY, 1'b0, done_ok);
-        send_layer_message(model, 0, 1'b0, CFG_SCOPE_FULL, GAP_CONTINUOUS, 1'b0, done_ok);
-        send_layer_message(model, 1, 1'b0, CFG_SCOPE_FULL, GAP_INTERMITTENT, 1'b0, done_ok);
-        send_layer_message(model, 2, 1'b0, CFG_SCOPE_FULL, GAP_BURSTY, 1'b0, done_ok);
+    task automatic queue_config_descriptor(
+        ref int layer_ids[$],
+        ref bit is_threshold_flags[$],
+        ref bit mutate_flags[$],
+        input int layer_idx,
+        input bit is_threshold,
+        input bit mutate_threshold_fields
+    );
+        layer_ids.push_back(layer_idx);
+        is_threshold_flags.push_back(is_threshold);
+        mutate_flags.push_back(mutate_threshold_fields);
+    endtask
+
+    task automatic send_config_queue_randomized(
+        input  BNN_FCC_Model #(CONFIG_BUS_WIDTH) model,
+        ref    int layer_ids[$],
+        ref    bit is_threshold_flags[$],
+        ref    bit mutate_flags[$],
+        input  cfg_scope_e scope,
+        output bit completed,
+        input  post_reset_cfg_e post_reset_cfg = POST_RESET_DIFFERENT_CONFIG
+    );
+        completed = 1'b1;
+        while (layer_ids.size() != 0) begin
+            int pick_idx;
+            int layer_idx;
+            bit is_threshold;
+            bit mutate_threshold_fields;
+            bit message_done;
+
+            pick_idx = random_range_inclusive(0, layer_ids.size() - 1);
+            layer_idx = layer_ids[pick_idx];
+            is_threshold = is_threshold_flags[pick_idx];
+            mutate_threshold_fields = mutate_flags[pick_idx];
+
+            layer_ids.delete(pick_idx);
+            is_threshold_flags.delete(pick_idx);
+            mutate_flags.delete(pick_idx);
+
+            send_layer_message_randomized(model, layer_idx, is_threshold, scope,
+                mutate_threshold_fields, message_done, RANDOM_RESET_PROBABILITY_PCT, post_reset_cfg);
+            if (!message_done) begin
+                completed = 1'b0;
+                return;
+            end
+        end
+    endtask
+
+    task automatic send_full_config_randomized(
+        input  BNN_FCC_Model #(CONFIG_BUS_WIDTH) model,
+        output bit completed,
+        input  post_reset_cfg_e post_reset_cfg = POST_RESET_DIFFERENT_CONFIG
+    );
+        int layer_ids[$];
+        bit is_threshold_flags[$];
+        bit mutate_flags[$];
+
+        for (int l = 0; l < NON_INPUT_LAYERS; l++) begin
+            queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, l, 1'b0, 1'b0);
+            if (l < NON_INPUT_LAYERS - 1) begin
+                queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, l, 1'b1,
+                    chance_pct(50));
+            end
+        end
+
+        if (layer_ids.size() != 0 && chance_pct(35)) begin
+            int dup_idx;
+            dup_idx = random_range_inclusive(0, layer_ids.size() - 1);
+            queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, layer_ids[dup_idx],
+                is_threshold_flags[dup_idx], mutate_flags[dup_idx]);
+        end
+
+        send_config_queue_randomized(model, layer_ids, is_threshold_flags, mutate_flags,
+            CFG_SCOPE_FULL, completed, post_reset_cfg);
+    endtask
+
+    task automatic build_random_variant(
+        input  BNN_FCC_Model #(CONFIG_BUS_WIDTH) src_model,
+        output BNN_FCC_Model #(CONFIG_BUS_WIDTH) dst_model,
+        output cfg_scope_e update_scope,
+        output int target_layer
+    );
+        int density_pct[NON_INPUT_LAYERS];
+        int threshold_mode[NON_INPUT_LAYERS-1];
+        int random_seed;
+
+        clone_model(src_model, dst_model);
+        random_seed = $urandom();
+
+        if (NON_INPUT_LAYERS <= 1) begin
+            update_scope = cfg_scope_e'(random_range_inclusive(CFG_SCOPE_FULL,
+                CFG_SCOPE_WEIGHTS_ONLY));
+        end else begin
+            update_scope = cfg_scope_e'(random_range_inclusive(CFG_SCOPE_FULL,
+                CFG_SCOPE_PARTIAL_BOTH));
+        end
+
+        target_layer = random_range_inclusive(0, NON_INPUT_LAYERS - 1);
+        if ((update_scope == CFG_SCOPE_THRESHOLDS_ONLY || update_scope == CFG_SCOPE_PARTIAL_BOTH) &&
+            target_layer >= NON_INPUT_LAYERS - 1) begin
+            target_layer = NON_INPUT_LAYERS - 2;
+        end
+
+        for (int l = 0; l < NON_INPUT_LAYERS; l++) begin
+            density_pct[l] = random_range_inclusive(0, 100);
+        end
+        for (int l = 0; l < NON_INPUT_LAYERS - 1; l++) begin
+            threshold_mode[l] = random_range_inclusive(0, 2);
+        end
+
+        case (update_scope)
+            CFG_SCOPE_FULL: begin
+                apply_weight_profile(dst_model, density_pct, random_seed);
+                if (NON_INPUT_LAYERS > 1) begin
+                    apply_threshold_profile(dst_model, threshold_mode);
+                end
+            end
+            CFG_SCOPE_WEIGHTS_ONLY: begin
+                apply_weight_profile(dst_model, density_pct, random_seed);
+            end
+            CFG_SCOPE_THRESHOLDS_ONLY: begin
+                apply_threshold_profile(dst_model, threshold_mode);
+            end
+            CFG_SCOPE_PARTIAL_SUBSET: begin
+                randomize_layer_weights(dst_model, target_layer, random_range_inclusive(0, 100),
+                    random_seed ^ target_layer);
+            end
+            CFG_SCOPE_PARTIAL_BOTH: begin
+                randomize_layer_weights(dst_model, target_layer, random_range_inclusive(0, 100),
+                    random_seed ^ target_layer);
+                set_layer_thresholds(dst_model, target_layer, random_range_inclusive(0, 2));
+            end
+        endcase
+    endtask
+
+    task automatic send_random_scope_update(
+        input  BNN_FCC_Model #(CONFIG_BUS_WIDTH) model,
+        input  cfg_scope_e update_scope,
+        input  int target_layer,
+        output bit completed,
+        input  post_reset_cfg_e post_reset_cfg = POST_RESET_DIFFERENT_CONFIG
+    );
+        int layer_ids[$];
+        bit is_threshold_flags[$];
+        bit mutate_flags[$];
+
+        case (update_scope)
+            CFG_SCOPE_FULL: begin
+                send_full_config_randomized(model, completed, post_reset_cfg);
+                return;
+            end
+            CFG_SCOPE_WEIGHTS_ONLY: begin
+                for (int l = 0; l < NON_INPUT_LAYERS; l++) begin
+                    queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, l, 1'b0,
+                        1'b0);
+                end
+            end
+            CFG_SCOPE_THRESHOLDS_ONLY: begin
+                for (int l = 0; l < NON_INPUT_LAYERS - 1; l++) begin
+                    queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, l, 1'b1,
+                        chance_pct(50));
+                end
+            end
+            CFG_SCOPE_PARTIAL_SUBSET: begin
+                queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, target_layer,
+                    1'b0, 1'b0);
+                if (chance_pct(35)) begin
+                    queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, target_layer,
+                        1'b0, 1'b0);
+                end
+            end
+            CFG_SCOPE_PARTIAL_BOTH: begin
+                queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, target_layer,
+                    1'b1, chance_pct(50));
+                queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, target_layer,
+                    1'b0, 1'b0);
+                if (chance_pct(35)) begin
+                    queue_config_descriptor(layer_ids, is_threshold_flags, mutate_flags, target_layer,
+                        chance_pct(50), chance_pct(50));
+                end
+            end
+        endcase
+
+        send_config_queue_randomized(model, layer_ids, is_threshold_flags, mutate_flags,
+            update_scope, completed, post_reset_cfg);
     endtask
 
     task automatic run_full_reordered();
@@ -907,6 +1321,159 @@ module bnn_fcc_coverage_tb #(
         end
     endtask
 
+    task automatic run_randomized_stress();
+        image_t img;
+        bit completed;
+        bit needs_full_config;
+        bit force_variant_before_config;
+        cfg_scope_e update_scope;
+        int target_layer;
+
+        perform_reset(RESET_PHASE_BEFORE_CONFIG, 1'b0, WORKLOAD_NONE, POST_RESET_SAME_CONFIG);
+        active_model = baseline_model;
+        needs_full_config = 1'b1;
+        force_variant_before_config = 1'b0;
+
+        for (int iter = 0; iter < RANDOM_STRESS_ITERATIONS; iter++) begin
+            post_reset_cfg_e pre_cfg_reset_policy;
+
+            if (chance_pct(RANDOM_RESET_PROBABILITY_PCT)) begin
+                pre_cfg_reset_policy = chance_pct(50) ? POST_RESET_SAME_CONFIG :
+                    POST_RESET_DIFFERENT_CONFIG;
+                perform_reset(RESET_PHASE_BEFORE_CONFIG, chance_pct(50), WORKLOAD_NONE,
+                    pre_cfg_reset_policy);
+                needs_full_config = 1'b1;
+                force_variant_before_config = (pre_cfg_reset_policy == POST_RESET_DIFFERENT_CONFIG);
+            end
+
+            if (force_variant_before_config) begin
+                build_random_variant(active_model, variant_model, update_scope, target_layer);
+                active_model = variant_model;
+                sample_model_profile(active_model);
+                force_variant_before_config = 1'b0;
+            end
+
+            if (needs_full_config) begin
+                post_reset_cfg_e cfg_reset_policy;
+
+                cfg_reset_policy = chance_pct(50) ? POST_RESET_SAME_CONFIG :
+                    POST_RESET_DIFFERENT_CONFIG;
+                send_full_config_randomized(active_model, completed, cfg_reset_policy);
+                if (!completed) begin
+                    needs_full_config = 1'b1;
+                    if (cfg_reset_policy == POST_RESET_DIFFERENT_CONFIG) begin
+                        build_random_variant(active_model, variant_model, update_scope, target_layer);
+                        active_model = variant_model;
+                        sample_model_profile(active_model);
+                    end
+                    continue;
+                end
+                needs_full_config = 1'b0;
+            end
+
+            if (chance_pct(65)) begin
+                post_reset_cfg_e update_reset_policy;
+
+                build_random_variant(active_model, variant_model, update_scope, target_layer);
+                active_model = variant_model;
+                sample_model_profile(active_model);
+
+                update_reset_policy = chance_pct(50) ? POST_RESET_SAME_CONFIG :
+                    POST_RESET_DIFFERENT_CONFIG;
+                send_random_scope_update(active_model, update_scope, target_layer, completed,
+                    update_reset_policy);
+                if (!completed) begin
+                    needs_full_config = 1'b1;
+                    if (update_reset_policy == POST_RESET_DIFFERENT_CONFIG) begin
+                        build_random_variant(active_model, variant_model, update_scope, target_layer);
+                        active_model = variant_model;
+                        sample_model_profile(active_model);
+                    end
+                    continue;
+                end
+            end
+
+            if (chance_pct(RANDOM_RESET_PROBABILITY_PCT)) begin
+                post_reset_cfg_e post_cfg_reset_policy;
+
+                post_cfg_reset_policy = chance_pct(50) ? POST_RESET_SAME_CONFIG :
+                    POST_RESET_DIFFERENT_CONFIG;
+                perform_reset(RESET_PHASE_AFTER_CONFIG, chance_pct(50), WORKLOAD_CONFIG_ONLY,
+                    post_cfg_reset_policy);
+                needs_full_config = 1'b1;
+                if (post_cfg_reset_policy == POST_RESET_DIFFERENT_CONFIG) begin
+                    build_random_variant(active_model, variant_model, update_scope, target_layer);
+                    active_model = variant_model;
+                    sample_model_profile(active_model);
+                end
+                continue;
+            end
+
+            get_random_image(img);
+            begin
+                ready_relation_e relation;
+                ready_style_e style;
+                int stall_cycles;
+                int inter_image_gap;
+                int image_count_bucket;
+                post_reset_cfg_e image_reset_policy;
+
+                relation = random_ready_relation();
+                style = random_ready_style();
+                stall_cycles = random_output_stall(relation);
+
+                // Force the last remaining output cross once per seed sweep.
+                if ((iter % 6) == 0) begin
+                    relation = READY_AFTER_VALID;
+                    stall_cycles = 0;
+                end
+
+                inter_image_gap = random_range_inclusive(0, RANDOM_MAX_IDLE_GAP);
+                image_count_bucket = random_range_inclusive(1, 6);
+                image_reset_policy = chance_pct(50) ? POST_RESET_SAME_CONFIG :
+                    POST_RESET_DIFFERENT_CONFIG;
+
+                send_image_randomized(img, inter_image_gap, image_count_bucket, relation, style,
+                    stall_cycles, 1'b1, completed, RANDOM_RESET_PROBABILITY_PCT / 2,
+                    image_reset_policy);
+                if (!completed) begin
+                    needs_full_config = 1'b1;
+                    if (image_reset_policy == POST_RESET_DIFFERENT_CONFIG) begin
+                        build_random_variant(active_model, variant_model, update_scope, target_layer);
+                        active_model = variant_model;
+                        sample_model_profile(active_model);
+                    end
+                    continue;
+                end
+            end
+
+            if (chance_pct(RANDOM_RESET_PROBABILITY_PCT)) begin
+                post_reset_cfg_e output_reset_policy;
+
+                output_reset_policy = chance_pct(50) ? POST_RESET_SAME_CONFIG :
+                    POST_RESET_DIFFERENT_CONFIG;
+                reset_while_output_pending(output_reset_policy);
+                needs_full_config = 1'b1;
+                if (output_reset_policy == POST_RESET_DIFFERENT_CONFIG) begin
+                    build_random_variant(active_model, variant_model, update_scope, target_layer);
+                    active_model = variant_model;
+                    sample_model_profile(active_model);
+                end
+            end
+        end
+
+        if (output_handshake_count == 0) begin
+            if (needs_full_config) begin
+                send_full_config_default(active_model, CFG_SCOPE_FULL, GAP_CONTINUOUS,
+                    GAP_INTERMITTENT, 1'b0);
+            end
+
+            get_random_image(img);
+            send_image(img, GAP_CONTINUOUS, 0, 1, READY_AFTER_VALID, READY_STYLE_CONTINUOUS, 0,
+                1'b1, completed);
+        end
+    endtask
+
     initial begin : output_monitor
         forever begin
             int actual_class;
@@ -1071,6 +1638,7 @@ module bnn_fcc_coverage_tb #(
             image_partial_keep_possible_f());
         clear_all_drives();
         rst = 1'b0;
+        void'($urandom(RANDOM_SEED));
         passed = 0;
         failed = 0;
         reset_count = 0;
@@ -1087,7 +1655,15 @@ module bnn_fcc_coverage_tb #(
         $display("[%0t] Starting coverage scenario %0d (%s)", $realtime, SCENARIO_ID,
             scenario_name(SCENARIO_ID));
 
-        load_baseline_assets();
+        if (USE_CUSTOM_TOPOLOGY && (SCENARIO_ID != 6)) begin
+            $fatal(1, "Custom topology coverage runs are only supported for SCENARIO_ID=6.");
+        end
+
+        if (SCENARIO_ID == 6) begin
+            load_random_assets();
+        end else begin
+            load_baseline_assets();
+        end
 
         case (SCENARIO_ID)
             0: run_full_reordered();
@@ -1096,6 +1672,7 @@ module bnn_fcc_coverage_tb #(
             3: run_partial_subset_reconfig();
             4: run_reset_mid_config();
             5: run_reset_mid_image_and_output();
+            6: run_randomized_stress();
             default: $fatal(1, "Unknown SCENARIO_ID=%0d", SCENARIO_ID);
         endcase
 

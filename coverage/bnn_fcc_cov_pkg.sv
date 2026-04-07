@@ -64,7 +64,7 @@ package bnn_fcc_cov_pkg;
             option.per_instance = 1;
 
             cp_scenario: coverpoint scenario_id {
-                bins scenarios[] = {[0:5]};
+                bins scenarios[] = {[0:6]};
             }
         endgroup
 

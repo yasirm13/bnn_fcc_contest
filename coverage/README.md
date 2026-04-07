@@ -19,7 +19,8 @@ This folder adds a dedicated coverage-oriented testbench on top of the existing
   and executes a compact suite of directed tests.
 * `run_coverage.sh`
   Questa/ModelSim runner that compiles the harness, runs one or more scenarios,
-  saves per-test UCDB files, merges them, and emits text coverage reports.
+  saves per-test UCDB files, optionally adds randomized custom-topology sweeps,
+  merges them, and emits text coverage reports.
 
 ## Scenario Map
 
@@ -41,6 +42,10 @@ The shell runner and the `SCENARIO_ID` parameter use the following scenario ids:
 * `5 reset_mid_image_and_output`
   Resets asserted mid-image, on an image `TLAST` boundary, and while an output
   is pending.
+* `6 randomized_stress`
+  Seeded randomized model/input stress with shuffled configuration delivery,
+  randomized backpressure, legal valid gaps, and random resets during config,
+  image streaming, and output wait windows.
 
 ## Running
 
@@ -55,12 +60,19 @@ Run a single scenario:
 ```bash
 ./coverage/run_coverage.sh --scenario 0
 ./coverage/run_coverage.sh --scenario reset_mid_config
+./coverage/run_coverage.sh --scenario randomized_stress --seed 12345
 ```
 
 List scenarios:
 
 ```bash
 ./coverage/run_coverage.sh --list
+```
+
+Add randomized custom-topology sweeps:
+
+```bash
+./coverage/run_coverage.sh --random-sweeps 3
 ```
 
 Generated artifacts land in `coverage/results/`:
@@ -77,3 +89,5 @@ Generated artifacts land in `coverage/results/`:
 * Output checking is strict: every observed output handshake must match a queued
   expectation, so unexpected DUT outputs now fail the scenario instead of being
   ignored.
+* Randomized topology changes are handled as separate elaborations because the
+  DUT layer sizes are compile-time parameters, not runtime signals.
