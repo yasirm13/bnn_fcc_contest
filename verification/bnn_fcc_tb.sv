@@ -130,11 +130,7 @@ module bnn_fcc_tb #(
 
     initial begin
         assert (INPUT_DATA_WIDTH == 8)
-        else
-            $fatal(
-                1,
-                "TB ERROR: INPUT_DATA_WIDTH must be 8. Sub-byte or multi-byte packing logic not yet implemented."
-            );
+        else $fatal(1, "TB ERROR: INPUT_DATA_WIDTH must be 8. Sub-byte or multi-byte packing logic not yet implemented.");
     end
 
     // Returns 1 with probability p, 0 with probability 1-p.
@@ -246,8 +242,7 @@ module bnn_fcc_tb #(
 
             // Self-check the SV model.
             if (sv_pred !== python_preds[i]) begin
-                $error("TB LOGIC ERROR: Img %0d. SV Model says %0d, Python says %0d", i, sv_pred,
-                       python_preds[i]);
+                $error("TB LOGIC ERROR: Img %0d. SV Model says %0d, Python says %0d", i, sv_pred, python_preds[i]);
                 $finish;  // Stop immediately, the testbench is broken
                 /*end else begin
                 $display("Img %0d: Class %0d (Matched Python)", i, sv_pred);*/
@@ -274,8 +269,7 @@ module bnn_fcc_tb #(
             model.load_from_file(path, ACTUAL_TOPOLOGY);
             if (VERIFY_MODEL) verify_model();
             model.encode_configuration(config_bus_data_stream, config_bus_keep_stream);
-            $display("--- Configuration created: %0d words (%0d-bit wide) ---",
-                     config_bus_data_stream.size(), CONFIG_BUS_WIDTH);
+            $display("--- Configuration created: %0d words (%0d-bit wide) ---", config_bus_data_stream.size(), CONFIG_BUS_WIDTH);
 
             // Load input images
             $display("--- Loading Test Vectors ---");
@@ -285,8 +279,7 @@ module bnn_fcc_tb #(
             $display("--- Loading Randomized Model ---");
             model.create_random(ACTUAL_TOPOLOGY);
             model.encode_configuration(config_bus_data_stream, config_bus_keep_stream);
-            $display("--- Configuration created: %0d words (%0d-bit wide) ---",
-                     config_bus_data_stream.size(), CONFIG_BUS_WIDTH);
+            $display("--- Configuration created: %0d words (%0d-bit wide) ---", config_bus_data_stream.size(), CONFIG_BUS_WIDTH);
 
             $display("--- Generating Random Test Vectors ---");
             stim.generate_random_vectors(NUM_TEST_IMAGES);
@@ -378,16 +371,6 @@ module bnn_fcc_tb #(
             expected_pred = model.compute_reference(current_img);
             expected_outputs.push_back(expected_pred);
 
-            // DEBUG: Print Reference Layer Outputs
-            $display("[REF] Image %0d Prediction: %0d", i, expected_pred);
-            for (int l = 0; l < model.num_layers; l++) begin
-                $display("[REF] Layer %0d First 10 Neurons:", l);
-                for (int n = 0; n < 10 && n < model.layer_outputs[l].size(); n++) begin
-                    $display("  N%0d: %0d", n, model.layer_outputs[l][n]);
-                end
-            end
-
-
             // Stream image into DUT.
             $display("[%0t] Streaming image %0d.", $realtime, i);
             if (DEBUG) model.print_inference_trace();
@@ -435,16 +418,14 @@ module bnn_fcc_tb #(
 
         disable generate_clock;
         disable l_timeout;
-        if (passed == num_tests)
-            $display("[%0t] SUCCESS: all %0d tests completed successfully.", $realtime, num_tests);
+        if (passed == num_tests) $display("[%0t] SUCCESS: all %0d tests completed successfully.", $realtime, num_tests);
         else $error("FAILED: %0d out of %0d tests failed.", failed, num_tests);
 
         $display("\nStats:");
         $display("Avg latency (cycles) per image: %0.1f cycles", latency.get_avg_cycles());
         $display("Avg latency (time) per image: %0.1f ns", latency.get_avg_time());
         $display("Avg throughput (outputs/sec): %0.1f", throughput.get_outputs_per_sec(NUM_TEST_IMAGES));
-        $display("Avg throughput (cycles/output): %0.1f", throughput.get_avg_cycles_per_output(
-                 NUM_TEST_IMAGES));
+        $display("Avg throughput (cycles/output): %0.1f", throughput.get_avg_cycles_per_output(NUM_TEST_IMAGES));
     end
 
     initial begin : l_toggle_ready
@@ -467,8 +448,7 @@ module bnn_fcc_tb #(
             assert (data_out.tdata == expected_outputs[0]) begin
                 passed++;
             end else begin
-                $error("Output incorrect for image %0d: actual = %0d vs expected = %0d", output_count,
-                       data_out.tdata, expected_outputs[0]);
+                $error("Output incorrect for image %0d: actual = %0d vs expected = %0d", output_count, data_out.tdata, expected_outputs[0]);
                 failed++;
             end
             void'(expected_outputs.pop_front());
