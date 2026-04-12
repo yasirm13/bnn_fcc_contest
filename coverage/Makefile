@@ -45,6 +45,10 @@ VSIM_GUI_FLAGS = -gui \
 	-coverage \
 	-voptargs="+acc"
 
+# Coverage viewer flags
+VSIM_COV_GUI_FLAGS = -gui \
+	-viewcov coverage.ucdb
+
 # Default target
 all: compile optimize
 
@@ -69,6 +73,10 @@ sim: optimize
 gui: optimize	
 	$(VSIM) $(VSIM_GUI_FLAGS) $(OPTIMIZED_TOP) &
 
+# Open saved coverage database in GUI
+covgui: sim
+	$(VSIM) $(VSIM_COV_GUI_FLAGS) &
+
 # Clean up generated files
 clean:
 	rm -rf $(WORK_DIR)
@@ -81,4 +89,4 @@ clean:
 	rm -rf *.ucdb 
 	rm -rf coverage_report.txt
 
-.PHONY: all compile optimize sim gui clean
+.PHONY: all compile optimize sim gui covgui clean

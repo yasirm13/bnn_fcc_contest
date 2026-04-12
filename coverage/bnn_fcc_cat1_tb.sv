@@ -118,14 +118,97 @@ module bnn_fcc_cat1_tb #(
         cr_valid_ready: cross cp_valid, cp_ready;
     endgroup
 
+    covergroup cg_config_diversity with function sample(
+        int layer_idx,
+        int weight_density_class,
+        int threshold_class,
+        bit threshold_fields_randomized
+    );
+        option.per_instance = 1;
+
+        cp_layer: coverpoint layer_idx {
+            bins layers[] = {[0:NON_INPUT_LAYERS-1]};
+        }
+
+        cp_hidden_layer: coverpoint layer_idx iff (layer_idx < NON_INPUT_LAYERS - 1) {
+            bins hidden_layers[] = {[0:NON_INPUT_LAYERS-2]};
+        }
+
+        cp_weight_density: coverpoint weight_density_class {
+            bins all_zero = {0};
+            bins sparse   = {1};
+            bins balanced = {2};
+            bins dense    = {3};
+            bins all_one  = {4};
+        }
+
+        cp_threshold_range: coverpoint threshold_class {
+            bins thr_small  = {0};
+            bins thr_medium = {1};
+            bins thr_large  = {2};
+        }
+
+        cp_threshold_dc: coverpoint threshold_fields_randomized {
+            bins default_fields = {0};
+            bins randomized_fields = {1};
+        }
+
+        cr_layer_density: cross cp_layer, cp_weight_density;
+        cr_layer_threshold: cross cp_hidden_layer, cp_threshold_range;
+    endgroup
+
     cg_axi_config cg_config_inst;
     cg_axi_image  cg_image_inst;
     cg_axi_output cg_output_inst;
+    cg_config_diversity cg_config_diversity_inst;
+
+    function automatic int classify_weight_density(input int layer_idx, input int neuron_idx);
+        int ones;
+        int fan_in;
+
+        ones = 0;
+        fan_in = model.weight[layer_idx][neuron_idx].size();
+        for (int i = 0; i < fan_in; i++) begin
+            if (model.weight[layer_idx][neuron_idx][i]) ones++;
+        end
+
+        if (ones == 0) return 0;
+        if (ones == fan_in) return 4;
+        if ((ones * 4) <= fan_in) return 1;
+        if ((ones * 4) >= (fan_in * 3)) return 3;
+        return 2;
+    endfunction
+
+    function automatic int classify_threshold_range(input int layer_idx, input int neuron_idx);
+        int fan_in;
+        int threshold_val;
+
+        fan_in = model.weight[layer_idx][neuron_idx].size();
+        threshold_val = model.threshold[layer_idx][neuron_idx];
+
+        if (threshold_val <= (fan_in / 3)) return 0;
+        if (threshold_val >= ((fan_in * 2) / 3)) return 2;
+        return 1;
+    endfunction
+
+    task automatic sample_cat2_coverage();
+        for (int l = 0; l < NON_INPUT_LAYERS; l++) begin
+            for (int n = 0; n < model.weight[l].size(); n++) begin
+                cg_config_diversity_inst.sample(
+                    l,
+                    classify_weight_density(l, n),
+                    classify_threshold_range(l, n),
+                    l[0]
+                );
+            end
+        end
+    endtask
 
     initial begin
         cg_config_inst = new();
         cg_image_inst  = new();
         cg_output_inst = new();
+        cg_config_diversity_inst = new();
     end
 
     bnn_fcc #(
@@ -167,12 +250,15 @@ module bnn_fcc_cat1_tb #(
         stim = new(ACTUAL_TOPOLOGY[0]);
         latency = new(CLK_PERIOD);
         throughput = new(CLK_PERIOD);
+        if (cg_config_diversity_inst == null) cg_config_diversity_inst = new();
 
-        $display("--- Loading Randomized Model (Category 1) ---");
-        model.create_random(ACTUAL_TOPOLOGY);
-        // USE ROMDOMIZED CONFIGURATION STREAM
+        $display("--- Loading Diverse Model (Category 1 + Category 2) ---");
+        model.create_diverse_config(ACTUAL_TOPOLOGY);
+        // Randomized stream ordering/timing still drives Cat1 protocol coverage.
         model.encode_configuration_randomized(config_bus_data_stream, config_bus_keep_stream);
         $display("--- Configuration created: %0d words (%0d-bit wide) ---", config_bus_data_stream.size(), CONFIG_BUS_WIDTH);
+
+        sample_cat2_coverage();
 
         $display("--- Generating Random Test Vectors (Category 1) ---");
         stim.generate_random_vectors(NUM_TEST_IMAGES);
@@ -206,7 +292,7 @@ module bnn_fcc_cat1_tb #(
         rst <= 1'b0;
         repeat (5) @(posedge clk);
 
-        $display("[%0t] Streaming weights and thresholds (Category 1).", $realtime);
+        $display("[%0t] Streaming weights and thresholds (Category 1 + Category 2).", $realtime);
         
         for (int i = 0; i < config_bus_data_stream.size(); i++) begin
             if (i % 8 == 0) update_probabilities(); // Update patterns regularly
