@@ -20,6 +20,7 @@ VLOG_FLAGS = -sv \
 	-mfcu \
 	-lint \
 	+acc=pr \
+	+cover \
 	-suppress 2275 \
 	-timescale "1ns/1ps" \
 	+incdir+../rtl \
@@ -28,17 +29,20 @@ VLOG_FLAGS = -sv \
 
 # Optimization flags (preserve full visibility with +acc)
 VOPT_FLAGS = +acc \
+	+cover \
 	-o $(OPTIMIZED_TOP)
 
 # Simulation flags
 VSIM_FLAGS = -c \
 	-debugDB \
+	-coverage \
 	-voptargs="+acc" \
-	-do "run -all"
+	-do "run -all; coverage save -onexit coverage.ucdb; coverage report -output coverage_report.txt -srcfile=* -details; quit -f"
 
 # GUI simulation flags
 VSIM_GUI_FLAGS = -gui \
 	-debugDB \
+	-coverage \
 	-voptargs="+acc"
 
 # Default target
@@ -74,5 +78,7 @@ clean:
 	rm -rf *.dbg
 	rm -rf *.vstf
 	rm -rf modelsim.ini
+	rm -rf *.ucdb 
+	rm -rf coverage_report.txt
 
 .PHONY: all compile optimize sim gui clean

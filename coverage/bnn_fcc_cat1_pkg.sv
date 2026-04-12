@@ -19,7 +19,7 @@ package bnn_fcc_cat1_pkg;
             layer_indices = new[num_layers];
             for (int i=0; i<num_layers; i++) layer_indices[i] = i;
             
-            layer_indices.shuffle();
+            
             
             full_stream = new[0];
             full_keep   = new[0];

@@ -93,6 +93,41 @@ module bnn_fcc_cat1_tb #(
     axi4_stream_if #(.DATA_WIDTH(INPUT_BUS_WIDTH)) data_in (.aclk(clk), .aresetn(!rst));
     axi4_stream_if #(.DATA_WIDTH(OUTPUT_BUS_WIDTH)) data_out (.aclk(clk), .aresetn(!rst));
 
+    covergroup cg_axi_config @(posedge clk);
+        option.per_instance = 1;
+        cp_valid: coverpoint config_in.tvalid;
+        cp_ready: coverpoint config_in.tready;
+        cp_last:  coverpoint config_in.tlast;
+        cr_valid_ready: cross cp_valid, cp_ready {
+            ignore_bins no_backpressure = binsof(cp_valid) intersect {1} && binsof(cp_ready) intersect {0};
+        }
+    endgroup
+
+    covergroup cg_axi_image @(posedge clk);
+        option.per_instance = 1;
+        cp_valid: coverpoint data_in.tvalid;
+        cp_ready: coverpoint data_in.tready;
+        cp_last:  coverpoint data_in.tlast;
+        cr_valid_ready: cross cp_valid, cp_ready;
+    endgroup
+
+    covergroup cg_axi_output @(posedge clk);
+        option.per_instance = 1;
+        cp_valid: coverpoint data_out.tvalid;
+        cp_ready: coverpoint data_out.tready;
+        cr_valid_ready: cross cp_valid, cp_ready;
+    endgroup
+
+    cg_axi_config cg_config_inst;
+    cg_axi_image  cg_image_inst;
+    cg_axi_output cg_output_inst;
+
+    initial begin
+        cg_config_inst = new();
+        cg_image_inst  = new();
+        cg_output_inst = new();
+    end
+
     bnn_fcc #(
         .INPUT_DATA_WIDTH (INPUT_DATA_WIDTH),
         .INPUT_BUS_WIDTH  (INPUT_BUS_WIDTH),
@@ -281,14 +316,23 @@ module bnn_fcc_cat1_tb #(
 
     initial begin : l_output_monitor
         automatic int output_count = 0;
+        automatic logic [OUTPUT_DATA_WIDTH-1:0] expected_output;
+        automatic logic [OUTPUT_DATA_WIDTH-1:0] actual_output;
         forever begin
             @(posedge clk iff data_out.tvalid && data_out.tready);
             assert (expected_outputs.size() > 0)
             else $fatal(1, "No expected output for actual output");
-            assert (data_out.tdata == expected_outputs[0]) begin
+            
+            expected_output = expected_outputs[0];
+            actual_output   = data_out.tdata;
+            
+            $display("[MONITOR @%0t] Output %0d -> RTL=%0d, Expected=%0d", $realtime, output_count, actual_output, expected_output);
+
+            if (actual_output == expected_output) begin
                 passed++;
             end else begin
-                $error("Output incorrect for image %0d: actual = %0d vs expected = %0d", output_count, data_out.tdata, expected_outputs[0]);
+                $error("Output incorrect for image %0d: actual = %0d vs expected = %0d", output_count, actual_output, expected_output);
+                model.print_inference_trace();
                 failed++;
             end
             void'(expected_outputs.pop_front());

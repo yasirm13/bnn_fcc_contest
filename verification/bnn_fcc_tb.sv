@@ -87,7 +87,7 @@ module bnn_fcc_tb #(
     parameter int      USE_CUSTOM_TOPOLOGY                      = 1'b0,
     parameter int      CUSTOM_LAYERS                            = 4,
     parameter int      CUSTOM_TOPOLOGY          [CUSTOM_LAYERS] = '{8, 8, 8, 8},
-    parameter int      NUM_TEST_IMAGES                          = 50,
+    parameter int      NUM_TEST_IMAGES                          = 100,
     parameter bit      VERIFY_MODEL                             = 1,
     parameter string   BASE_DIR                                 = "../python",
     parameter bit      TOGGLE_DATA_OUT_READY                    = 1'b1,

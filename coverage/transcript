@@ -1,5 +1,4 @@
-# vsim -c -debugDB -voptargs="+acc" -do "run -all" bnn_fcc_cat1_tb_opt 
-# Start time: 13:33:00 on Apr 12,2026
+# Reading pref.tcl
 # //  Questa Sim-64
 # //  Version 2023.3 linux_x86_64 Jul 17 2023
 # //
@@ -14,6 +13,8 @@
 # //  is prohibited from disclosure under the Trade Secrets Act,
 # //  18 U.S.C. Section 1905.
 # //
+# vsim -gui -debugDB -coverage -voptargs="+acc" bnn_fcc_cat1_tb_opt 
+# Start time: 14:42:18 on Apr 12,2026
 # Loading sv_std.std
 # Loading work.bnn_fcc_tb_pkg(fast)
 # Loading work.bnn_fcc_cat1_pkg(fast)
@@ -33,7 +34,7 @@
 # ** Note: (vsim-8900) Creating design debug database vsim.dbg.
 # It appears vopt was not run with -debugdb option on this design.
 # Advanced Causality and Schematic debug features will not be available.
-# run -all
+run -all
 # --- Loading Randomized Model (Category 1) ---
 # Randomizing Layer 0: 13 inputs -> 10 neurons
 # Randomizing Layer 1: 10 inputs -> 10 neurons
@@ -46,145 +47,122 @@
 #   Layer 1 (hidden): 10 Neurons
 #   Layer 2 (output): 5 Neurons
 # [95 ns] Streaming weights and thresholds (Category 1).
-# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
-# PAYLOAD DONE: Cnt         10 Total         10
-# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
 # ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
 # PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
 # PAYLOAD DONE: Cnt         40 Total         40
 # ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
 # PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
 # PAYLOAD DONE: Cnt         20 Total         20
+# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
+# PAYLOAD DONE: Cnt         20 Total         20
+# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
+# PAYLOAD DONE: Cnt         40 Total         40
+# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
+# PAYLOAD DONE: Cnt         10 Total         10
 # [555 ns] Streaming image 0 (Category 1).
-# [625 ns] Streaming image 1 (Category 1).
-# [825 ns] Streaming image 2 (Category 1).
-# [965 ns] Streaming image 3 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 1135 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [1145 ns] Streaming image 4 (Category 1).
-# [1295 ns] Streaming image 5 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 1325 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [1525 ns] Streaming image 6 (Category 1).
-# [1625 ns] Streaming image 7 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 1645 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 1805 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [1865 ns] Streaming image 8 (Category 1).
-# ** Error: Output incorrect for image 1: actual = 1 vs expected = 4
-#    Time: 1915 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [2005 ns] Streaming image 9 (Category 1).
-# [2205 ns] Streaming image 10 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 2375 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [2385 ns] Streaming image 11 (Category 1).
-# [2515 ns] Streaming image 12 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 2535 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [2665 ns] Streaming image 13 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 2695 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# ** Error: Output incorrect for image 3: actual = 4 vs expected = 3
-#    Time: 2735 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [2815 ns] Streaming image 14 (Category 1).
-# ** Error: Output incorrect for image 4: actual = 1 vs expected = 4
-#    Time: 2895 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [3015 ns] Streaming image 15 (Category 1).
-# ** Error: Output incorrect for image 5: actual = 4 vs expected = 1
-#    Time: 3055 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [3125 ns] Streaming image 16 (Category 1).
-# [3295 ns] Streaming image 17 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 3495 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [3495 ns] Streaming image 18 (Category 1).
-# ** Error: Output incorrect for image 7: actual = 1 vs expected = 4
-#    Time: 3575 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [3715 ns] Streaming image 19 (Category 1).
-# [3905 ns] Streaming image 20 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 4015 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [4045 ns] Streaming image 21 (Category 1).
-# [4175 ns] Streaming image 22 (Category 1).
-# [4345 ns] Streaming image 23 (Category 1).
-# ** Error: Output incorrect for image 11: actual = 4 vs expected = 1
-#    Time: 4405 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [4505 ns] Streaming image 24 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 4685 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [4715 ns] Streaming image 25 (Category 1).
-# [4795 ns] Streaming image 26 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 4845 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [4985 ns] Streaming image 27 (Category 1).
-# ** Error: Output incorrect for image 13: actual = 3 vs expected = 1
-#    Time: 5045 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [5155 ns] Streaming image 28 (Category 1).
-# [5345 ns] Streaming image 29 (Category 1).
-# ** Error: Output incorrect for image 15: actual = 4 vs expected = 1
-#    Time: 5415 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [5505 ns] Streaming image 30 (Category 1).
-# ** Error: Output incorrect for image 17: actual = 4 vs expected = 1
-#    Time: 5695 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [5715 ns] Streaming image 31 (Category 1).
-# [5815 ns] Streaming image 32 (Category 1).
-# ** Error: Output incorrect for image 18: actual = 1 vs expected = 4
-#    Time: 5925 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [6015 ns] Streaming image 33 (Category 1).
-# [6155 ns] Streaming image 34 (Category 1).
-# [6305 ns] Streaming image 35 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 6315 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 6515 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [6525 ns] Streaming image 36 (Category 1).
-# [6645 ns] Streaming image 37 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 6675 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [6785 ns] Streaming image 38 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 6845 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [7025 ns] Streaming image 39 (Category 1).
-# [7115 ns] Streaming image 40 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 7165 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [7275 ns] Streaming image 41 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 7325 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# ** Error: Output incorrect for image 21: actual = 1 vs expected = 4
-#    Time: 7425 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [7465 ns] Streaming image 42 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 7645 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [7685 ns] Streaming image 43 (Category 1).
-# [7825 ns] Streaming image 44 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 7965 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [7965 ns] Streaming image 45 (Category 1).
-# [8135 ns] Streaming image 46 (Category 1).
-# [8245 ns] Streaming image 47 (Category 1).
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 8285 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 8445 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# [8485 ns] Streaming image 48 (Category 1).
-# ** Error: Output incorrect for image 24: actual = 4 vs expected = 3
-#    Time: 8535 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# [8565 ns] Streaming image 49 (Category 1).
-# [8745 ns] All images loaded, waiting for outputs.
-# ** Error: tvalid must be asserted continuously until tready is asserted.
-#    Time: 8945 ns  Scope: bnn_fcc_cat1_tb.data_out File: ../verification/axi4_stream_if.sv Line: 43
-# ** Error: Output incorrect for image 27: actual = 3 vs expected = 4
-#    Time: 9165 ns  Scope: bnn_fcc_cat1_tb.l_output_monitor File: ./bnn_fcc_cat1_tb.sv Line: 291
-# ** Fatal: Simulation failed due to timeout of 10000000 ns.
-#    Time: 10 ms  Scope: bnn_fcc_cat1_tb.l_timeout File: ./bnn_fcc_cat1_tb.sv Line: 303
-# ** Note: $finish    : ./bnn_fcc_cat1_tb.sv(303)
-#    Time: 10 ms  Iteration: 0  Instance: /bnn_fcc_cat1_tb
-# End time: 13:33:01 on Apr 12,2026, Elapsed time: 0:00:01
-# Errors: 36, Warnings: 0
+# [655 ns] Streaming image 1 (Category 1).
+# [765 ns] Streaming image 2 (Category 1).
+# [1005 ns] Streaming image 3 (Category 1).
+# [MONITOR @1025 ns] Output 0 -> RTL=0, Expected=0
+# [1195 ns] Streaming image 4 (Category 1).
+# [1275 ns] Streaming image 5 (Category 1).
+# [1475 ns] Streaming image 6 (Category 1).
+# [MONITOR @1635 ns] Output 1 -> RTL=0, Expected=0
+# [1705 ns] Streaming image 7 (Category 1).
+# [MONITOR @1715 ns] Output 2 -> RTL=0, Expected=0
+# [1885 ns] Streaming image 8 (Category 1).
+# [MONITOR @2005 ns] Output 3 -> RTL=0, Expected=0
+# [MONITOR @2055 ns] Output 4 -> RTL=0, Expected=0
+# [MONITOR @2105 ns] Output 5 -> RTL=1, Expected=1
+# [2145 ns] Streaming image 9 (Category 1).
+# [MONITOR @2185 ns] Output 6 -> RTL=4, Expected=4
+# [2335 ns] Streaming image 10 (Category 1).
+# [MONITOR @2475 ns] Output 7 -> RTL=1, Expected=1
+# [2495 ns] Streaming image 11 (Category 1).
+# [2675 ns] Streaming image 12 (Category 1).
+# [2765 ns] Streaming image 13 (Category 1).
+# [MONITOR @2965 ns] Output 8 -> RTL=1, Expected=1
+# [MONITOR @3015 ns] Output 9 -> RTL=4, Expected=4
+# [MONITOR @3085 ns] Output 10 -> RTL=1, Expected=1
+# [3115 ns] Streaming image 14 (Category 1).
+# [MONITOR @3145 ns] Output 11 -> RTL=1, Expected=1
+# [3305 ns] Streaming image 15 (Category 1).
+# [3425 ns] Streaming image 16 (Category 1).
+# [3635 ns] Streaming image 17 (Category 1).
+# [MONITOR @3655 ns] Output 12 -> RTL=4, Expected=4
+# [MONITOR @3715 ns] Output 13 -> RTL=4, Expected=4
+# [3745 ns] Streaming image 18 (Category 1).
+# [MONITOR @3765 ns] Output 14 -> RTL=1, Expected=1
+# [MONITOR @3835 ns] Output 15 -> RTL=4, Expected=4
+# [3985 ns] Streaming image 19 (Category 1).
+# [MONITOR @4105 ns] Output 16 -> RTL=1, Expected=1
+# [4125 ns] Streaming image 20 (Category 1).
+# [4305 ns] Streaming image 21 (Category 1).
+# [4445 ns] Streaming image 22 (Category 1).
+# [MONITOR @4625 ns] Output 17 -> RTL=0, Expected=0
+# [MONITOR @4705 ns] Output 18 -> RTL=1, Expected=1
+# [MONITOR @4755 ns] Output 19 -> RTL=0, Expected=0
+# [4785 ns] Streaming image 23 (Category 1).
+# [MONITOR @4805 ns] Output 20 -> RTL=0, Expected=0
+# [4865 ns] Streaming image 24 (Category 1).
+# [5065 ns] Streaming image 25 (Category 1).
+# [MONITOR @5095 ns] Output 21 -> RTL=0, Expected=0
+# [MONITOR @5145 ns] Output 22 -> RTL=0, Expected=0
+# [5165 ns] Streaming image 26 (Category 1).
+# [MONITOR @5285 ns] Output 23 -> RTL=4, Expected=4
+# [5365 ns] Streaming image 27 (Category 1).
+# [5595 ns] Streaming image 28 (Category 1).
+# [5755 ns] Streaming image 29 (Category 1).
+# [MONITOR @5915 ns] Output 24 -> RTL=1, Expected=1
+# [MONITOR @5975 ns] Output 25 -> RTL=4, Expected=4
+# [5995 ns] Streaming image 30 (Category 1).
+# [MONITOR @6025 ns] Output 26 -> RTL=4, Expected=4
+# [MONITOR @6095 ns] Output 27 -> RTL=1, Expected=1
+# [6155 ns] Streaming image 31 (Category 1).
+# [6355 ns] Streaming image 32 (Category 1).
+# [6505 ns] Streaming image 33 (Category 1).
+# [MONITOR @7185 ns] Output 28 -> RTL=4, Expected=4
+# [MONITOR @7235 ns] Output 29 -> RTL=0, Expected=0
+# [7285 ns] Streaming image 34 (Category 1).
+# [MONITOR @7455 ns] Output 30 -> RTL=0, Expected=0
+# [7465 ns] Streaming image 35 (Category 1).
+# [MONITOR @7515 ns] Output 31 -> RTL=0, Expected=0
+# [MONITOR @7565 ns] Output 32 -> RTL=4, Expected=4
+# [7625 ns] Streaming image 36 (Category 1).
+# [MONITOR @7675 ns] Output 33 -> RTL=0, Expected=0
+# [7795 ns] Streaming image 37 (Category 1).
+# [MONITOR @7835 ns] Output 34 -> RTL=2, Expected=2
+# [8015 ns] Streaming image 38 (Category 1).
+# [8235 ns] Streaming image 39 (Category 1).
+# [8315 ns] Streaming image 40 (Category 1).
+# [MONITOR @8635 ns] Output 35 -> RTL=4, Expected=4
+# [MONITOR @8685 ns] Output 36 -> RTL=4, Expected=4
+# [MONITOR @8745 ns] Output 37 -> RTL=1, Expected=1
+# [8785 ns] Streaming image 41 (Category 1).
+# [MONITOR @8815 ns] Output 38 -> RTL=0, Expected=0
+# [8985 ns] Streaming image 42 (Category 1).
+# [9045 ns] Streaming image 43 (Category 1).
+# [9315 ns] Streaming image 44 (Category 1).
+# [MONITOR @9715 ns] Output 39 -> RTL=0, Expected=0
+# [MONITOR @9765 ns] Output 40 -> RTL=0, Expected=0
+# [MONITOR @9815 ns] Output 41 -> RTL=1, Expected=1
+# [9875 ns] Streaming image 45 (Category 1).
+# [MONITOR @9895 ns] Output 42 -> RTL=0, Expected=0
+# [9975 ns] Streaming image 46 (Category 1).
+# [10135 ns] Streaming image 47 (Category 1).
+# [10255 ns] Streaming image 48 (Category 1).
+# [MONITOR @10465 ns] Output 43 -> RTL=0, Expected=0
+# [10555 ns] Streaming image 49 (Category 1).
+# [MONITOR @10655 ns] Output 44 -> RTL=0, Expected=0
+# [10715 ns] All images loaded, waiting for outputs.
+# [MONITOR @10715 ns] Output 45 -> RTL=0, Expected=0
+# [MONITOR @10775 ns] Output 46 -> RTL=4, Expected=4
+# [MONITOR @10835 ns] Output 47 -> RTL=4, Expected=4
+# [MONITOR @11375 ns] Output 48 -> RTL=1, Expected=1
+# [MONITOR @11425 ns] Output 49 -> RTL=0, Expected=0
+# [11475 ns] SUCCESS: all 50 tests completed successfully.
+# End time: 14:42:48 on Apr 12,2026, Elapsed time: 0:00:30
+# Errors: 0, Warnings: 0

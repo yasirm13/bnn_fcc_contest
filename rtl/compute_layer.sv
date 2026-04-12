@@ -10,9 +10,10 @@ module compute_layer #(
     input logic clk,
     input logic rst,
 
-    input logic start,
-    output logic done,
-    output logic is_idle,
+    input logic valid_in,
+    output logic ready_out,
+    output logic valid_out,
+    input logic ready_in,
     output logic [(IS_OUTPUT_LAYER ? (NUM_NEURONS * 32) : NUM_NEURONS)-1:0] result_vector,
 
     input logic [LAYER_INPUTS-1:0] input_activations,
@@ -47,10 +48,10 @@ module compute_layer #(
 
     logic [RESULT_WIDTH-1:0] results;
     assign result_vector = results;
-    assign done = (state == DONE_STATE);
-    assign is_idle = (state == IDLE);
+    assign valid_out = (state == DONE_STATE);
+    assign ready_out = (state == DONE_STATE) && ready_in;
 
-    assign mem_layer_start = (state == IDLE) && start;
+    assign mem_layer_start = (state == IDLE) && valid_in;
 
     logic [CONFIG_BUS_WIDTH-1:0] muxed_input;
     logic [CONFIG_BUS_WIDTH-1:0] valid_mask;
@@ -141,7 +142,7 @@ module compute_layer #(
 
             case (state)
                 IDLE: begin
-                    if (start) begin
+                    if (valid_in) begin
                         state <= PRELOAD_BATCH;
                         neuron_base_cnt <= '0;
                         chunk_cnt <= '0;
@@ -183,7 +184,9 @@ module compute_layer #(
                 end
 
                 DONE_STATE: begin
-                    state <= IDLE;
+                    if (ready_in) begin
+                        state <= IDLE;
+                    end
                 end
             endcase
         end

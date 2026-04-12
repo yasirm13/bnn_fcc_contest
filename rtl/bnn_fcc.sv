@@ -109,21 +109,25 @@ module bnn_fcc #(
         end
     end
 
+    logic layer_valid_reg[0:LAYERS];
+    logic layer_ready[0:LAYERS];
+
     logic [INPUT_BUS_ELEMENTS-1:0] input_buffer_words[0:INPUT_BUFFER_WORDS-1];
     logic [INPUT_WORD_IDX_WIDTH-1:0] input_word_idx;
-    logic image_ready;
 
     always_ff @(posedge clk) begin
         if (rst_int) begin
             input_word_idx <= '0;
-            image_ready <= 1'b0;
+            layer_valid_reg[0] <= 1'b0;
         end else begin
-            image_ready <= 1'b0;
+            if (layer_ready[0] && layer_valid_reg[0]) begin
+                layer_valid_reg[0] <= 1'b0;
+            end
             if (data_in_valid && data_in_ready) begin
                 input_buffer_words[input_word_idx] <= binarized_pixels;
 
                 if (data_in_last || (input_word_idx == INPUT_WORD_IDX_WIDTH'(INPUT_BUFFER_WORDS - 1))) begin
-                    image_ready <= 1'b1;
+                    layer_valid_reg[0] <= 1'b1;
                     input_word_idx <= '0;
                 end else begin
                     input_word_idx <= INPUT_WORD_IDX_WIDTH'(input_word_idx + 1'b1);
@@ -132,11 +136,12 @@ module bnn_fcc #(
         end
     end
 
-    logic layer_idle[1:LAYERS];
-    assign data_in_ready = layer_idle[1] && !image_ready;
+    assign data_in_ready = !layer_valid_reg[0];
 
     logic [ACTIVATION_STORAGE_BITS-1:0] layer_activations[0:LAYERS];
-    logic layer_start_pulse[1:LAYERS+1];
+    logic comp_valid_out[1:LAYERS];
+    logic comp_ready_in[1:LAYERS];
+    logic comp_ready_out[1:LAYERS];
 
     if (ACTIVATION_STORAGE_BITS > TOPOLOGY[0]) begin : gen_input_pad_zero
         assign layer_activations[0][ACTIVATION_STORAGE_BITS-1:TOPOLOGY[0]] = '0;
@@ -148,7 +153,16 @@ module bnn_fcc #(
             INPUT_BUS_ELEMENTS : (TOPOLOGY[0] - WORD_LO);
         assign layer_activations[0][WORD_LO +: WORD_BITS] = input_buffer_words[input_word][0 +: WORD_BITS];
     end
-    assign layer_start_pulse[1] = image_ready;
+
+    logic                          argmax_active;
+    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_scan_idx;
+    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_best_idx;
+    logic signed [31:0]            argmax_best_score;
+    logic signed [31:0]            argmax_scan_score;
+    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_next_best_idx;
+    logic signed [31:0]            argmax_next_best_score;
+    logic                          out_valid_reg;
+    logic [OUTPUT_BUS_WIDTH-1:0]   out_data_reg;
 
     genvar l;
     generate
@@ -198,9 +212,10 @@ module bnn_fcc #(
             ) comp_inst (
                 .clk              (clk),
                 .rst              (rst_int),
-                .start            (layer_start_pulse[l]),
-                .done             (layer_done),
-                .is_idle          (layer_idle[l]),
+                .valid_in         (layer_valid_reg[l-1]),
+                .ready_out        (comp_ready_out[l]),
+                .valid_out        (comp_valid_out[l]),
+                .ready_in         (comp_ready_in[l]),
                 .result_vector    (result_vector),
                 .input_activations(layer_activations[l-1][TOPOLOGY[l-1]-1:0]),
                 .mem_layer_start  (mem_layer_start),
@@ -213,39 +228,46 @@ module bnn_fcc #(
             if (L_RESULT_WIDTH == ACTIVATION_STORAGE_BITS) begin : gen_store_exact
                 always_ff @(posedge clk) begin
                     if (rst_int) begin
-                        layer_start_pulse[l+1] <= 1'b0;
+                        layer_valid_reg[l] <= 1'b0;
                     end else begin
-                        layer_start_pulse[l+1] <= layer_done;
-                        if (layer_done) begin
+                        if (layer_ready[l] && layer_valid_reg[l]) begin
+                            layer_valid_reg[l] <= 1'b0;
+                        end
+                        if (comp_valid_out[l] && comp_ready_in[l]) begin
                             layer_activations[l] <= result_vector;
+                            layer_valid_reg[l] <= 1'b1;
                         end
                     end
                 end
             end else begin : gen_store_padded
                 always_ff @(posedge clk) begin
                     if (rst_int) begin
-                        layer_start_pulse[l+1] <= 1'b0;
+                        layer_valid_reg[l] <= 1'b0;
                     end else begin
-                        layer_start_pulse[l+1] <= layer_done;
-                        if (layer_done) begin
+                        if (layer_ready[l] && layer_valid_reg[l]) begin
+                            layer_valid_reg[l] <= 1'b0;
+                        end
+                        if (comp_valid_out[l] && comp_ready_in[l]) begin
                             layer_activations[l] <= '0;
                             layer_activations[l][L_RESULT_WIDTH-1:0] <= result_vector;
+                            layer_valid_reg[l] <= 1'b1;
                         end
                     end
                 end
             end
+            
+            assign layer_ready[l-1] = comp_ready_out[l];
+            if (l == 1) begin
+                assign comp_ready_in[l] = layer_valid_reg[l-1] && (!layer_valid_reg[l] || layer_ready[l]);
+            end else if (l == LAYERS) begin
+                logic argmax_safe;
+                assign argmax_safe = !argmax_active || (argmax_scan_idx == OUTPUT_NEURONS - 1);
+                assign comp_ready_in[l] = !layer_valid_reg[l] && argmax_safe;
+            end else begin
+                assign comp_ready_in[l] = !layer_valid_reg[l] || layer_ready[l];
+            end
         end
     endgenerate
-
-    logic                         argmax_active;
-    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_scan_idx;
-    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_best_idx;
-    logic signed [31:0]            argmax_best_score;
-    logic signed [31:0]            argmax_scan_score;
-    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_next_best_idx;
-    logic signed [31:0]            argmax_next_best_score;
-    logic                          out_valid_reg;
-    logic [OUTPUT_BUS_WIDTH-1:0]   out_data_reg;
 
     always_comb begin
         if (argmax_scan_idx < OUTPUT_NEURONS)
@@ -261,6 +283,8 @@ module bnn_fcc #(
         end
     end
 
+    assign layer_ready[LAYERS] = (!argmax_active && (!out_valid_reg || data_out_ready));
+
     always_ff @(posedge clk) begin
         if (rst_int) begin
             argmax_active <= 1'b0;
@@ -270,12 +294,15 @@ module bnn_fcc #(
             out_valid_reg <= 1'b0;
             out_data_reg  <= '0;
         end else begin
-            if (layer_start_pulse[LAYERS+1]) begin
+            if (data_out_ready && out_valid_reg) begin
+                out_valid_reg <= 1'b0;
+            end
+
+            if (layer_valid_reg[LAYERS] && layer_ready[LAYERS]) begin
                 argmax_active <= 1'b1;
                 argmax_scan_idx <= OUTPUT_INDEX_WIDTH'(1);
                 argmax_best_idx <= '0;
                 argmax_best_score <= $signed(layer_activations[LAYERS][31:0]);
-                out_valid_reg <= 1'b0;
             end else if (argmax_active) begin
                 if (argmax_scan_idx < OUTPUT_NEURONS) begin
                     argmax_best_idx <= argmax_next_best_idx;
@@ -293,8 +320,6 @@ module bnn_fcc #(
                     out_valid_reg <= 1'b1;
                     out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_best_idx);
                 end
-            end else if (data_out_ready && out_valid_reg) begin
-                out_valid_reg <= 1'b0;
             end
         end
     end
