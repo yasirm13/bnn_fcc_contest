@@ -19,15 +19,15 @@ module neural_processor #(
     logic [N-1:0] xnor_result;
     logic [POPCOUNT_W-1:0] popcount;
     logic [ACC_WIDTH-1:0] acc;
-    logic accum_valid;
-    logic pending_output;
     logic pop_valid_q;
     logic pop_last_q;
     logic [POPCOUNT_W-1:0] popcount_q;
-    logic [31:0] threshold_pipe_q;
     logic [31:0] threshold_q;
     logic [ACC_WIDTH-1:0] popcount_extended_q;
-    logic [ACC_WIDTH-1:0] next_acc_q;
+    logic [ACC_WIDTH-1:0] acc_next_q;
+    logic                 final_valid_q;
+    logic [ACC_WIDTH-1:0] final_sum_q;
+    logic [31:0]          final_threshold_q;
 
     always_comb begin
         xnor_result = ~(x ^ w);
@@ -35,38 +35,39 @@ module neural_processor #(
     end
 
     assign popcount_extended_q = ACC_WIDTH'(popcount_q);
-    assign next_acc_q = (accum_valid ? acc : '0) + popcount_extended_q;
-    assign popcount_out = 32'(acc);
+    assign acc_next_q = acc + popcount_extended_q;
 
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if (rst) begin
-            acc       <= '0;
-            y         <= 1'b0;
+            acc <= '0;
+            y <= 1'b0;
             valid_out <= 1'b0;
-            accum_valid <= 1'b0;
-            pending_output <= 1'b0;
+            popcount_out <= '0;
             pop_valid_q <= 1'b0;
             pop_last_q <= 1'b0;
             popcount_q <= '0;
-            threshold_pipe_q <= '0;
             threshold_q <= '0;
+            final_valid_q <= 1'b0;
+            final_sum_q <= '0;
+            final_threshold_q <= '0;
         end else begin
             valid_out <= 1'b0;
 
-            if (pending_output) begin
-                y <= (32'(acc) >= threshold_q);
+            if (final_valid_q) begin
+                y <= (32'(final_sum_q) >= final_threshold_q);
+                popcount_out <= 32'(final_sum_q);
                 valid_out <= 1'b1;
-                pending_output <= 1'b0;
+                final_valid_q <= 1'b0;
             end
 
             if (pop_valid_q) begin
-                acc <= next_acc_q;
                 if (pop_last_q) begin
-                    threshold_q <= threshold_pipe_q;
-                    accum_valid <= 1'b0;
-                    pending_output <= 1'b1;
+                    acc <= '0;
+                    final_sum_q <= acc_next_q;
+                    final_threshold_q <= threshold_q;
+                    final_valid_q <= 1'b1;
                 end else begin
-                    accum_valid <= 1'b1;
+                    acc <= acc_next_q;
                 end
             end
 
@@ -74,7 +75,7 @@ module neural_processor #(
             if (valid_in) begin
                 pop_last_q <= last;
                 popcount_q <= popcount;
-                threshold_pipe_q <= threshold;
+                threshold_q <= threshold;
             end
         end
     end

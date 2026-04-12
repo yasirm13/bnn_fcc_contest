@@ -32,6 +32,27 @@ module compute_layer #(
     localparam int NP_ACC_WIDTH = (LAYER_INPUTS > 1) ? $clog2(LAYER_INPUTS + 1) : 1;
     localparam int NEURON_BASE_WIDTH = (NUM_NEURONS + PARALLEL_NEURONS > 1) ? $clog2(NUM_NEURONS + PARALLEL_NEURONS) : 1;
     localparam int CHUNK_COUNT_WIDTH = (CHUNKS_PER_NEURON > 1) ? $clog2(CHUNKS_PER_NEURON) : 1;
+    localparam int PADDED_INPUT_BITS = CHUNKS_PER_NEURON * CONFIG_BUS_WIDTH;
+
+    function automatic logic [PARALLEL_NEURONS-1:0] calc_lane_mask(
+        input logic [NEURON_BASE_WIDTH-1:0] base_idx
+    );
+        logic [PARALLEL_NEURONS-1:0] lane_mask;
+        begin
+            for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                lane_mask[lane] = ((base_idx + lane) < NUM_NEURONS);
+            end
+            return lane_mask;
+        end
+    endfunction
+
+    function automatic logic calc_last_batch(
+        input logic [NEURON_BASE_WIDTH-1:0] base_idx
+    );
+        begin
+            return ((base_idx + PARALLEL_NEURONS) >= NUM_NEURONS);
+        end
+    endfunction
 
     typedef enum logic [2:0] {
         IDLE,
@@ -53,24 +74,37 @@ module compute_layer #(
 
     assign mem_layer_start = (state == IDLE) && valid_in;
 
-    logic [CONFIG_BUS_WIDTH-1:0] muxed_input;
-    logic [CONFIG_BUS_WIDTH-1:0] valid_mask;
-    logic [CONFIG_BUS_WIDTH-1:0] masked_input;
+    logic [PADDED_INPUT_BITS-1:0] padded_input_activations;
+    logic [CONFIG_BUS_WIDTH-1:0]  input_chunks[0:CHUNKS_PER_NEURON-1];
+    logic [CONFIG_BUS_WIDTH-1:0]  chunk_valid_masks[0:CHUNKS_PER_NEURON-1];
+    logic [CONFIG_BUS_WIDTH-1:0]  selected_input_chunk;
+    logic [CONFIG_BUS_WIDTH-1:0]  selected_valid_mask;
 
-    always_comb begin
-        for (int i = 0; i < CONFIG_BUS_WIDTH; i++) begin
-            if ((chunk_cnt * CONFIG_BUS_WIDTH + i) < LAYER_INPUTS) begin
-                muxed_input[i] = input_activations[chunk_cnt*CONFIG_BUS_WIDTH+i];
-                valid_mask[i] = 1'b1;
-            end else begin
-                muxed_input[i] = 1'b0;
-                valid_mask[i] = 1'b0;
-            end
+    assign padded_input_activations[LAYER_INPUTS-1:0] = input_activations;
+    if (PADDED_INPUT_BITS > LAYER_INPUTS) begin : gen_input_pad
+        assign padded_input_activations[PADDED_INPUT_BITS-1:LAYER_INPUTS] = '0;
+    end
+
+    for (genvar chunk = 0; chunk < CHUNKS_PER_NEURON; chunk++) begin : gen_input_chunks
+        localparam int CHUNK_LO = chunk * CONFIG_BUS_WIDTH;
+        localparam int CHUNK_BITS = ((CHUNK_LO + CONFIG_BUS_WIDTH) <= LAYER_INPUTS) ?
+            CONFIG_BUS_WIDTH : (LAYER_INPUTS - CHUNK_LO);
+        assign input_chunks[chunk] = padded_input_activations[CHUNK_LO +: CONFIG_BUS_WIDTH];
+        if (CHUNK_BITS == CONFIG_BUS_WIDTH) begin : gen_full_mask
+            assign chunk_valid_masks[chunk] = '1;
+        end else begin : gen_partial_mask
+            assign chunk_valid_masks[chunk] = {
+                {(CONFIG_BUS_WIDTH-CHUNK_BITS){1'b0}},
+                {CHUNK_BITS{1'b1}}
+            };
         end
     end
 
-    logic [PARALLEL_NEURONS-1:0] lane_active;
-    logic                        last_batch;
+    assign selected_input_chunk = input_chunks[chunk_cnt];
+    assign selected_valid_mask = chunk_valid_masks[chunk_cnt];
+
+    logic [PARALLEL_NEURONS-1:0] lane_active_q;
+    logic                        last_batch_q;
     logic [PARALLEL_NEURONS-1:0] np_valid_in_q;
     logic                        np_last_q;
     logic [CONFIG_BUS_WIDTH-1:0] np_x_q;
@@ -82,17 +116,13 @@ module compute_layer #(
     logic [PARALLEL_NEURONS-1:0] np_done_mask;
     logic batch_valid_out;
 
-    assign masked_input = muxed_input & valid_mask;
-
     always_comb begin
         for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-            lane_active[lane] = ((neuron_base_cnt + lane) < NUM_NEURONS);
-            np_done_mask[lane] = np_valid_out[lane] | ~lane_active[lane];
+            np_done_mask[lane] = np_valid_out[lane] | ~lane_active_q[lane];
         end
     end
 
     assign batch_valid_out = &np_done_mask;
-    assign last_batch = (neuron_base_cnt + PARALLEL_NEURONS >= NUM_NEURONS);
 
     for (genvar lane = 0; lane < PARALLEL_NEURONS; lane++) begin : gen_np
         neural_processor #(
@@ -118,6 +148,8 @@ module compute_layer #(
             neuron_base_cnt <= '0;
             chunk_cnt <= '0;
             results <= '0;
+            lane_active_q <= '0;
+            last_batch_q <= 1'b0;
             np_x_q <= '0;
             np_last_q <= 1'b0;
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
@@ -126,17 +158,28 @@ module compute_layer #(
                 np_thresh_q[lane] <= '0;
             end
         end else begin
-            np_x_q <= masked_input;
-            np_last_q <= (state == COMPUTE_BATCH) && (chunk_cnt == CHUNKS_PER_NEURON - 1);
+            np_last_q <= 1'b0;
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
                 np_valid_in_q[lane] <= 1'b0;
-                np_w_q[lane] <= (mem_weight_data[lane] & valid_mask) | (~valid_mask);
-                np_thresh_q[lane] <= mem_thresh_data[lane];
+            end
+
+            if (state == PRELOAD_BATCH || state == COMPUTE_BATCH) begin
+                np_x_q <= selected_input_chunk;
+                for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                    np_w_q[lane] <= mem_weight_data[lane] | ~selected_valid_mask;
+                end
+            end
+
+            if (state == PRELOAD_BATCH) begin
+                for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                    np_thresh_q[lane] <= mem_thresh_data[lane];
+                end
             end
 
             if (state == COMPUTE_BATCH) begin
+                np_last_q <= (chunk_cnt == CHUNKS_PER_NEURON - 1);
                 for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-                    np_valid_in_q[lane] <= lane_active[lane];
+                    np_valid_in_q[lane] <= lane_active_q[lane];
                 end
             end
 
@@ -146,6 +189,8 @@ module compute_layer #(
                         state <= PRELOAD_BATCH;
                         neuron_base_cnt <= '0;
                         chunk_cnt <= '0;
+                        lane_active_q <= calc_lane_mask('0);
+                        last_batch_q <= calc_last_batch('0);
                     end
                 end
 
@@ -164,7 +209,7 @@ module compute_layer #(
                 FINISH_BATCH: begin
                     if (batch_valid_out) begin
                         for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-                            if (lane_active[lane]) begin
+                            if (lane_active_q[lane]) begin
                                 if (IS_OUTPUT_LAYER) begin
                                     results[(neuron_base_cnt+lane)*32 +: 32] <= np_popcount_out[lane];
                                 end else begin
@@ -173,12 +218,14 @@ module compute_layer #(
                             end
                         end
 
-                        if (last_batch) begin
+                        if (last_batch_q) begin
                             state <= DONE_STATE;
                         end else begin
                             state <= PRELOAD_BATCH;
                             neuron_base_cnt <= NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS);
                             chunk_cnt <= '0;
+                            lane_active_q <= calc_lane_mask(NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS));
+                            last_batch_q <= calc_last_batch(NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS));
                         end
                     end
                 end
@@ -195,6 +242,6 @@ module compute_layer #(
     assign mem_read_weight = ((state == PRELOAD_BATCH) && (CHUNKS_PER_NEURON > 1)) ||
                              ((state == COMPUTE_BATCH) && (CHUNKS_PER_NEURON > 2) &&
                               (chunk_cnt < (CHUNKS_PER_NEURON - 2)));
-    assign mem_read_thresh = (state == FINISH_BATCH) && batch_valid_out && !last_batch;
+    assign mem_read_thresh = (state == FINISH_BATCH) && batch_valid_out && !last_batch_q;
 
 endmodule

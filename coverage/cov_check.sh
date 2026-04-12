@@ -1,6 +1,11 @@
 #!/usr/bin/bash
 set -euo pipefail
 
+source ../activate.sh
+
+make clean
+make sim
+
 REPORT="${1:-coverage_report.txt}"
 
 if [[ ! -f "$REPORT" ]]; then

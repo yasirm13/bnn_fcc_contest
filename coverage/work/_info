@@ -13,7 +13,7 @@ Z1 d/home/UFAD/ymahmud/bnn_fcc_contest/coverage
 Yaxi4_stream_if
 Z2 2../rtl/bnn_types_pkg.sv|../verification/bnn_fcc_tb_pkg.sv|./bnn_fcc_cat1_pkg.sv|../verification/axi4_stream_if.sv|../rtl/layer_memory.sv|../rtl/config_parser.sv|../rtl/compute_layer.sv|../rtl/neural_processor.sv|../rtl/bnn_fcc.sv|./bnn_fcc_cat1_tb.sv
 Z3 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
-Z4 !s110 1776029434
+Z4 !s110 1776035714
 !i10b 1
 !s100 YUnVII^@X>[SK?6P46dzZ2
 IFg9P:M9GG1VOTfRBWXJ9L3
@@ -29,7 +29,7 @@ Z6 OL;L;2023.3;77
 r1
 !s85 0
 31
-Z7 !s108 1776029434.000000
+Z7 !s108 1776035713.000000
 Z8 !s107 ./bnn_fcc_cat1_tb.sv|../rtl/bnn_fcc.sv|../rtl/neural_processor.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../verification/axi4_stream_if.sv|./bnn_fcc_cat1_pkg.sv|../verification/bnn_fcc_tb_pkg.sv|../rtl/bnn_types_pkg.sv|
 Z9 !s90 -sv|-mfcu|-lint|+acc=pr|+cover|-suppress|2275|-timescale|1ns/1ps|+incdir+../rtl|+incdir+../verification|-work|work|-f|sources.txt|
 !i113 0
@@ -122,8 +122,8 @@ R11
 R12
 R13
 Tbnn_fcc_cat1_tb_opt
-R4
-VzF50TFU4bMem]2Z<;Z:6P3
+!s110 1776035715
+VZi6O[lU;6U1GkER=>9eaH2
 04 15 4 work bnn_fcc_cat1_tb fast 0
 R10
 R0
@@ -192,15 +192,15 @@ R2
 R3
 R4
 !i10b 1
-!s100 HmSkY18eKiBQAEh70?o@50
-IUITfL?hWjFRl7aB<Xiz;K2
+!s100 FB8jCkj25`a5DkG[2XhhR1
+I0X7mZ=H81XY]5]mM=Q7`03
 S1
 R1
-w1776015615
+w1776035205
 8../rtl/compute_layer.sv
 F../rtl/compute_layer.sv
 !i122 0
-L0 1 200
+L0 1 247
 R5
 R6
 r1
@@ -274,15 +274,15 @@ R2
 R3
 R4
 !i10b 1
-!s100 ^mAEC[9IbJRL__RcgFS8R3
-I7k:2]S@Z1do7;K>dlBGGV1
+!s100 >A9lD=B;hDgDCQaOUaA:52
+IGFI@:KzG?@dYQT]eML_cE0
 S1
 R1
-w1775533206
+w1776035179
 8../rtl/neural_processor.sv
 F../rtl/neural_processor.sv
 !i122 0
-L0 1 82
+L0 1 83
 R5
 R6
 r1
