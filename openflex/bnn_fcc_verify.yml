@@ -4,13 +4,12 @@ top: bnn_fcc_tb
 clock: clk
 
 files:
-  # Add all required source files:
-  # e.g.:
-  #- ../rtl/binary_neuron.sv
-  #- ../rtl/binary_layer.sv
-  #- ../rtl/bnn.sv
-
-  # These are common to all projects.  
+  # Add all required source files.
+  - ../rtl/bnn_types_pkg.sv
+  - ../rtl/layer_memory.sv
+  - ../rtl/compute_layer.sv
+  - ../rtl/config_parser.sv
+  - ../rtl/neural_processor.sv
   - ../rtl/bnn_fcc.sv
   - ../verification/axi4_stream_if.sv
   - ../verification/bnn_fcc_tb_pkg.sv
