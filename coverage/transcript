@@ -1,5 +1,5 @@
 # vsim -c -debugDB -coverage -voptargs="+acc" -do "run -all; coverage save -onexit coverage.ucdb; coverage report -output coverage_report.txt -srcfile=* -details; quit -f" bnn_fcc_cat1_tb_opt 
-# Start time: 20:27:32 on Apr 12,2026
+# Start time: 21:20:54 on Apr 12,2026
 # //  Questa Sim-64
 # //  Version 2023.3 linux_x86_64 Jul 17 2023
 # //
@@ -181,5 +181,5 @@
 #  coverage report -output coverage_report.txt -srcfile=* -details
 #  quit -f
 # Saving coverage database on exit...
-# End time: 20:27:33 on Apr 12,2026, Elapsed time: 0:00:01
+# End time: 21:20:56 on Apr 12,2026, Elapsed time: 0:00:02
 # Errors: 0, Warnings: 0
