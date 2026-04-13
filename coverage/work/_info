@@ -13,7 +13,7 @@ Z1 d/home/UFAD/ymahmud/bnn_fcc_contest/coverage
 Yaxi4_stream_if
 Z2 2../rtl/bnn_types_pkg.sv|../verification/bnn_fcc_tb_pkg.sv|./bnn_fcc_cat1_pkg.sv|../verification/axi4_stream_if.sv|../rtl/layer_memory.sv|../rtl/config_parser.sv|../rtl/compute_layer.sv|../rtl/neural_processor.sv|../rtl/bnn_fcc.sv|./bnn_fcc_cat1_tb.sv
 Z3 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
-Z4 !s110 1776035714
+Z4 !s110 1776040050
 !i10b 1
 !s100 YUnVII^@X>[SK?6P46dzZ2
 IFg9P:M9GG1VOTfRBWXJ9L3
@@ -29,7 +29,7 @@ Z6 OL;L;2023.3;77
 r1
 !s85 0
 31
-Z7 !s108 1776035713.000000
+Z7 !s108 1776040050.000000
 Z8 !s107 ./bnn_fcc_cat1_tb.sv|../rtl/bnn_fcc.sv|../rtl/neural_processor.sv|../rtl/compute_layer.sv|../rtl/config_parser.sv|../rtl/layer_memory.sv|../verification/axi4_stream_if.sv|./bnn_fcc_cat1_pkg.sv|../verification/bnn_fcc_tb_pkg.sv|../rtl/bnn_types_pkg.sv|
 Z9 !s90 -sv|-mfcu|-lint|+acc=pr|+cover|-suppress|2275|-timescale|1ns/1ps|+incdir+../rtl|+incdir+../verification|-work|work|-f|sources.txt|
 !i113 0
@@ -40,7 +40,7 @@ Z13 tCvgOpt 0
 vbnn_fcc
 R2
 R3
-R4
+Z14 !s110 1776040051
 !i10b 1
 !s100 GF[P<PiKO>G_aV6CZfOaB2
 I^A51DQJWdIJ@f7eRnc]aM3
@@ -67,7 +67,7 @@ R13
 Xbnn_fcc_cat1_pkg
 R2
 R3
-Z14 DXx4 work 14 bnn_fcc_tb_pkg 0 22 6XUZQ2I[bKm]YOd[2F=om2
+Z15 DXx4 work 14 bnn_fcc_tb_pkg 0 22 6XUZQ2I[bKm]YOd[2F=om2
 R4
 !i10b 1
 !s100 2UeYoO2nA@h4bi@J9MlZN0
@@ -78,7 +78,7 @@ w1776021352
 8./bnn_fcc_cat1_pkg.sv
 F./bnn_fcc_cat1_pkg.sv
 !i122 0
-Z15 L0 1 0
+Z16 L0 1 0
 ViBLUhk45N2Lo<0?R80CK:2
 R6
 r1
@@ -95,9 +95,9 @@ R13
 vbnn_fcc_cat1_tb
 R2
 R3
-R14
+R15
 DXx4 work 16 bnn_fcc_cat1_pkg 0 22 iBLUhk45N2Lo<0?R80CK:2
-R4
+R14
 !i10b 1
 !s100 >CFc^ZIE186ID5B;Am?f_1
 I@o=[E]@X4AHQ_fESS]zfm3
@@ -122,8 +122,8 @@ R11
 R12
 R13
 Tbnn_fcc_cat1_tb_opt
-!s110 1776035715
-VZi6O[lU;6U1GkER=>9eaH2
+R14
+Va::G9^019VLd;IZP1Wd[31
 04 15 4 work bnn_fcc_cat1_tb fast 0
 R10
 R0
@@ -173,7 +173,7 @@ w1773816466
 8../rtl/bnn_types_pkg.sv
 F../rtl/bnn_types_pkg.sv
 !i122 0
-R15
+R16
 VDNbVZ@ddmIVSJlJz3P[aS3
 R6
 r1
@@ -220,15 +220,15 @@ R3
 DXx4 work 13 bnn_types_pkg 0 22 DNbVZ@ddmIVSJlJz3P[aS3
 R4
 !i10b 1
-!s100 eIkA5WgKnN;OzZcn:zL[i0
-If@hJKTiaUABo`LR6KE4aR2
+!s100 3U?0@0lQ598N<1dOcClLA0
+IaAz^h7io?@Jlfc1?Z2[hi2
 S1
 R1
-w1775538774
+w1776037218
 8../rtl/config_parser.sv
 F../rtl/config_parser.sv
 !i122 0
-L0 1 186
+L0 1 141
 R5
 R6
 r1
@@ -247,15 +247,15 @@ R2
 R3
 R4
 !i10b 1
-!s100 oC]PlP5V]NDaRH[QBQDTE3
-IV:A`<e52lRf15^R10^Poo1
+!s100 be@N94f_XodO4L`BeHmoh3
+I^CN`9@`<zdVmh`iUUl@SC0
 S1
 R1
-w1775535608
+w1776038756
 8../rtl/layer_memory.sv
 F../rtl/layer_memory.sv
 !i122 0
-L0 1 271
+L0 1 286
 R5
 R6
 r1

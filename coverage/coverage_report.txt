@@ -852,32 +852,32 @@ Branch Coverage:
 Branch Coverage for file ../rtl/compute_layer.sv --
 
 ------------------------------------IF Branch------------------------------------
-    146                                     2203     Count coming in to IF
+    146                                     2204     Count coming in to IF
     146             1                         30     
-    160             1                       2173     
+    160             1                       2174     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    166                                     2173     Count coming in to IF
+    166                                     2174     Count coming in to IF
     166             1                        578     
-                                            1595     All False Count
+                                            1596     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    173                                     2173     Count coming in to IF
+    173                                     2174     Count coming in to IF
     173             1                        289     
-                                            1884     All False Count
+                                            1885     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    179                                     2173     Count coming in to IF
+    179                                     2174     Count coming in to IF
     179             1                        289     
-                                            1884     All False Count
+                                            1885     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------CASE Branch------------------------------------
-    186                                     2173     Count coming in to CASE
-    187             1                        481     
+    186                                     2174     Count coming in to CASE
+    187             1                        482     
     197             1                        289     
     201             1                        289     
     209             1                        922     
@@ -886,9 +886,9 @@ Branch totals: 2 hits of 2 branches = 100.00%
 Branch totals: 5 hits of 6 branches = 83.33%
 
 ------------------------------------IF Branch------------------------------------
-    188                                      481     Count coming in to IF
+    188                                      482     Count coming in to IF
     188             1                        174     
-                                             307     All False Count
+                                             308     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
@@ -1069,7 +1069,7 @@ Statement Coverage for file ../rtl/compute_layer.sv --
     120             2                       5926     
     121             1                       5926     
     125             1                        123     
-    145             1                       2203     
+    145             1                       2204     
     147             1                         30     
     148             1                         30     
     149             1                         30     
@@ -1083,10 +1083,10 @@ Statement Coverage for file ../rtl/compute_layer.sv --
     156             1                        260     
     157             1                        260     
     158             1                        260     
-    161             1                       2173     
-    162             1                       2173     
-    162             2                      18398     
-    163             1                      18398     
+    161             1                       2174     
+    162             1                       2174     
+    162             2                      18406     
+    163             1                      18406     
     167             1                        578     
     168             1                        578     
     168             2                       4852     
@@ -2246,269 +2246,181 @@ Toggle Coverage      =      52.93% (2481 of 4687 bins)
 Branch Coverage:
     Enabled Coverage              Bins      Hits    Misses  Coverage
     ----------------              ----      ----    ------  --------
-    Branches                        32        28         4    87.50%
+    Branches                        22        18         4    81.81%
 
 ================================Branch Details================================
 
 Branch Coverage for file ../rtl/config_parser.sv --
 
 ------------------------------------IF Branch------------------------------------
-    58                                       138     Count coming in to IF
-    58              1                         40     
+    44                                        31     Count coming in to IF
+    44              1                    ***0***     
+                                              31     All False Count
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    61                                       138     Count coming in to IF
+    61              1                         40     
                                               98     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    59                                        40     Count coming in to IF
-    59              1                         22     
-    63              1                         18     
+    62                                        40     Count coming in to IF
+    62              1                         40     
+                                         ***0***     All False Count
+Branch totals: 1 hit of 2 branches = 50.00%
+
+------------------------------------IF Branch------------------------------------
+    63                                        40     Count coming in to IF
+    63              1                         22     
+    65              1                         18     
                                          ***0***     All False Count
 Branch totals: 2 hits of 3 branches = 66.66%
 
 ------------------------------------IF Branch------------------------------------
-    61                                        22     Count coming in to IF
-    61              1                         22     
-                                         ***0***     All False Count
-Branch totals: 1 hit of 2 branches = 50.00%
-
-------------------------------------IF Branch------------------------------------
-    64                                        18     Count coming in to IF
-    64              1                         18     
-                                         ***0***     All False Count
-Branch totals: 1 hit of 2 branches = 50.00%
-
-------------------------------------IF Branch------------------------------------
-    72                                       217     Count coming in to IF
-    72              1                         10     
-    77              1                        207     
+    73                                       217     Count coming in to IF
+    73              1                         10     
+    80              1                        207     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------CASE Branch------------------------------------
-    78                                       207     Count coming in to CASE
-    79              1                         83     
-    144             1                        124     
+    81                                       207     Count coming in to CASE
+    82              1                         83     
+    119             1                        124     
                                          ***0***     All False Count
 Branch totals: 2 hits of 3 branches = 66.66%
 
 ------------------------------------IF Branch------------------------------------
-    80                                        83     Count coming in to IF
-    80              1                         62     
+    83                                        83     Count coming in to IF
+    83              1                         62     
                                               21     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    104                                       62     Count coming in to IF
-    104             1                         31     
-    104             2                         31     
+    85                                        62     Count coming in to IF
+    85              1                         31     
+    89              1                         31     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    115                                       62     Count coming in to IF
-    115             1                         31     
-                                              31     All False Count
-Branch totals: 2 hits of 2 branches = 100.00%
-
-------------------------------------IF Branch------------------------------------
-    116                                       62     Count coming in to IF
-    116             1                         31     
-                                              31     All False Count
-Branch totals: 2 hits of 2 branches = 100.00%
-
-------------------------------------IF Branch------------------------------------
-    128                                       62     Count coming in to IF
-    128             1                         31     
-                                              31     All False Count
-Branch totals: 2 hits of 2 branches = 100.00%
-
-------------------------------------IF Branch------------------------------------
-    145                                      124     Count coming in to IF
-    145             1                         31     
-                                              93     All False Count
-Branch totals: 2 hits of 2 branches = 100.00%
-
-------------------------------------IF Branch------------------------------------
-    149                                      124     Count coming in to IF
-    149             1                        109     
+    120                                      124     Count coming in to IF
+    120             1                        109     
                                               15     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    162                                      109     Count coming in to IF
-    162             1                         31     
-                                              78     All False Count
-Branch totals: 2 hits of 2 branches = 100.00%
-
-------------------------------------IF Branch------------------------------------
-    166                                      109     Count coming in to IF
-    166             1                         31     
-                                              78     All False Count
+    121                                      109     Count coming in to IF
+    121             1                         31     
+    125             1                         78     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 
 Condition Coverage:
     Enabled Coverage              Bins   Covered    Misses  Coverage
     ----------------              ----      ----    ------  --------
-    Conditions                      15        12         3    80.00%
+    Conditions                       4         1         3    25.00%
 
 ================================Condition Details================================
 
 Condition Coverage for file ../rtl/config_parser.sv --
 
 ----------------Focused Condition View-------------------
-Line       58 Item    1  ((state == ST_PAYLOAD) && config_valid)
-Condition totals: 2 of 2 input terms covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       59 Item    1  (current_header.msg_type == MSG_TYPE_WEIGHTS)
-Condition totals: 1 of 1 input term covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       61 Item    1  ((current_header.layer_id + 1) < 4)
+Line       44 Item    1  (total_bytes <= 8)
 Condition totals: 0 of 1 input term covered = 0.00%
 
-                           Input Term   Covered  Reason for no coverage   Hint
-                          -----------  --------  -----------------------  --------------
-  ((current_header.layer_id + 1) < 4)         N  '_0' not hit             Hit '_0'
+          Input Term   Covered  Reason for no coverage   Hint
+         -----------  --------  -----------------------  --------------
+  (total_bytes <= 8)         N  '_1' not hit             Hit '_1'
 
-     Rows:       Hits  FEC Target                             Non-masking condition(s)      
- ---------  ---------  --------------------                   -------------------------     
-  Row   1:    ***0***  ((current_header.layer_id + 1) < 4)_0  -                             
-  Row   2:          1  ((current_header.layer_id + 1) < 4)_1  -                             
+     Rows:       Hits  FEC Target            Non-masking condition(s)      
+ ---------  ---------  --------------------  -------------------------     
+  Row   1:          1  (total_bytes <= 8)_0  -                             
+  Row   2:    ***0***  (total_bytes <= 8)_1  -                             
 
 ----------------Focused Condition View-------------------
-Line       63 Item    1  (current_header.msg_type == MSG_TYPE_THRESHOLDS)
+Line       62 Item    1  (active_layer_id < (4 - 1))
 Condition totals: 0 of 1 input term covered = 0.00%
 
-                                        Input Term   Covered  Reason for no coverage   Hint
-                                       -----------  --------  -----------------------  --------------
-  (current_header.msg_type == MSG_TYPE_THRESHOLDS)         N  '_0' not hit             Hit '_0'
+                   Input Term   Covered  Reason for no coverage   Hint
+                  -----------  --------  -----------------------  --------------
+  (active_layer_id < (4 - 1))         N  '_0' not hit             Hit '_0'
 
-     Rows:       Hits  FEC Target                                          Non-masking condition(s)      
- ---------  ---------  --------------------                                -------------------------     
-  Row   1:    ***0***  (current_header.msg_type == MSG_TYPE_THRESHOLDS)_0  -                             
-  Row   2:          1  (current_header.msg_type == MSG_TYPE_THRESHOLDS)_1  -                             
+     Rows:       Hits  FEC Target                     Non-masking condition(s)      
+ ---------  ---------  --------------------           -------------------------     
+  Row   1:    ***0***  (active_layer_id < (4 - 1))_0  -                             
+  Row   2:          1  (active_layer_id < (4 - 1))_1  -                             
 
 ----------------Focused Condition View-------------------
-Line       64 Item    1  ((current_header.layer_id + 1) < 4)
+Line       63 Item    1  (active_msg_type == MSG_TYPE_WEIGHTS)
+Condition totals: 1 of 1 input term covered = 100.00%
+
+----------------Focused Condition View-------------------
+Line       65 Item    1  (active_msg_type == MSG_TYPE_THRESHOLDS)
 Condition totals: 0 of 1 input term covered = 0.00%
 
-                           Input Term   Covered  Reason for no coverage   Hint
-                          -----------  --------  -----------------------  --------------
-  ((current_header.layer_id + 1) < 4)         N  '_0' not hit             Hit '_0'
+                                Input Term   Covered  Reason for no coverage   Hint
+                               -----------  --------  -----------------------  --------------
+  (active_msg_type == MSG_TYPE_THRESHOLDS)         N  '_0' not hit             Hit '_0'
 
-     Rows:       Hits  FEC Target                             Non-masking condition(s)      
- ---------  ---------  --------------------                   -------------------------     
-  Row   1:    ***0***  ((current_header.layer_id + 1) < 4)_0  -                             
-  Row   2:          1  ((current_header.layer_id + 1) < 4)_1  -                             
-
-----------------Focused Condition View-------------------
-Line       104 Item    1  ((128 - header_bits_count) > 64)
-Condition totals: 1 of 1 input term covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       115 Item    1  (header_bits_count == 0)
-Condition totals: 1 of 1 input term covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       116 Item    1  (header_bits_count == 64)
-Condition totals: 1 of 1 input term covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       128 Item    1  ((header_bits_count + 64) >= 128)
-Condition totals: 1 of 1 input term covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       145 Item    1  ((layer_wr_addr == 0) && config_valid)
-Condition totals: 2 of 2 input terms covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       162 Item    1  ((payload_cnt & 127) == 0)
-Condition totals: 1 of 1 input term covered = 100.00%
-
-----------------Focused Condition View-------------------
-Line       166 Item    1  (config_last || ((payload_cnt + bytes_this_beat) >= current_header.total_bytes))
-Condition totals: 2 of 2 input terms covered = 100.00%
+     Rows:       Hits  FEC Target                                  Non-masking condition(s)      
+ ---------  ---------  --------------------                        -------------------------     
+  Row   1:    ***0***  (active_msg_type == MSG_TYPE_THRESHOLDS)_0  -                             
+  Row   2:          1  (active_msg_type == MSG_TYPE_THRESHOLDS)_1  -                             
 
 
-FSM Coverage:
-    Enabled Coverage              Bins      Hits    Misses  Coverage
+Expression Coverage:
+    Enabled Coverage              Bins   Covered    Misses  Coverage
     ----------------              ----      ----    ------  --------
-    FSM States                       2         2         0   100.00%
-    FSM Transitions                  2         2         0   100.00%
+    Expressions                      2         2         0   100.00%
 
-================================FSM Details================================
+================================Expression Details================================
 
-FSM Coverage for file ../rtl/config_parser.sv --
+Expression Coverage for file ../rtl/config_parser.sv --
 
-FSM_ID: state
-    Current State Object : state
-    ----------------------
-    State Value MapInfo :
-    ---------------------
-Line          State Name               Value
-----          ----------               -----
-  79           ST_HEADER                   1
- 144          ST_PAYLOAD                   2
-    Covered States :
-    ----------------
-                   State           Hit_count
-                   -----           ---------
-               ST_HEADER                  41          
-              ST_PAYLOAD                  31          
-    Covered Transitions :
-    ---------------------
-Line            Trans_ID           Hit_count          Transition          
-----            --------           ---------          ----------          
- 129                   0                  31          ST_HEADER -> ST_PAYLOAD          
- 168                   1                  31          ST_PAYLOAD -> ST_HEADER          
+----------------Focused Expression View-----------------
+Line       53 Item    1  (config_last || (layer_wr_addr == payload_last_addr))
+Expression totals: 2 of 2 input terms covered = 100.00%
 
 
-    Summary                       Bins      Hits    Misses  Coverage
-    -------                       ----      ----    ------  --------
-        FSM States                   2         2         0   100.00%
-        FSM Transitions              2         2         0   100.00%
 Statement Coverage:
     Enabled Coverage              Bins      Hits    Misses  Coverage
     ----------------              ----      ----    ------  --------
-    Statements                      29        29         0   100.00%
+    Statements                      26        25         1    96.15%
 
 ================================Statement Details================================
 
 Statement Coverage for file ../rtl/config_parser.sv --
 
-    51              1                         65     
-    54              1                        138     
-    55              1                        138     
-    56              1                        138     
-    62              1                         22     
-    65              1                         18     
-    71              1                        217     
-    73              1                         10     
+    45              1                    ***0***     
+    47              1                         31     
+    53              1                        161     
+    57              1                        138     
+    58              1                        138     
+    59              1                        138     
+    64              1                         22     
+    66              1                         18     
+    72              1                        217     
     74              1                         10     
     75              1                         10     
     76              1                         10     
-    104             1                         62     
-    115             1                         31     
-    116             1                         31     
-    117             1                         62     
-    129             1                         31     
-    130             1                         31     
-    131             1                         31     
-    146             1                         31     
-    151             1                        109     
-    156             1                        109     
-    157             1                        109     
-    157             2                        872     
-    157             3                        872     
-    159             1                        109     
-    163             1                         31     
-    167             1                         31     
-    168             1                         31     
-    169             1                         31     
+    77              1                         10     
+    78              1                         10     
+    79              1                         10     
+    86              1                         31     
+    87              1                         31     
+    88              1                         31     
+    90              1                         31     
+    91              1                         31     
+    92              1                         31     
+    93              1                         31     
+    122             1                         31     
+    123             1                         31     
+    124             1                         31     
+    126             1                         78     
 Toggle Coverage:
     Enabled Coverage              Bins      Hits    Misses  Coverage
     ----------------              ----      ----    ------  --------
-    Toggles                       1030       584       446    56.69%
+    Toggles                        466       332       134    71.24%
 
 ================================Toggle Details================================
 
@@ -2516,240 +2428,81 @@ Toggle Coverage for File ../rtl/config_parser.sv --
 
        Line                                   Node      1H->0L      0L->1H                          "Coverage"
 --------------------------------------------------------------------------------------------------------------
-         17                 layer_wr_en_weights[0]           0           0                                0.00 
-         18              layer_wr_en_thresholds[3]           0           0                                0.00 
-         18              layer_wr_en_thresholds[0]           0           0                                0.00 
-         19                       layer_wr_addr[9]           0           0                                0.00 
-         19                       layer_wr_addr[8]           0           0                                0.00 
-         19                       layer_wr_addr[7]           0           0                                0.00 
-         19                       layer_wr_addr[6]           0           0                                0.00 
-         19                       layer_wr_addr[5]           0           0                                0.00 
-         19                       layer_wr_addr[4]           0           0                                0.00 
-         19                       layer_wr_addr[3]           0           0                                0.00 
-         19                      layer_wr_addr[31]           0           0                                0.00 
-         19                      layer_wr_addr[30]           0           0                                0.00 
-         19                      layer_wr_addr[29]           0           0                                0.00 
-         19                      layer_wr_addr[28]           0           0                                0.00 
-         19                      layer_wr_addr[27]           0           0                                0.00 
-         19                      layer_wr_addr[26]           0           0                                0.00 
-         19                      layer_wr_addr[25]           0           0                                0.00 
-         19                      layer_wr_addr[24]           0           0                                0.00 
-         19                      layer_wr_addr[23]           0           0                                0.00 
-         19                      layer_wr_addr[22]           0           0                                0.00 
-         19                      layer_wr_addr[21]           0           0                                0.00 
-         19                      layer_wr_addr[20]           0           0                                0.00 
-         19                      layer_wr_addr[19]           0           0                                0.00 
-         19                      layer_wr_addr[18]           0           0                                0.00 
-         19                      layer_wr_addr[17]           0           0                                0.00 
-         19                      layer_wr_addr[16]           0           0                                0.00 
-         19                      layer_wr_addr[15]           0           0                                0.00 
-         19                      layer_wr_addr[14]           0           0                                0.00 
-         19                      layer_wr_addr[13]           0           0                                0.00 
-         19                      layer_wr_addr[12]           0           0                                0.00 
-         19                      layer_wr_addr[11]           0           0                                0.00 
-         19                      layer_wr_addr[10]           0           0                                0.00 
+         14                 layer_wr_en_weights[0]           0           0                                0.00 
+         15              layer_wr_en_thresholds[3]           0           0                                0.00 
+         15              layer_wr_en_thresholds[0]           0           0                                0.00 
+         16                       layer_wr_addr[9]           0           0                                0.00 
+         16                       layer_wr_addr[8]           0           0                                0.00 
+         16                       layer_wr_addr[7]           0           0                                0.00 
+         16                       layer_wr_addr[6]           0           0                                0.00 
+         16                       layer_wr_addr[5]           0           0                                0.00 
+         16                       layer_wr_addr[4]           0           0                                0.00 
+         16                       layer_wr_addr[3]           0           0                                0.00 
+         16                      layer_wr_addr[31]           0           0                                0.00 
+         16                      layer_wr_addr[30]           0           0                                0.00 
+         16                      layer_wr_addr[29]           0           0                                0.00 
+         16                      layer_wr_addr[28]           0           0                                0.00 
+         16                      layer_wr_addr[27]           0           0                                0.00 
+         16                      layer_wr_addr[26]           0           0                                0.00 
+         16                      layer_wr_addr[25]           0           0                                0.00 
+         16                      layer_wr_addr[24]           0           0                                0.00 
+         16                      layer_wr_addr[23]           0           0                                0.00 
+         16                      layer_wr_addr[22]           0           0                                0.00 
+         16                      layer_wr_addr[21]           0           0                                0.00 
+         16                      layer_wr_addr[20]           0           0                                0.00 
+         16                      layer_wr_addr[19]           0           0                                0.00 
+         16                      layer_wr_addr[18]           0           0                                0.00 
+         16                      layer_wr_addr[17]           0           0                                0.00 
+         16                      layer_wr_addr[16]           0           0                                0.00 
+         16                      layer_wr_addr[15]           0           0                                0.00 
+         16                      layer_wr_addr[14]           0           0                                0.00 
+         16                      layer_wr_addr[13]           0           0                                0.00 
+         16                      layer_wr_addr[12]           0           0                                0.00 
+         16                      layer_wr_addr[11]           0           0                                0.00 
+         16                      layer_wr_addr[10]           0           0                                0.00 
          33                                  state               ENUM type       Value       Count 
-                                                                  ST_RESET           0        0.00 
-         34                             next_state               ENUM type       Value       Count 
-                                                                  ST_RESET           0        0.00 
-                                                                 ST_HEADER           0        0.00 
-                                                                ST_PAYLOAD           0        0.00 
-         37                   header_shift_reg[95]           0           0                                0.00 
-         37                   header_shift_reg[94]           0           0                                0.00 
-         37                   header_shift_reg[93]           0           0                                0.00 
-         37                   header_shift_reg[92]           0           0                                0.00 
-         37                   header_shift_reg[91]           0           0                                0.00 
-         37                   header_shift_reg[90]           0           0                                0.00 
-         37                   header_shift_reg[89]           0           0                                0.00 
-         37                   header_shift_reg[88]           0           0                                0.00 
-         37                   header_shift_reg[87]           0           0                                0.00 
-         37                   header_shift_reg[86]           0           0                                0.00 
-         37                   header_shift_reg[85]           0           0                                0.00 
-         37                   header_shift_reg[84]           0           0                                0.00 
-         37                   header_shift_reg[83]           0           0                                0.00 
-         37                   header_shift_reg[82]           0           0                                0.00 
-         37                   header_shift_reg[81]           0           0                                0.00 
-         37                   header_shift_reg[80]           0           0                                0.00 
-         37                    header_shift_reg[7]           0           0                                0.00 
-         37                   header_shift_reg[79]           0           0                                0.00 
-         37                   header_shift_reg[78]           0           0                                0.00 
-         37                   header_shift_reg[77]           0           0                                0.00 
-         37                   header_shift_reg[76]           0           0                                0.00 
-         37                   header_shift_reg[75]           0           0                                0.00 
-         37                   header_shift_reg[74]           0           0                                0.00 
-         37                   header_shift_reg[73]           0           0                                0.00 
-         37                   header_shift_reg[72]           0           0                                0.00 
-         37                   header_shift_reg[71]           0           0                                0.00 
-         37                   header_shift_reg[70]           0           0                                0.00 
-         37                    header_shift_reg[6]           0           0                                0.00 
-         37                   header_shift_reg[64]           0           0                                0.00 
-         37                   header_shift_reg[63]           0           0                                0.00 
-         37                   header_shift_reg[62]           0           0                                0.00 
-         37                   header_shift_reg[61]           0           0                                0.00 
-         37                   header_shift_reg[60]           0           0                                0.00 
-         37                    header_shift_reg[5]           0           0                                0.00 
-         37                   header_shift_reg[59]           0           0                                0.00 
-         37                   header_shift_reg[58]           0           0                                0.00 
-         37                   header_shift_reg[57]           0           0                                0.00 
-         37                   header_shift_reg[56]           0           0                                0.00 
-         37                   header_shift_reg[55]           0           0                                0.00 
-         37                   header_shift_reg[54]           0           0                                0.00 
-         37                   header_shift_reg[53]           0           0                                0.00 
-         37                   header_shift_reg[52]           0           0                                0.00 
-         37                   header_shift_reg[51]           0           0                                0.00 
-         37                    header_shift_reg[4]           0           0                                0.00 
-         37                   header_shift_reg[48]           0           0                                0.00 
-         37                   header_shift_reg[47]           0           0                                0.00 
-         37                   header_shift_reg[46]           0           0                                0.00 
-         37                   header_shift_reg[45]           0           0                                0.00 
-         37                   header_shift_reg[44]           0           0                                0.00 
-         37                   header_shift_reg[43]           0           0                                0.00 
-         37                   header_shift_reg[42]           0           0                                0.00 
-         37                   header_shift_reg[41]           0           0                                0.00 
-         37                   header_shift_reg[40]           0           0                                0.00 
-         37                    header_shift_reg[3]           0           0                                0.00 
-         37                   header_shift_reg[39]           0           0                                0.00 
-         37                   header_shift_reg[38]           0           0                                0.00 
-         37                   header_shift_reg[37]           0           0                                0.00 
-         37                   header_shift_reg[36]           0           0                                0.00 
-         37                    header_shift_reg[2]           0           0                                0.00 
-         37                    header_shift_reg[1]           0           0                                0.00 
-         37                   header_shift_reg[15]           0           0                                0.00 
-         37                   header_shift_reg[14]           0           0                                0.00 
-         37                   header_shift_reg[13]           0           0                                0.00 
-         37                   header_shift_reg[12]           0           0                                0.00 
-         37                   header_shift_reg[11]           0           0                                0.00 
-         37                   header_shift_reg[10]           0           0                                0.00 
-         40                   header_bits_count[8]           0           0                                0.00 
-         40                   header_bits_count[5]           0           0                                0.00 
-         40                   header_bits_count[4]           0           0                                0.00 
-         40                   header_bits_count[3]           0           0                                0.00 
-         40                   header_bits_count[2]           0           0                                0.00 
-         40                   header_bits_count[1]           0           0                                0.00 
-         40                   header_bits_count[0]           0           0                                0.00 
-         41          current_header.total_bytes[9]           0           0                                0.00 
-         41          current_header.total_bytes[8]           0           0                                0.00 
-         41          current_header.total_bytes[7]           0           0                                0.00 
-         41          current_header.total_bytes[6]           0           0                                0.00 
-         41         current_header.total_bytes[31]           0           0                                0.00 
-         41         current_header.total_bytes[30]           0           0                                0.00 
-         41         current_header.total_bytes[29]           0           0                                0.00 
-         41         current_header.total_bytes[28]           0           0                                0.00 
-         41         current_header.total_bytes[27]           0           0                                0.00 
-         41         current_header.total_bytes[26]           0           0                                0.00 
-         41         current_header.total_bytes[25]           0           0                                0.00 
-         41         current_header.total_bytes[24]           0           0                                0.00 
-         41         current_header.total_bytes[23]           0           0                                0.00 
-         41         current_header.total_bytes[22]           0           0                                0.00 
-         41         current_header.total_bytes[21]           0           0                                0.00 
-         41         current_header.total_bytes[20]           0           0                                0.00 
-         41         current_header.total_bytes[19]           0           0                                0.00 
-         41         current_header.total_bytes[18]           0           0                                0.00 
-         41         current_header.total_bytes[17]           0           0                                0.00 
-         41         current_header.total_bytes[16]           0           0                                0.00 
-         41         current_header.total_bytes[15]           0           0                                0.00 
-         41         current_header.total_bytes[14]           0           0                                0.00 
-         41         current_header.total_bytes[13]           0           0                                0.00 
-         41         current_header.total_bytes[12]           0           0                                0.00 
-         41         current_header.total_bytes[11]           0           0                                0.00 
-         41         current_header.total_bytes[10]           0           0                                0.00 
-         41          current_header.total_bytes[0]           0           0                                0.00 
-         41          current_header.num_neurons[9]           0           0                                0.00 
-         41          current_header.num_neurons[8]           0           0                                0.00 
-         41          current_header.num_neurons[7]           0           0                                0.00 
-         41          current_header.num_neurons[6]           0           0                                0.00 
-         41          current_header.num_neurons[5]           0           0                                0.00 
-         41          current_header.num_neurons[4]           0           0                                0.00 
-         41         current_header.num_neurons[15]           0           0                                0.00 
-         41         current_header.num_neurons[14]           0           0                                0.00 
-         41         current_header.num_neurons[13]           0           0                                0.00 
-         41         current_header.num_neurons[12]           0           0                                0.00 
-         41         current_header.num_neurons[11]           0           0                                0.00 
-         41         current_header.num_neurons[10]           0           0                                0.00 
-         41                current_header.msg_type               ENUM type       Value       Count 
-         41             current_header.layer_id[7]           0           0                                0.00 
-         41             current_header.layer_id[6]           0           0                                0.00 
-         41             current_header.layer_id[5]           0           0                                0.00 
-         41             current_header.layer_id[4]           0           0                                0.00 
-         41             current_header.layer_id[3]           0           0                                0.00 
-         41             current_header.layer_id[2]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[9]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[8]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[7]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[6]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[5]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[4]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[3]           0           0                                0.00 
-         41    current_header.bytes_per_neuron[15]           0           0                                0.00 
-         41    current_header.bytes_per_neuron[14]           0           0                                0.00 
-         41    current_header.bytes_per_neuron[13]           0           0                                0.00 
-         41    current_header.bytes_per_neuron[12]           0           0                                0.00 
-         41    current_header.bytes_per_neuron[11]           0           0                                0.00 
-         41    current_header.bytes_per_neuron[10]           0           0                                0.00 
-         41     current_header.bytes_per_neuron[0]           0           0                                0.00 
-         44                        header_complete           0           0                                0.00 
-         45                         payload_cnt[9]           0           0                                0.00 
-         45                         payload_cnt[8]           0           0                                0.00 
-         45                         payload_cnt[7]           0           0                                0.00 
-         45                         payload_cnt[6]           0           0                                0.00 
-         45                        payload_cnt[31]           0           0                                0.00 
-         45                        payload_cnt[30]           0           0                                0.00 
-         45                        payload_cnt[29]           0           0                                0.00 
-         45                        payload_cnt[28]           0           0                                0.00 
-         45                        payload_cnt[27]           0           0                                0.00 
-         45                        payload_cnt[26]           0           0                                0.00 
-         45                        payload_cnt[25]           0           0                                0.00 
-         45                        payload_cnt[24]           0           0                                0.00 
-         45                        payload_cnt[23]           0           0                                0.00 
-         45                        payload_cnt[22]           0           0                                0.00 
-         45                        payload_cnt[21]           0           0                                0.00 
-         45                        payload_cnt[20]           0           0                                0.00 
-         45                        payload_cnt[19]           0           0                                0.00 
-         45                        payload_cnt[18]           0           0                                0.00 
-         45                        payload_cnt[17]           0           0                                0.00 
-         45                        payload_cnt[16]           0           0                                0.00 
-         45                        payload_cnt[15]           0           0                                0.00 
-         45                        payload_cnt[14]           0           0                                0.00 
-         45                        payload_cnt[13]           0           0                                0.00 
-         45                        payload_cnt[12]           0           0                                0.00 
-         45                        payload_cnt[11]           0           0                                0.00 
-         45                        payload_cnt[10]           0           0                                0.00 
-         45                         payload_cnt[0]           0           0                                0.00 
-         46                     bytes_this_beat[9]           0           0                                0.00 
-         46                     bytes_this_beat[8]           0           0                                0.00 
-         46                     bytes_this_beat[7]           0           0                                0.00 
-         46                     bytes_this_beat[6]           0           0                                0.00 
-         46                     bytes_this_beat[5]           0           0                                0.00 
-         46                     bytes_this_beat[4]           0           0                                0.00 
-         46                    bytes_this_beat[31]           0           0                                0.00 
-         46                    bytes_this_beat[30]           0           0                                0.00 
-         46                    bytes_this_beat[29]           0           0                                0.00 
-         46                    bytes_this_beat[28]           0           0                                0.00 
-         46                    bytes_this_beat[27]           0           0                                0.00 
-         46                    bytes_this_beat[26]           0           0                                0.00 
-         46                    bytes_this_beat[25]           0           0                                0.00 
-         46                    bytes_this_beat[24]           0           0                                0.00 
-         46                    bytes_this_beat[23]           0           0                                0.00 
-         46                    bytes_this_beat[22]           0           0                                0.00 
-         46                    bytes_this_beat[21]           0           0                                0.00 
-         46                    bytes_this_beat[20]           0           0                                0.00 
-         46                    bytes_this_beat[19]           0           0                                0.00 
-         46                    bytes_this_beat[18]           0           0                                0.00 
-         46                    bytes_this_beat[17]           0           0                                0.00 
-         46                    bytes_this_beat[16]           0           0                                0.00 
-         46                    bytes_this_beat[15]           0           0                                0.00 
-         46                    bytes_this_beat[14]           0           0                                0.00 
-         46                    bytes_this_beat[13]           0           0                                0.00 
-         46                    bytes_this_beat[12]           0           0                                0.00 
-         46                    bytes_this_beat[11]           0           0                                0.00 
-         46                    bytes_this_beat[10]           0           0                                0.00 
-         46                     bytes_this_beat[0]           0           0                                0.00 
+         35                        active_msg_type               ENUM type       Value       Count 
+         36                     active_layer_id[7]           0           0                                0.00 
+         36                     active_layer_id[6]           0           0                                0.00 
+         36                     active_layer_id[5]           0           0                                0.00 
+         36                     active_layer_id[4]           0           0                                0.00 
+         36                     active_layer_id[3]           0           0                                0.00 
+         36                     active_layer_id[2]           0           0                                0.00 
+         37                   payload_last_addr[9]           0           0                                0.00 
+         37                   payload_last_addr[8]           0           0                                0.00 
+         37                   payload_last_addr[7]           0           0                                0.00 
+         37                   payload_last_addr[6]           0           0                                0.00 
+         37                   payload_last_addr[5]           0           0                                0.00 
+         37                   payload_last_addr[4]           0           0                                0.00 
+         37                   payload_last_addr[3]           0           0                                0.00 
+         37                  payload_last_addr[31]           0           0                                0.00 
+         37                  payload_last_addr[30]           0           0                                0.00 
+         37                  payload_last_addr[29]           0           0                                0.00 
+         37                  payload_last_addr[28]           0           0                                0.00 
+         37                  payload_last_addr[27]           0           0                                0.00 
+         37                  payload_last_addr[26]           0           0                                0.00 
+         37                  payload_last_addr[25]           0           0                                0.00 
+         37                  payload_last_addr[24]           0           0                                0.00 
+         37                  payload_last_addr[23]           0           0                                0.00 
+         37                  payload_last_addr[22]           0           0                                0.00 
+         37                  payload_last_addr[21]           0           0                                0.00 
+         37                  payload_last_addr[20]           0           0                                0.00 
+         37                  payload_last_addr[19]           0           0                                0.00 
+         37                  payload_last_addr[18]           0           0                                0.00 
+         37                  payload_last_addr[17]           0           0                                0.00 
+         37                  payload_last_addr[16]           0           0                                0.00 
+         37                  payload_last_addr[15]           0           0                                0.00 
+         37                  payload_last_addr[14]           0           0                                0.00 
+         37                  payload_last_addr[13]           0           0                                0.00 
+         37                  payload_last_addr[12]           0           0                                0.00 
+         37                  payload_last_addr[11]           0           0                                0.00 
+         37                  payload_last_addr[10]           0           0                                0.00 
 
-Total Node Count     =        519 
-Toggled Node Count   =        294 
-Untoggled Node Count =        225 
+Total Node Count     =        235 
+Toggled Node Count   =        168 
+Untoggled Node Count =         67 
 
-Toggle Coverage      =      56.69% (584 of 1030 bins)
+Toggle Coverage      =      71.24% (332 of 466 bins)
 
 =================================================================================
 === File: ../rtl/layer_memory.sv
@@ -2764,78 +2517,78 @@ Branch Coverage:
 Branch Coverage for file ../rtl/layer_memory.sv --
 
 ------------------------------------IF Branch------------------------------------
-    70                                       488     Count coming in to IF
-    70              1                        488     
+    75                                       480     Count coming in to IF
+    75              1                        480     
                                          ***0***     All False Count
 Branch totals: 1 hit of 2 branches = 50.00%
 
 ------------------------------------IF Branch------------------------------------
-    90                                      3346     Count coming in to IF
-    90              1                       1624     
+    95                                      3346     Count coming in to IF
+    95              1                       1624     
                                             1722     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    115                                      920     Count coming in to IF
-    115             1                    ***0***     
+    120                                      920     Count coming in to IF
+    120             1                    ***0***     
                                              920     All False Count
 Branch totals: 1 hit of 2 branches = 50.00%
 
 ------------------------------------IF Branch------------------------------------
-    127                                      920     Count coming in to IF
-    127             1                    ***0***     
+    132                                      920     Count coming in to IF
+    132             1                    ***0***     
                                              920     All False Count
 Branch totals: 1 hit of 2 branches = 50.00%
 
 ------------------------------------IF Branch------------------------------------
-    135                                      619     Count coming in to IF
-    135             1                        197     
-    137             1                        115     
+    140                                      619     Count coming in to IF
+    140             1                        197     
+    142             1                        115     
                                              307     All False Count
 Branch totals: 3 hits of 3 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    168                                     1102     Count coming in to IF
-    168             1                         30     
-    173             1                       1072     
+    173                                     1155     Count coming in to IF
+    173             1                         30     
+    183             1                       1125     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    176                                     1072     Count coming in to IF
-    176             1                         61     
-                                            1011     All False Count
+    191                                     1125     Count coming in to IF
+    191             1                         60     
+                                            1065     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    181                                     8990     Count coming in to IF
-    181             1                       5843     
-    186             1                       3147     
+    196                                     9450     Count coming in to IF
+    196             1                       6129     
+    201             1                       3321     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    208                                    12424     Count coming in to IF
-    208             1                        260     
-    219             1                      12164     
+    223                                    12242     Count coming in to IF
+    223             1                        260     
+    234             1                      11982     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    220                                    12164     Count coming in to IF
-    220             1                        408     
-                                           11756     All False Count
+    235                                    11982     Count coming in to IF
+    235             1                        408     
+                                           11574     All False Count
 Branch totals: 2 hits of 2 branches = 100.00%
 
 ------------------------------------IF Branch------------------------------------
-    230                                    12164     Count coming in to IF
-    230             1                       1506     
-    238             1                        920     
-    248             1                    ***0***     
-                                            9738     All False Count
+    245                                    11982     Count coming in to IF
+    245             1                       1506     
+    253             1                        920     
+    263             1                    ***0***     
+                                            9556     All False Count
 Branch totals: 3 hits of 4 branches = 75.00%
 
 ------------------------------------IF Branch------------------------------------
-    264                                     2234     Count coming in to IF
-    264             1                        968     
-    264             2                       1266     
+    279                                     2234     Count coming in to IF
+    279             1                        968     
+    279             2                       1266     
 Branch totals: 2 hits of 2 branches = 100.00%
 
 
@@ -2849,11 +2602,11 @@ Condition Coverage:
 Condition Coverage for file ../rtl/layer_memory.sv --
 
 ----------------Focused Condition View-------------------
-Line       90 Item    1  (addr_ext < 2)
+Line       95 Item    1  (addr_ext < 2)
 Condition totals: 1 of 1 input term covered = 100.00%
 
 ----------------Focused Condition View-------------------
-Line       115 Item    1  (batch_byte_sum >= 8)
+Line       120 Item    1  (batch_byte_sum >= 8)
 Condition totals: 0 of 1 input term covered = 0.00%
 
              Input Term   Covered  Reason for no coverage   Hint
@@ -2866,7 +2619,7 @@ Condition totals: 0 of 1 input term covered = 0.00%
   Row   2:    ***0***  (batch_byte_sum >= 8)_1  -                             
 
 ----------------Focused Condition View-------------------
-Line       127 Item    1  (batch_byte_sum >= 8)
+Line       132 Item    1  (batch_byte_sum >= 8)
 Condition totals: 0 of 1 input term covered = 0.00%
 
              Input Term   Covered  Reason for no coverage   Hint
@@ -2879,44 +2632,44 @@ Condition totals: 0 of 1 input term covered = 0.00%
   Row   2:    ***0***  (batch_byte_sum >= 8)_1  -                             
 
 ----------------Focused Condition View-------------------
-Line       135 Item    1  (rst || layer_start)
+Line       140 Item    1  (rst || layer_start)
 Condition totals: 2 of 2 input terms covered = 100.00%
 
 ----------------Focused Condition View-------------------
-Line       176 Item    1  (wr_en_thresholds && (wr_addr < 3))
+Line       191 Item    1  (wr_en_thresholds_q && (wr_addr_q < 3))
 Condition totals: 1 of 2 input terms covered = 50.00%
 
-        Input Term   Covered  Reason for no coverage   Hint
-       -----------  --------  -----------------------  --------------
-  wr_en_thresholds         Y
-     (wr_addr < 3)         N  '_0' not hit             Hit '_0'
+          Input Term   Covered  Reason for no coverage   Hint
+         -----------  --------  -----------------------  --------------
+  wr_en_thresholds_q         Y
+     (wr_addr_q < 3)         N  '_0' not hit             Hit '_0'
 
      Rows:       Hits  FEC Target            Non-masking condition(s)      
  ---------  ---------  --------------------  -------------------------     
-  Row   1:          3  wr_en_thresholds_0    -                             
-  Row   2:          2  wr_en_thresholds_1    (wr_addr < 3)                 
-  Row   3:    ***0***  (wr_addr < 3)_0       wr_en_thresholds              
-  Row   4:          2  (wr_addr < 3)_1       wr_en_thresholds              
+  Row   1:          3  wr_en_thresholds_q_0  -                             
+  Row   2:          2  wr_en_thresholds_q_1  (wr_addr_q < 3)               
+  Row   3:    ***0***  (wr_addr_q < 3)_0     wr_en_thresholds_q            
+  Row   4:          2  (wr_addr_q < 3)_1     wr_en_thresholds_q            
 
 ----------------Focused Condition View-------------------
-Line       181 Item    1  (threshold_idx_req[lane] < 5)
+Line       196 Item    1  (threshold_idx_req[lane] < 5)
 Condition totals: 1 of 1 input term covered = 100.00%
 
 ----------------Focused Condition View-------------------
-Line       220 Item    1  (wr_en_weights && (wr_addr < 2))
+Line       235 Item    1  (wr_en_weights_q && (wr_addr_q < 2))
 Condition totals: 1 of 2 input terms covered = 50.00%
 
-     Input Term   Covered  Reason for no coverage   Hint
-    -----------  --------  -----------------------  --------------
-  wr_en_weights         Y
-  (wr_addr < 2)         N  '_0' not hit             Hit '_0'
+       Input Term   Covered  Reason for no coverage   Hint
+      -----------  --------  -----------------------  --------------
+  wr_en_weights_q         Y
+  (wr_addr_q < 2)         N  '_0' not hit             Hit '_0'
 
      Rows:       Hits  FEC Target            Non-masking condition(s)      
  ---------  ---------  --------------------  -------------------------     
-  Row   1:         26  wr_en_weights_0       -                             
-  Row   2:         26  wr_en_weights_1       (wr_addr < 2)                 
-  Row   3:    ***0***  (wr_addr < 2)_0       wr_en_weights                 
-  Row   4:         26  (wr_addr < 2)_1       wr_en_weights                 
+  Row   1:         26  wr_en_weights_q_0     -                             
+  Row   2:         26  wr_en_weights_q_1     (wr_addr_q < 2)               
+  Row   3:    ***0***  (wr_addr_q < 2)_0     wr_en_weights_q               
+  Row   4:         26  (wr_addr_q < 2)_1     wr_en_weights_q               
 
 
 Expression Coverage:
@@ -2929,7 +2682,7 @@ Expression Coverage:
 Expression Coverage for file ../rtl/layer_memory.sv --
 
 ----------------Focused Expression View-----------------
-Line       236 Item    1  (issue_lo_addr != 2)
+Line       251 Item    1  (issue_lo_addr != 2)
 Expression totals: 0 of 1 input term covered = 0.00%
 
             Input Term   Covered  Reason for no coverage   Hint
@@ -2942,7 +2695,7 @@ Expression totals: 0 of 1 input term covered = 0.00%
   Row   2:         16  (issue_lo_addr != 2)_1  -                             
 
 ----------------Focused Expression View-----------------
-Line       246 Item    1  (next_batch_lo_addr != 2)
+Line       261 Item    1  (next_batch_lo_addr != 2)
 Expression totals: 0 of 1 input term covered = 0.00%
 
                  Input Term   Covered  Reason for no coverage   Hint
@@ -2955,7 +2708,7 @@ Expression totals: 0 of 1 input term covered = 0.00%
   Row   2:    ***0***  (next_batch_lo_addr != 2)_1  -                             
 
 ----------------Focused Expression View-----------------
-Line       254 Item    1  (next_lo_addr != 2)
+Line       269 Item    1  (next_lo_addr != 2)
 Expression totals: 0 of 1 input term covered = 0.00%
 
            Input Term   Covered  Reason for no coverage   Hint
@@ -2971,98 +2724,108 @@ Expression totals: 0 of 1 input term covered = 0.00%
 Statement Coverage:
     Enabled Coverage              Bins      Hits    Misses  Coverage
     ----------------              ----      ----    ------  --------
-    Statements                      82        75         7    91.46%
+    Statements                      92        85         7    92.39%
 
 ================================Statement Details================================
 
 Statement Coverage for file ../rtl/layer_memory.sv --
 
-    68              1                         61     
-    69              1                         61     
-    69              2                        488     
-    71              1                        488     
-    73              1                         61     
-    82              1                       5843     
-    91              1                       1624     
-    92              1                       1722     
-    101             1                       2426     
-    102             1                       2426     
-    113             1                        920     
-    114             1                        920     
-    116             1                    ***0***     
-    117             1                        920     
-    126             1                        920     
-    128             1                    ***0***     
-    129             1                        920     
-    133             1                        619     
-    134             1                        619     
-    136             1                        197     
-    138             1                        115     
-    147             1                       1884     
-    151             1                       1884     
+    73              1                         60     
+    74              1                         60     
+    74              2                        480     
+    76              1                        480     
+    78              1                         60     
+    87              1                       6129     
+    96              1                       1624     
+    97              1                       1722     
+    106             1                       2426     
+    107             1                       2426     
+    118             1                        920     
+    119             1                        920     
+    121             1                    ***0***     
+    122             1                        920     
+    131             1                        920     
+    133             1                    ***0***     
+    134             1                        920     
+    138             1                        619     
+    139             1                        619     
+    141             1                        197     
+    143             1                        115     
     152             1                       1884     
-    154             1                       1884     
     156             1                       1884     
     157             1                       1884     
-    162             1                       1884     
+    159             1                       1884     
     163             1                       1884     
-    167             1                       1102     
-    169             1                         30     
-    170             1                         30     
-    170             2                        260     
-    171             1                        260     
-    174             1                       1072     
-    177             1                         61     
-    180             1                       1072     
-    180             2                       8990     
-    182             1                       5843     
-    187             1                       3147     
-    201             1                      12424     
-    209             1                        260     
-    210             1                        260     
-    211             1                        260     
-    212             1                        260     
-    213             1                        260     
-    214             1                        260     
-    215             1                        260     
-    216             1                        260     
-    217             1                        260     
-    218             1                        260     
-    221             1                        408     
-    222             1                        408     
-    225             1                      12164     
-    226             1                      12164     
-    227             1                      12164     
-    228             1                      12164     
-    231             1                       1506     
-    232             1                       1506     
-    233             1                       1506     
-    234             1                       1506     
-    235             1                       1506     
-    236             1                       1506     
-    237             1                       1506     
-    239             1                        920     
-    240             1                        920     
-    242             1                        920     
-    243             1                        920     
-    244             1                        920     
-    245             1                        920     
-    246             1                        920     
-    247             1                        920     
-    249             1                    ***0***     
-    250             1                    ***0***     
-    252             1                    ***0***     
-    253             1                    ***0***     
-    254             1                    ***0***     
-    259             1                       2260     
-    264             1                       2260     
-    265             1                       2260     
-    266             1                       2260     
-    267             1                       2260     
+    164             1                       1884     
+    167             1                       1884     
+    168             1                       1884     
+    172             1                       1155     
+    174             1                         30     
+    175             1                         30     
+    176             1                         30     
+    177             1                         30     
+    178             1                         30     
+    179             1                         30     
+    180             1                         30     
+    180             2                        260     
+    181             1                        260     
+    184             1                       1125     
+    185             1                       1125     
+    186             1                       1125     
+    187             1                       1125     
+    188             1                       1125     
+    189             1                       1125     
+    192             1                         60     
+    195             1                       1125     
+    195             2                       9450     
+    197             1                       6129     
+    202             1                       3321     
+    216             1                      12242     
+    224             1                        260     
+    225             1                        260     
+    226             1                        260     
+    227             1                        260     
+    228             1                        260     
+    229             1                        260     
+    230             1                        260     
+    231             1                        260     
+    232             1                        260     
+    233             1                        260     
+    236             1                        408     
+    237             1                        408     
+    240             1                      11982     
+    241             1                      11982     
+    242             1                      11982     
+    243             1                      11982     
+    246             1                       1506     
+    247             1                       1506     
+    248             1                       1506     
+    249             1                       1506     
+    250             1                       1506     
+    251             1                       1506     
+    252             1                       1506     
+    254             1                        920     
+    255             1                        920     
+    257             1                        920     
+    258             1                        920     
+    259             1                        920     
+    260             1                        920     
+    261             1                        920     
+    262             1                        920     
+    264             1                    ***0***     
+    265             1                    ***0***     
+    267             1                    ***0***     
+    268             1                    ***0***     
+    269             1                    ***0***     
+    274             1                       2260     
+    279             1                       2260     
+    280             1                       2260     
+    281             1                       2260     
+    282             1                       2260     
 Toggle Coverage:
     Enabled Coverage              Bins      Hits    Misses  Coverage
     ----------------              ----      ----    ------  --------
-    Toggles                       4520      3484      1036    77.07%
+    Toggles                       4732      3638      1094    76.88%
 
 ================================Toggle Details================================
 
@@ -3587,13 +3350,42 @@ Toggle Coverage for File ../rtl/layer_memory.sv --
          55                     bit_offset_q[0][2]           0           0                                0.00 
          55                     bit_offset_q[0][1]           0           0                                0.00 
          55                     bit_offset_q[0][0]           0           0                                0.00 
-        199                 batch_byte_offset_q[0]           0           0                                0.00 
+         58                           wr_addr_q[9]           0           0                                0.00 
+         58                           wr_addr_q[8]           0           0                                0.00 
+         58                           wr_addr_q[7]           0           0                                0.00 
+         58                           wr_addr_q[6]           0           0                                0.00 
+         58                           wr_addr_q[5]           0           0                                0.00 
+         58                           wr_addr_q[4]           0           0                                0.00 
+         58                           wr_addr_q[3]           0           0                                0.00 
+         58                          wr_addr_q[31]           0           0                                0.00 
+         58                          wr_addr_q[30]           0           0                                0.00 
+         58                          wr_addr_q[29]           0           0                                0.00 
+         58                          wr_addr_q[28]           0           0                                0.00 
+         58                          wr_addr_q[27]           0           0                                0.00 
+         58                          wr_addr_q[26]           0           0                                0.00 
+         58                          wr_addr_q[25]           0           0                                0.00 
+         58                          wr_addr_q[24]           0           0                                0.00 
+         58                          wr_addr_q[23]           0           0                                0.00 
+         58                          wr_addr_q[22]           0           0                                0.00 
+         58                          wr_addr_q[21]           0           0                                0.00 
+         58                          wr_addr_q[20]           0           0                                0.00 
+         58                          wr_addr_q[19]           0           0                                0.00 
+         58                          wr_addr_q[18]           0           0                                0.00 
+         58                          wr_addr_q[17]           0           0                                0.00 
+         58                          wr_addr_q[16]           0           0                                0.00 
+         58                          wr_addr_q[15]           0           0                                0.00 
+         58                          wr_addr_q[14]           0           0                                0.00 
+         58                          wr_addr_q[13]           0           0                                0.00 
+         58                          wr_addr_q[12]           0           0                                0.00 
+         58                          wr_addr_q[11]           0           0                                0.00 
+         58                          wr_addr_q[10]           0           0                                0.00 
+        214                 batch_byte_offset_q[0]           0           0                                0.00 
 
-Total Node Count     =       2260 
-Toggled Node Count   =       1742 
-Untoggled Node Count =        518 
+Total Node Count     =       2366 
+Toggled Node Count   =       1819 
+Untoggled Node Count =        547 
 
-Toggle Coverage      =      77.07% (3484 of 4520 bins)
+Toggle Coverage      =      76.88% (3638 of 4732 bins)
 
 =================================================================================
 === File: ../rtl/neural_processor.sv
@@ -7351,6 +7143,9 @@ Name                 File(Line)                   Failure      Pass
                      ./bnn_fcc_cat1_tb.sv(372)          0          1
 /bnn_fcc_cat1_tb/l_output_monitor/#ublk#232498338#836/immed__838
                      ./bnn_fcc_cat1_tb.sv(838)          0          1
+/bnn_fcc_cat1_tb/DUT/config_parser_inst/#ublk#202135154#136/immed__137
+                     ../rtl/config_parser.sv(137)
+                                                        0          1
 
-Total Coverage By File (code coverage only, filtered view): 73.22%
+Total Coverage By File (code coverage only, filtered view): 72.30%
 

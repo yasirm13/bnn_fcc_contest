@@ -53,6 +53,11 @@ module layer_memory #(
     logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] weights_word_hi_raw_q;
     logic [PARALLEL_NEURONS-1:0]                       weights_hi_valid_q;
     logic [PARALLEL_NEURONS-1:0][BIT_OFFSET_WIDTH-1:0] bit_offset_q;
+    logic                                             wr_en_weights_q;
+    logic                                             wr_en_thresholds_q;
+    logic [31:0]                                      wr_addr_q;
+    logic [CONFIG_BUS_WIDTH-1:0]                      wr_data_q;
+    logic [CONFIG_BUS_WIDTH/8-1:0]                    wr_strb_q;
 
     // Pack thresholds into bus-width words so the config path writes one aligned
     // memory word at a time instead of updating many individual 32-bit registers.
@@ -152,11 +157,11 @@ module layer_memory #(
             threshold_subword_tmp = '0;
 
             threshold_idx_req[lane] = THRESH_IDX_WIDTH'(neuron_base_idx_req + lane);
-            if (THRESH_WORDS_PER_BEAT > 1) begin
-                threshold_word_addr_tmp = THRESH_ADDR_WIDTH'(threshold_idx_req[lane] / THRESH_WORDS_PER_BEAT);
-                threshold_subword_tmp = THRESH_SUBWORD_WIDTH'(threshold_idx_req[lane] % THRESH_WORDS_PER_BEAT);
-            end else begin
+            if (THRESH_WORDS_PER_BEAT == 1) begin
                 threshold_word_addr_tmp = THRESH_ADDR_WIDTH'(threshold_idx_req[lane]);
+            end else begin
+                threshold_word_addr_tmp = THRESH_ADDR_WIDTH'(threshold_idx_req[lane] >> THRESH_SUBWORD_WIDTH);
+                threshold_subword_tmp = THRESH_SUBWORD_WIDTH'(threshold_idx_req[lane][THRESH_SUBWORD_WIDTH-1:0]);
             end
 
             threshold_word_addr_req[lane] = threshold_word_addr_tmp;
@@ -167,14 +172,24 @@ module layer_memory #(
     always_ff @(posedge clk) begin
         if (rst) begin
             neuron_base_idx <= '0;
+            wr_en_weights_q <= 1'b0;
+            wr_en_thresholds_q <= 1'b0;
+            wr_addr_q <= '0;
+            wr_data_q <= '0;
+            wr_strb_q <= '0;
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
                 rd_data_threshold[lane] <= '0;
             end
         end else begin
             neuron_base_idx <= neuron_base_idx_req;
+            wr_en_weights_q <= wr_en_weights;
+            wr_en_thresholds_q <= wr_en_thresholds;
+            wr_addr_q <= wr_addr;
+            wr_data_q <= wr_data;
+            wr_strb_q <= wr_strb;
 
-            if (wr_en_thresholds && (wr_addr < THRESH_MEM_DEPTH)) begin
-                threshold_mem[wr_addr] <= apply_byte_wstrb(threshold_mem[wr_addr], wr_data, wr_strb);
+            if (wr_en_thresholds_q && (wr_addr_q < THRESH_MEM_DEPTH)) begin
+                threshold_mem[wr_addr_q] <= apply_byte_wstrb(threshold_mem[wr_addr_q], wr_data_q, wr_strb_q);
             end
 
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
@@ -217,9 +232,9 @@ module layer_memory #(
                 weights_hi_valid_q[lane] <= 1'b0;
                 bit_offset_q[lane] <= '0;
             end else begin
-                if (wr_en_weights && (wr_addr < WEIGHT_MEM_DEPTH)) begin
-                    mem_weights_lo[wr_addr] <= wr_data;
-                    mem_weights_hi[wr_addr] <= wr_data;
+                if (wr_en_weights_q && (wr_addr_q < WEIGHT_MEM_DEPTH)) begin
+                    mem_weights_lo[wr_addr_q] <= wr_data_q;
+                    mem_weights_hi[wr_addr_q] <= wr_data_q;
                 end
 
                 weights_word_lo_q[lane] <= mem_weights_lo[weight_word_addr_lo_issue[lane]];

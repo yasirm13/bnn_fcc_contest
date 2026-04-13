@@ -1,5 +1,5 @@
 # vsim -c -debugDB -coverage -voptargs="+acc" -do "run -all; coverage save -onexit coverage.ucdb; coverage report -output coverage_report.txt -srcfile=* -details; quit -f" bnn_fcc_cat1_tb_opt 
-# Start time: 19:15:17 on Apr 12,2026
+# Start time: 20:27:32 on Apr 12,2026
 # //  Questa Sim-64
 # //  Version 2023.3 linux_x86_64 Jul 17 2023
 # //
@@ -53,28 +53,7 @@
 #   Layer 1 (hidden): 10 Neurons
 #   Layer 2 (output): 5 Neurons
 # [95 ns] Streaming initial partial configuration before Category 5 reset.
-# ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt          8 Total         40
 # [235 ns] Re-applying full configuration after Category 5 reset during config.
-# ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
-# PAYLOAD DONE: Cnt         10 Total         10
 # [795 ns] Streaming image 0 (Category 1 + Category 3 + Category 4 + Category 5).
 # [835 ns] Streaming image 1 (Category 1 + Category 3 + Category 4 + Category 5).
 # [1015 ns] Streaming image 2 (Category 1 + Category 3 + Category 4 + Category 5).
@@ -106,9 +85,6 @@
 # [MONITOR @3765 ns] Output 13 -> RTL=0, Expected=0
 # [MONITOR @3835 ns] Output 14 -> RTL=1, Expected=1
 # [3865 ns] Applying Category 4 partial reconfiguration: output-layer weights only.
-# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
-# PAYLOAD DONE: Cnt         10 Total         10
 # [3985 ns] Streaming image 15 (Category 1 + Category 3 + Category 4 + Category 5).
 # [4105 ns] Streaming image 16 (Category 1 + Category 3 + Category 4 + Category 5).
 # [4205 ns] Streaming image 17 (Category 1 + Category 3 + Category 4 + Category 5).
@@ -121,21 +97,6 @@
 # [MONITOR @5145 ns] Output 19 -> RTL=0, Expected=0
 # [5145 ns] Streaming image 20 (Category 1 + Category 3 + Category 4 + Category 5).
 # [5225 ns] Re-applying same configuration after Category 5 reset on image TLAST boundary.
-# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
-# PAYLOAD DONE: Cnt         10 Total         10
 # [5715 ns] Streaming image 21 (Category 1 + Category 3 + Category 4 + Category 5).
 # [5815 ns] Streaming image 22 (Category 1 + Category 3 + Category 4 + Category 5).
 # [6035 ns] Streaming image 23 (Category 1 + Category 3 + Category 4 + Category 5).
@@ -155,30 +116,12 @@
 # [MONITOR @7835 ns] Output 27 -> RTL=2, Expected=2
 # [MONITOR @8635 ns] Output 28 -> RTL=2, Expected=2
 # [8665 ns] Applying Category 4 partial reconfiguration: hidden-layer thresholds only.
-# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
 # [8765 ns] Streaming image 30 (Category 1 + Category 3 + Category 4 + Category 5).
 # [8815 ns] Streaming image 31 (Category 1 + Category 3 + Category 4 + Category 5).
 # [8945 ns] Streaming image 32 (Category 1 + Category 3 + Category 4 + Category 5).
 # [9105 ns] Streaming image 33 (Category 1 + Category 3 + Category 4 + Category 5).
 # [9305 ns] Streaming image 34 (Category 1 + Category 3 + Category 4 + Category 5).
 # [9515 ns] Re-applying same configuration after Category 5 reset during output drain.
-# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
-# PAYLOAD DONE: Cnt         10 Total         10
 # [9865 ns] Streaming image 35 (Category 1 + Category 3 + Category 4 + Category 5).
 # [9945 ns] Streaming image 36 (Category 1 + Category 3 + Category 4 + Category 5).
 # [10155 ns] Streaming image 37 (Category 1 + Category 3 + Category 4 + Category 5).
@@ -200,12 +143,6 @@
 # [MONITOR @12045 ns] Output 37 -> RTL=2, Expected=2
 # [MONITOR @12105 ns] Output 38 -> RTL=2, Expected=2
 # [12135 ns] Applying Category 4 partial reconfiguration: hidden-layer weights and thresholds.
-# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
 # [12385 ns] Streaming image 45 (Category 1 + Category 3 + Category 4 + Category 5).
 # [12535 ns] Streaming image 46 (Category 1 + Category 3 + Category 4 + Category 5).
 # [12665 ns] Streaming image 47 (Category 1 + Category 3 + Category 4 + Category 5).
@@ -227,37 +164,7 @@
 # [MONITOR @14255 ns] Output 47 -> RTL=1, Expected=1
 # [MONITOR @14415 ns] Output 48 -> RTL=0, Expected=0
 # [14445 ns] Applying Category 4 full reconfiguration of all layers.
-# ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
-# PAYLOAD DONE: Cnt         10 Total         10
 # [14835 ns] Applying different full configuration after Category 5 reset after outputs drained.
-# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
-# PAYLOAD DONE: Cnt         40 Total         40
-# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
-# PAYLOAD DONE: Cnt         20 Total         20
-# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
-# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
-# PAYLOAD DONE: Cnt         10 Total         10
 # [15155 ns] Streaming image 55 (Category 1 + Category 3 + Category 4 + Category 5).
 # [15255 ns] Streaming image 56 (Category 1 + Category 3 + Category 4 + Category 5).
 # [15335 ns] Streaming image 57 (Category 1 + Category 3 + Category 4 + Category 5).
@@ -274,5 +181,5 @@
 #  coverage report -output coverage_report.txt -srcfile=* -details
 #  quit -f
 # Saving coverage database on exit...
-# End time: 19:15:18 on Apr 12,2026, Elapsed time: 0:00:01
+# End time: 20:27:33 on Apr 12,2026, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0
