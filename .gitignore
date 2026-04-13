@@ -6,7 +6,6 @@
 !/rtl/
 !/doc/
 !/verification/
-!/coverage/
 
 
 # Also don't ignore .gitignore itself
