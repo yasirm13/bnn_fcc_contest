@@ -6,8 +6,16 @@
 !/rtl/
 !/doc/
 !/verification/
-
+!/coverage/
+!report.pdf
 
 # Also don't ignore .gitignore itself
 !/.gitignore
 !/syn/
+!/sim/
+!/post_syn/
+
+# Ignore generated simulator libraries
+/rtl/work/
+/sim/work/
+/coverage/work/

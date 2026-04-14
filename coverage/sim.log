@@ -1,0 +1,381 @@
+Reading pref.tcl
+
+# 2023.3
+
+# vsim -c work.bnn_fcc_cat1_tb_opt -do "run 5000ns; quit" 
+# Start time: 14:26:34 on Apr 12,2026
+# //  Questa Sim-64
+# //  Version 2023.3 linux_x86_64 Jul 17 2023
+# //
+# //  Copyright 1991-2023 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.bnn_fcc_tb_pkg(fast)
+# Loading work.bnn_fcc_cat1_pkg(fast)
+# Loading work.bnn_fcc_cat1_tb(fast)
+# Loading work.axi4_stream_if(fast__1)
+# Loading work.axi4_stream_if(fast__2)
+# Loading work.bnn_fcc(fast)
+# Loading work.bnn_types_pkg(fast)
+# Loading work.config_parser(fast)
+# Loading work.layer_memory(fast)
+# Loading work.compute_layer(fast)
+# Loading work.neural_processor(fast)
+# Loading work.layer_memory(fast__1)
+# Loading work.compute_layer(fast__1)
+# Loading work.layer_memory(fast__2)
+# Loading work.compute_layer(fast__2)
+# run 5000ns
+# --- Loading Randomized Model (Category 1) ---
+# Randomizing Layer 0: 13 inputs -> 10 neurons
+# Randomizing Layer 1: 10 inputs -> 10 neurons
+# Randomizing Layer 2: 10 inputs -> 5 neurons
+# --- Configuration created: 28 words (64-bit wide) ---
+# --- Generating Random Test Vectors (Category 1) ---
+# BNN_FCC_Stimulus: Generating 50 random vectors...
+# BNN Model: 3 Layers, 13 Inputs
+#   Layer 0 (hidden): 10 Neurons
+#   Layer 1 (hidden): 10 Neurons
+#   Layer 2 (output): 5 Neurons
+# [95 ns] Streaming weights and thresholds (Category 1).
+# ConfigParser: MsgType   0 LayerID   0 TotalBytes         20
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
+# PAYLOAD DONE: Cnt         20 Total         20
+# ConfigParser: MsgType   1 LayerID   0 TotalBytes         40
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
+# PAYLOAD DONE: Cnt         40 Total         40
+# ConfigParser: MsgType   0 LayerID   1 TotalBytes         20
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         20 Keep ff
+# PAYLOAD DONE: Cnt         20 Total         20
+# ConfigParser: MsgType   1 LayerID   1 TotalBytes         40
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         40 Keep ff
+# PAYLOAD DONE: Cnt         40 Total         40
+# ConfigParser: MsgType   0 LayerID   2 TotalBytes         10
+# PAYLOAD DBG: Cnt          0 Beat          8 Total         10 Keep ff
+# PAYLOAD DONE: Cnt         10 Total         10
+# [DRIVER] Pushed Expected 3 for Image 0
+# [555 ns] Streaming image 0 (Category 1).
+# [DRIVER] Pushed Expected 1 for Image 1
+# [625 ns] Streaming image 1 (Category 1).
+# [715 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 31d
+# [DRIVER] Pushed Expected 4 for Image 2
+# [825 ns] Streaming image 2 (Category 1).
+# [855 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 315
+# [895 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 11b
+# [935 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000600000007000000050000000500000006
+# [945 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=0
+# [DRIVER] Pushed Expected 1 for Image 3
+# [965 ns] Streaming image 3 (Category 1).
+# [1035 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 33f
+# [1085 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 1f9
+# [1115 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000500000006000000040000000600000005
+# [1125 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1135 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1145 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 3 for Image 4
+# [1145 ns] Streaming image 4 (Category 1).
+# [1155 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1165 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1175 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1185 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1195 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1205 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1215 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1225 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 33b
+# [1225 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1235 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1245 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 11d
+# [1245 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1255 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1265 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1275 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1285 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1295 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 4 for Image 5
+# [1295 ns] Streaming image 5 (Category 1).
+# [1305 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1315 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1325 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1335 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1345 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1355 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1365 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1375 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1385 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1395 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1405 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1415 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1425 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1435 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @1435 ns] Output 0 -> RTL=3, Expected=3
+# [1475 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 16b
+# [1475 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 31f
+# [1475 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000600000005000000030000000500000004
+# [1485 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @1485 ns] Output 1 -> RTL=1, Expected=1
+# [1555 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000600000005000000050000000700000004
+# [1565 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1575 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1585 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1595 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 1 for Image 6
+# [1595 ns] Streaming image 6 (Category 1).
+# [1605 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1615 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 333
+# [1615 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1625 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1635 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 109
+# [1635 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1645 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1655 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1665 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1675 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1685 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1695 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 1 for Image 7
+# [1695 ns] Streaming image 7 (Category 1).
+# [1705 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1715 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1725 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1735 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1745 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1755 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1765 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1775 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1785 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1795 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1805 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1815 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1825 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1835 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1845 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1855 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1865 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1875 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1885 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1895 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1905 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [1915 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @1915 ns] Output 2 -> RTL=4, Expected=4
+# [1955 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 10d
+# [1955 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 35f
+# [1955 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000500000006000000040000000400000005
+# [1965 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @1965 ns] Output 3 -> RTL=1, Expected=1
+# [2035 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000700000004000000060000000600000003
+# [MONITOR @2035 ns] Output 4 -> RTL=3, Expected=3
+# [2045 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2095 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 317
+# [DRIVER] Pushed Expected 4 for Image 8
+# [2095 ns] Streaming image 8 (Category 1).
+# [2165 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 17d
+# [2175 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000500000006000000060000000600000005
+# [2185 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2195 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2205 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2215 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2225 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2235 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 4 for Image 9
+# [2235 ns] Streaming image 9 (Category 1).
+# [2245 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2255 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2265 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2275 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2285 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2295 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2305 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 33f
+# [2305 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2315 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2325 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2335 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2345 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2355 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2365 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 1b9
+# [2365 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2375 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2385 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2395 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2405 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2415 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2425 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2435 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 4 for Image 10
+# [2435 ns] Streaming image 10 (Category 1).
+# [2445 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2455 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2465 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2475 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2485 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2495 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2505 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2515 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2525 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2535 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2545 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2555 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2565 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2575 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2585 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2595 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2605 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2615 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2625 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2635 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2645 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2655 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2665 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2675 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2685 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [2695 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @2695 ns] Output 5 -> RTL=4, Expected=4
+# [2735 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 169
+# [2735 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 319
+# [2735 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000500000006000000040000000600000005
+# [2745 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @2745 ns] Output 6 -> RTL=1, Expected=1
+# [MONITOR @2795 ns] Output 7 -> RTL=1, Expected=1
+# [2815 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000800000005000000030000000500000004
+# [2825 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 4 for Image 11
+# [2825 ns] Streaming image 11 (Category 1).
+# [2875 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 37b
+# [MONITOR @2875 ns] Output 8 -> RTL=4, Expected=4
+# [2895 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 049
+# [2955 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000700000004000000040000000400000003
+# [DRIVER] Pushed Expected 1 for Image 12
+# [2955 ns] Streaming image 12 (Category 1).
+# [2965 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @3015 ns] Output 9 -> RTL=4, Expected=4
+# [3035 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 35f
+# [3055 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 14c
+# [DRIVER] Pushed Expected 4 for Image 13
+# [3105 ns] Streaming image 13 (Category 1).
+# [3115 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000700000004000000060000000600000003
+# [3125 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @3175 ns] Output 10 -> RTL=4, Expected=4
+# [3195 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 35f
+# [3215 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 11d
+# [DRIVER] Pushed Expected 1 for Image 14
+# [3255 ns] Streaming image 14 (Category 1).
+# [3275 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000700000004000000060000000600000003
+# [3285 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3355 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 31f
+# [3375 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 309
+# [3435 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000600000005000000050000000700000004
+# [3445 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3455 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 4 for Image 15
+# [3455 ns] Streaming image 15 (Category 1).
+# [3465 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3475 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3485 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3495 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3505 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3515 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 351
+# [3515 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3525 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3535 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 11b
+# [3535 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3545 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3555 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3565 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 1 for Image 16
+# [3565 ns] Streaming image 16 (Category 1).
+# [3575 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @3575 ns] Output 11 -> RTL=4, Expected=4
+# [3615 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000800000005000000050000000300000004
+# [3625 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @3625 ns] Output 12 -> RTL=1, Expected=1
+# [3675 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 33f
+# [MONITOR @3675 ns] Output 13 -> RTL=4, Expected=4
+# [3695 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 109
+# [DRIVER] Pushed Expected 4 for Image 17
+# [3735 ns] Streaming image 17 (Category 1).
+# [3755 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000500000006000000040000000600000005
+# [3765 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3835 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 35f
+# [3855 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 11d
+# [3915 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000700000004000000060000000600000003
+# [3925 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3935 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 1 for Image 18
+# [3935 ns] Streaming image 18 (Category 1).
+# [3945 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3955 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3965 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3975 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3985 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [3995 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 31f
+# [3995 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4005 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4015 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 311
+# [4015 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @4015 ns] Output 14 -> RTL=1, Expected=1
+# [4075 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000600000005000000050000000700000004
+# [MONITOR @4075 ns] Output 15 -> RTL=4, Expected=4
+# [4085 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @4145 ns] Output 16 -> RTL=1, Expected=1
+# [4155 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 241
+# [DRIVER] Pushed Expected 4 for Image 19
+# [4155 ns] Streaming image 19 (Category 1).
+# [4215 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 17d
+# [4235 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000600000003000000050000000300000004
+# [4245 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @4295 ns] Output 17 -> RTL=4, Expected=4
+# [DRIVER] Pushed Expected 4 for Image 20
+# [4345 ns] Streaming image 20 (Category 1).
+# [4355 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 33f
+# [4405 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 16a
+# [4435 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000500000006000000040000000600000005
+# [4445 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 4 for Image 21
+# [4485 ns] Streaming image 21 (Category 1).
+# [MONITOR @4495 ns] Output 18 -> RTL=1, Expected=1
+# [4545 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 37f
+# [4565 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 3bd
+# [DRIVER] Pushed Expected 4 for Image 22
+# [4615 ns] Streaming image 22 (Category 1).
+# [4625 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000600000005000000050000000500000004
+# [4635 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=0, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4705 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 311
+# [4725 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 1ed
+# [4785 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000700000006000000040000000400000005
+# [DRIVER] Pushed Expected 4 for Image 23
+# [4785 ns] Streaming image 23 (Category 1).
+# [4795 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4805 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4815 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4825 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4835 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4845 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4855 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4865 ns ns] [RTL_DBG] Layer 2 output captured. result_vector: 31b
+# [4865 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4875 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4885 ns ns] [RTL_DBG] Layer 1 output captured. result_vector: 149
+# [4885 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4895 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4905 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4915 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4925 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4935 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=0, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [4945 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [DRIVER] Pushed Expected 4 for Image 24
+# [4945 ns] Streaming image 24 (Category 1).
+# [MONITOR @4945 ns] Output 19 -> RTL=4, Expected=4
+# [4985 ns ns] [RTL_DBG] Layer 3 output captured. result_vector: 0000000700000004000000040000000600000003
+# [4995 ns ns] [DEBUG_3] L3_Valid=1, L3_Ready=1, out_valid=1, argmax_active=0, comp_ready_in[3]=0, scan_idx=4
+# [MONITOR @4995 ns] Output 20 -> RTL=4, Expected=4
+#  quit
+# End time: 14:26:35 on Apr 12,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

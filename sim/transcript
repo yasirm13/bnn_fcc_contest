@@ -1,0 +1,111 @@
+# vsim -c -voptargs="+acc" work.bnn_fcc_tb -do "run -all; quit -f" 
+# Start time: 14:54:10 on Apr 13,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# ** Note: (vopt-143) Recognized 1 FSM in module "compute_layer(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "compute_layer(fast__2)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "compute_layer(fast__1)".
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# //  Questa Sim-64
+# //  Version 2023.3 linux_x86_64 Jul 17 2023
+# //
+# //  Copyright 1991-2023 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.bnn_fcc_tb_pkg(fast)
+# Loading work.bnn_fcc_tb(fast)
+# Loading work.axi4_stream_if(fast__1)
+# Loading work.axi4_stream_if(fast__2)
+# Loading work.bnn_fcc(fast)
+# Loading work.bnn_types_pkg(fast)
+# Loading work.config_parser(fast)
+# Loading work.layer_memory(fast)
+# Loading work.compute_layer(fast)
+# Loading work.neural_processor(fast)
+# Loading work.layer_memory(fast__1)
+# Loading work.compute_layer(fast__1)
+# Loading work.neural_processor(fast__1)
+# Loading work.layer_memory(fast__2)
+# Loading work.compute_layer(fast__2)
+# run -all
+# --- Loading Trained Model ---
+# BNN_FCC_Stimulus: Loaded 100 vectors from ../python/test_vectors/inputs.hex
+# SV model successfully verified.
+# --- Configuration created: 4466 words (64-bit wide) ---
+# --- Loading Test Vectors ---
+# BNN_FCC_Stimulus: Loaded 50 vectors from ../python/test_vectors/inputs.hex
+# BNN Model: 3 Layers, 784 Inputs
+#   Layer 0 (hidden): 256 Neurons
+#   Layer 1 (hidden): 256 Neurons
+#   Layer 2 (output): 10 Neurons
+# [95 ns] Streaming weights and thresholds.
+# [55415 ns] Streaming image 0.
+# [56605 ns] Streaming image 1.
+# [63955 ns] Streaming image 2.
+# [71215 ns] Streaming image 3.
+# [78565 ns] Streaming image 4.
+# [85865 ns] Streaming image 5.
+# [93115 ns] Streaming image 6.
+# [100435 ns] Streaming image 7.
+# [107755 ns] Streaming image 8.
+# [115095 ns] Streaming image 9.
+# [122535 ns] Streaming image 10.
+# [129905 ns] Streaming image 11.
+# [137235 ns] Streaming image 12.
+# [144635 ns] Streaming image 13.
+# [151865 ns] Streaming image 14.
+# [159185 ns] Streaming image 15.
+# [166405 ns] Streaming image 16.
+# [173725 ns] Streaming image 17.
+# [181135 ns] Streaming image 18.
+# [188365 ns] Streaming image 19.
+# [195685 ns] Streaming image 20.
+# [202945 ns] Streaming image 21.
+# [210245 ns] Streaming image 22.
+# [217535 ns] Streaming image 23.
+# [224855 ns] Streaming image 24.
+# [232185 ns] Streaming image 25.
+# [239625 ns] Streaming image 26.
+# [247075 ns] Streaming image 27.
+# [254365 ns] Streaming image 28.
+# [261705 ns] Streaming image 29.
+# [269095 ns] Streaming image 30.
+# [276385 ns] Streaming image 31.
+# [283775 ns] Streaming image 32.
+# [291055 ns] Streaming image 33.
+# [298375 ns] Streaming image 34.
+# [305685 ns] Streaming image 35.
+# [312975 ns] Streaming image 36.
+# [320275 ns] Streaming image 37.
+# [327575 ns] Streaming image 38.
+# [334865 ns] Streaming image 39.
+# [342115 ns] Streaming image 40.
+# [349445 ns] Streaming image 41.
+# [356845 ns] Streaming image 42.
+# [364195 ns] Streaming image 43.
+# [371475 ns] Streaming image 44.
+# [378815 ns] Streaming image 45.
+# [386075 ns] Streaming image 46.
+# [393365 ns] Streaming image 47.
+# [400695 ns] Streaming image 48.
+# [408055 ns] Streaming image 49.
+# [415315 ns] All images loaded, waiting for outputs.
+# [424915 ns] SUCCESS: all 50 tests completed successfully.
+# 
+# Stats:
+# Avg latency (cycles) per image: 10766.0 cycles
+# Avg latency (time) per image: 107660.0 ns
+# Avg throughput (outputs/sec): 13534.4
+# Avg throughput (cycles/output): 7388.6
+#  quit -f
+# End time: 14:54:14 on Apr 13,2026, Elapsed time: 0:00:04
+# Errors: 0, Warnings: 1
