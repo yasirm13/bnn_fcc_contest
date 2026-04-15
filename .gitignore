@@ -14,7 +14,7 @@
 !/syn/
 !/sim/
 !/post_syn/
-
+!activate.sh
 # Ignore generated simulator libraries
 /rtl/work/
 /sim/work/
