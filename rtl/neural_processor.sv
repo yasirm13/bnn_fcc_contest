@@ -1,3 +1,6 @@
+// Chunk-level neuron primitive.
+// Each valid chunk performs XNOR+popcount, accumulates across chunks until `last`,
+// then emits both the raw population count and the threshold comparison result.
 module neural_processor #(
     parameter N = 8,  // input parallel vector width // Pw
     parameter ACC_WIDTH = 16  // threshold register size // population count register width

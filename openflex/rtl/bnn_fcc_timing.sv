@@ -20,7 +20,7 @@ module bnn_fcc_timing #(
     parameter int TOTAL_LAYERS = 4,
     parameter int TOPOLOGY[TOTAL_LAYERS] = '{0: 784, 1: 256, 2: 256, 3: 10, default: 0},
 
-    // TODO: UPDATE BASED ON IMPLEMENTATION-SPECIFIC PARAMETERS
+    // Submission-specific parallelism parameters for the chosen timing point.
     parameter int PARALLEL_INPUTS = 8,
     parameter int PARALLEL_NEURONS[TOTAL_LAYERS-1] = '{8, 8, 10}    
 ) (

@@ -8,6 +8,15 @@ This folder contains a parameterized SystemVerilog testbench for verifying the f
 * **Automated Reference Model**: Includes a SystemVerilog-based reference model to verify hardware outputs against expected Python-generated results.
 * **Parameterized Parallelism**: Configurable neuron and input parallelism to match your specific DUT implementation.
 * **Benchmarking**: Tracks latency and throughput.
+* **Module-Level Verification**: Includes self-checking unit benches for the parser, memory, neuron primitive, and layer controller so module behavior can be debugged without the full-system testbench.
+
+## Verification Matrix
+
+| Scope | Primary files | Purpose |
+| :--- | :--- | :--- |
+| Standard contest regression | `bnn_fcc_tb.sv`, `bnn_fcc_tb_pkg.sv` | End-to-end verification of the trained contest topology and the required pass/fail submission result. |
+| Supplemental coverage regression | `../coverage/bnn_fcc_cat1_tb.sv` | Apple-style functional coverage, reset/reconfiguration stress, and code-coverage collection. |
+| Module-level unit tests | `config_parser_unit_tb.sv`, `layer_memory_unit_tb.sv`, `neural_processor_unit_tb.sv`, `compute_layer_unit_tb.sv` | Focused self-checking tests for protocol parsing, memory mapping, chunk accumulation, and layer scheduling. |
 
 ---
 
@@ -29,22 +38,26 @@ This folder contains a parameterized SystemVerilog testbench for verifying the f
 1. Start a simulation using the bnn_fcc_tb testbench.
 
 #### Script Mode
+Use the repository scripts for the three verification layers:
 
-TO BE UPDATED
+1. **Standard contest verification**
+   ```bash
+   cd ../openflex
+   ./verify.sh
+   ```
+2. **Module-level unit tests**
+   ```bash
+   cd ../verification
+   ./run_unit_tests.sh
+   ```
+3. **Supplemental coverage regression**
+   ```bash
+   cd ../coverage
+   make sim
+   ./cov_check.sh
+   ```
 
-<!--1. Open your simulator and navigate to the `sim/` directory.
-2. Compile the package, DUT, and testbench:
-```tcl
-vlog -sv ../rtl/bnn_fcc.sv
-vlog -sv ../verification/bnn_fcc_tb_pkg.sv
-vlog -sv ../verification/bnn_fcc_tb.sv
-```
-3. Initialize and run the simulation:
-```tcl
-vsim -gBASE_DIR="../python" -gNUM_TEST_IMAGES=100 -gDATA_IN_VALID_PROBABILITY=0.8 work.bnn_fcc_tb
-run -all
-```
--->
+`run_unit_tests.sh` automatically sources `../activate.sh`, creates an isolated `verification/.unit_sim/` work area, and checks for an explicit success banner from each bench before reporting a pass.
 ---
 
 ## Testbench Parameters
@@ -120,4 +133,3 @@ To fully verify your design's robustness against back-pressure and inputs gaps, 
 * `DATA_IN_VALID_PROBABILITY = 0.8`
 
 ---
-

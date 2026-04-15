@@ -1,3 +1,6 @@
+// AXI4-Stream configuration parser.
+// Consumes the 128-bit message header over CONFIG_BUS_WIDTH beats, tracks payload
+// addresses, and emits per-layer write enables plus aligned payload data/strb.
 module config_parser #(
     parameter int CONFIG_BUS_WIDTH = 64,
     parameter int TOTAL_LAYERS = 4

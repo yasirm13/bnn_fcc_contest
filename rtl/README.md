@@ -2,6 +2,20 @@
 
 The `bnn_fcc` module is a parameterized, fully-connected binary neural network classifier. It uses AXI4-Stream interfaces for configuration, image inputs, and result outputs.
 
+## Module Overview
+
+The submitted implementation is organized as a streaming pipeline with one parser, one memory block per layer, one compute engine per layer, and a small neuron primitive:
+
+| File | Role |
+| :--- | :--- |
+| `bnn_fcc.sv` | Top-level controller that accepts configuration traffic, binarizes input images, sequences the layer pipeline, and emits the final argmax result. |
+| `config_parser.sv` | Decodes the 128-bit configuration header and converts payload beats into per-layer weight/threshold memory writes. |
+| `layer_memory.sv` | Stores weights and thresholds for one layer and schedules aligned multi-lane reads for the active compute engine. |
+| `compute_layer.sv` | Processes one layer at a time with batched `PARALLEL_NEURONS` execution and either emits binarized activations or output-layer popcounts. |
+| `neural_processor.sv` | Performs the per-chunk XNOR+popcount accumulation and final threshold comparison for one neuron lane. |
+
+This partitioning keeps configuration parsing separate from inference scheduling, localizes the parallelism knobs to the modules that consume them, and makes the critical contest dataflow easier to reason about during timing closure and debug.
+
 ### Architectural Parameters
 
 | Parameter | Description |
@@ -145,5 +159,4 @@ sized according to the configured topology. Adding a panic signal for a mismatch
 practice, but is not a design requirement.
 
 You can assume that the module must be reset before a new configuration.
-
 

@@ -1,3 +1,7 @@
+// Per-layer storage and read scheduler for weights and thresholds.
+// Weights are stored as bus-width words and served in aligned slices for each
+// PARALLEL_NEURONS lane, while thresholds are packed into bus-width words so the
+// configuration path stays word-oriented and timing-friendly.
 module layer_memory #(
     parameter int CONFIG_BUS_WIDTH = 64,
     parameter int LAYER_INPUTS = 784,

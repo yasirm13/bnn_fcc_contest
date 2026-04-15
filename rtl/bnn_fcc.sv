@@ -1,3 +1,7 @@
+// Top-level streaming BNN classifier.
+// Parses AXI4-Stream configuration traffic, buffers a binarized image, runs each
+// layer in sequence, and returns the final argmax classification as one output beat.
+// Submission parallelism is controlled by PARALLEL_INPUTS and PARALLEL_NEURONS.
 module bnn_fcc #(
     parameter int INPUT_DATA_WIDTH  = 8,
     parameter int INPUT_BUS_WIDTH   = 64,

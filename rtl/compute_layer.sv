@@ -1,3 +1,6 @@
+// Compute engine for one hidden or output layer.
+// The controller preloads each PARALLEL_NEURONS batch, walks the required weight
+// chunks, and emits either binarized activations or 32-bit output-layer popcounts.
 module compute_layer #(
     parameter int LAYER_ID = 1,
     parameter int LAYER_INPUTS = 784,
