@@ -42,15 +42,17 @@ module bnn_fcc #(
     output logic [OUTPUT_BUS_WIDTH/8-1:0] data_out_keep,
     output logic                          data_out_last
 );
+    import bnn_util_pkg::*;
+
     localparam int LAYERS = TOTAL_LAYERS - 1;
     localparam int NUM_NEURONS[LAYERS] = TOPOLOGY[1:LAYERS];
     localparam int INPUT_BUS_ELEMENTS = INPUT_BUS_WIDTH / INPUT_DATA_WIDTH;
     localparam int INPUT_BINARIZATION_THRESHOLD = 1 << (INPUT_DATA_WIDTH - 1);
     localparam int OUTPUT_LAYER = TOTAL_LAYERS - 1;
     localparam int OUTPUT_NEURONS = TOPOLOGY[OUTPUT_LAYER];
-    localparam int OUTPUT_INDEX_WIDTH = (OUTPUT_NEURONS > 1) ? $clog2(OUTPUT_NEURONS) : 1;
-    localparam int INPUT_BUFFER_WORDS = (TOPOLOGY[0] + INPUT_BUS_ELEMENTS - 1) / INPUT_BUS_ELEMENTS;
-    localparam int INPUT_WORD_IDX_WIDTH = (INPUT_BUFFER_WORDS > 1) ? $clog2(INPUT_BUFFER_WORDS) : 1;
+    localparam int OUTPUT_INDEX_WIDTH = clog2_safe(OUTPUT_NEURONS);
+    localparam int INPUT_BUFFER_WORDS = div_ceil(TOPOLOGY[0], INPUT_BUS_ELEMENTS);
+    localparam int INPUT_WORD_IDX_WIDTH = clog2_safe(INPUT_BUFFER_WORDS);
 
     function automatic int calc_activation_storage_bits();
         int max_bits;
@@ -76,6 +78,10 @@ module bnn_fcc #(
     initial begin
         if (INPUT_BUS_WIDTH % INPUT_DATA_WIDTH)
             $fatal(1, "bnn_fcc requires INPUT_BUS_WIDTH to be a multiple of INPUT_DATA_WIDTH");
+        if (CONFIG_BUS_WIDTH % 8)
+            $fatal(1, "bnn_fcc requires CONFIG_BUS_WIDTH to be a multiple of 8");
+        if (OUTPUT_BUS_WIDTH % 8)
+            $fatal(1, "bnn_fcc requires OUTPUT_BUS_WIDTH to be a multiple of 8");
         for (int i = 0; i < LAYERS; i++) begin
             if (PARALLEL_NEURONS[i] <= 0)
                 $fatal(1, "bnn_fcc requires PARALLEL_NEURONS[%0d] > 0", i);

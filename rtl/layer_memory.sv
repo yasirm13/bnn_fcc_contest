@@ -25,23 +25,33 @@ module layer_memory #(
     output logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] rd_data_weights,
     output logic [PARALLEL_NEURONS-1:0][31:0]                 rd_data_threshold
 );
+    import bnn_util_pkg::*;
 
     localparam int BUS_BYTES = CONFIG_BUS_WIDTH / 8;
-    localparam int BYTES_PER_NEURON = (LAYER_INPUTS + 7) / 8;
-    localparam int CHUNKS_PER_NEURON = (BYTES_PER_NEURON + BUS_BYTES - 1) / BUS_BYTES;
+    localparam int BYTES_PER_NEURON = div_ceil(LAYER_INPUTS, 8);
+    localparam int CHUNKS_PER_NEURON = div_ceil(BYTES_PER_NEURON, BUS_BYTES);
     localparam int TOTAL_WEIGHT_BITS = NUM_NEURONS * BYTES_PER_NEURON * 8;
-    localparam int WEIGHT_MEM_DEPTH = (TOTAL_WEIGHT_BITS + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
-    localparam int WEIGHT_ADDR_WIDTH = (WEIGHT_MEM_DEPTH > 1) ? $clog2(WEIGHT_MEM_DEPTH) : 1;
+    localparam int WEIGHT_MEM_DEPTH = div_ceil(TOTAL_WEIGHT_BITS, CONFIG_BUS_WIDTH);
+    localparam int WEIGHT_ADDR_WIDTH = clog2_safe(WEIGHT_MEM_DEPTH);
     localparam int THRESH_WORDS_PER_BEAT = CONFIG_BUS_WIDTH / 32;
-    localparam int THRESH_MEM_DEPTH = (NUM_NEURONS + THRESH_WORDS_PER_BEAT - 1) / THRESH_WORDS_PER_BEAT;
+    localparam int THRESH_MEM_DEPTH = div_ceil(NUM_NEURONS, THRESH_WORDS_PER_BEAT);
     localparam int NEURON_STRIDE_BYTES = PARALLEL_NEURONS * BYTES_PER_NEURON;
     localparam int NEURON_STRIDE_WORDS = NEURON_STRIDE_BYTES / BUS_BYTES;
     localparam int NEURON_STRIDE_REM_BYTES = NEURON_STRIDE_BYTES % BUS_BYTES;
-    localparam int BYTE_OFFSET_WIDTH = (BUS_BYTES > 1) ? $clog2(BUS_BYTES) : 1;
-    localparam int BIT_OFFSET_WIDTH = (CONFIG_BUS_WIDTH > 1) ? $clog2(CONFIG_BUS_WIDTH) : 1;
-    localparam int THRESH_IDX_WIDTH = (NUM_NEURONS + PARALLEL_NEURONS > 1) ? $clog2(NUM_NEURONS + PARALLEL_NEURONS) : 1;
-    localparam int THRESH_ADDR_WIDTH = (THRESH_MEM_DEPTH > 1) ? $clog2(THRESH_MEM_DEPTH) : 1;
-    localparam int THRESH_SUBWORD_WIDTH = (THRESH_WORDS_PER_BEAT > 1) ? $clog2(THRESH_WORDS_PER_BEAT) : 1;
+    localparam int BYTE_OFFSET_WIDTH = clog2_safe(BUS_BYTES);
+    localparam int BIT_OFFSET_WIDTH = clog2_safe(CONFIG_BUS_WIDTH);
+    localparam int THRESH_IDX_WIDTH = clog2_safe(NUM_NEURONS + PARALLEL_NEURONS);
+    localparam int THRESH_ADDR_WIDTH = clog2_safe(THRESH_MEM_DEPTH);
+    localparam int THRESH_SUBWORD_WIDTH = clog2_safe(THRESH_WORDS_PER_BEAT);
+
+    initial begin
+        if (PARALLEL_NEURONS <= 0)
+            $fatal(1, "layer_memory requires PARALLEL_NEURONS > 0");
+        if (CONFIG_BUS_WIDTH % 8)
+            $fatal(1, "layer_memory requires CONFIG_BUS_WIDTH to be a multiple of 8");
+        if (CONFIG_BUS_WIDTH % 32)
+            $fatal(1, "layer_memory requires CONFIG_BUS_WIDTH to be a multiple of 32");
+    end
 
     logic [THRESH_IDX_WIDTH-1:0] neuron_base_idx;
     logic [THRESH_IDX_WIDTH-1:0] neuron_base_idx_req;

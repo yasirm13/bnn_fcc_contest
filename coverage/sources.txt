@@ -1,3 +1,4 @@
+../rtl/bnn_util_pkg.sv
 ../rtl/bnn_types_pkg.sv
 ../verification/bnn_fcc_tb_pkg.sv
 ./bnn_fcc_cat1_pkg.sv

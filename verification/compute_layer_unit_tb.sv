@@ -35,11 +35,9 @@ module compute_layer_unit_tb;
     logic [PARALLEL_NEURONS-1:0][31:0]                 output_mem_thresh_data;
 
     compute_layer #(
-        .LAYER_ID        (1),
         .LAYER_INPUTS    (LAYER_INPUTS),
         .NUM_NEURONS     (NUM_NEURONS),
         .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
-        .PARALLEL_INPUTS (4),
         .PARALLEL_NEURONS(PARALLEL_NEURONS),
         .IS_OUTPUT_LAYER (1'b0)
     ) hidden_dut (
@@ -59,11 +57,9 @@ module compute_layer_unit_tb;
     );
 
     compute_layer #(
-        .LAYER_ID        (2),
         .LAYER_INPUTS    (LAYER_INPUTS),
         .NUM_NEURONS     (NUM_NEURONS),
         .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
-        .PARALLEL_INPUTS (4),
         .PARALLEL_NEURONS(PARALLEL_NEURONS),
         .IS_OUTPUT_LAYER (1'b1)
     ) output_dut (

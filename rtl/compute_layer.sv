@@ -27,14 +27,15 @@ module compute_layer #(
     input var logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] mem_weight_data,
     input var logic [PARALLEL_NEURONS-1:0][31:0]                 mem_thresh_data
 );
+    import bnn_util_pkg::*;
 
-    localparam int BYTES_PER_NEURON = (LAYER_INPUTS + 7) / 8;
+    localparam int BYTES_PER_NEURON = div_ceil(LAYER_INPUTS, 8);
     localparam int BITS_PER_NEURON = BYTES_PER_NEURON * 8;
-    localparam int CHUNKS_PER_NEURON = (BITS_PER_NEURON + CONFIG_BUS_WIDTH - 1) / CONFIG_BUS_WIDTH;
+    localparam int CHUNKS_PER_NEURON = div_ceil(BITS_PER_NEURON, CONFIG_BUS_WIDTH);
     localparam int RESULT_WIDTH = IS_OUTPUT_LAYER ? (NUM_NEURONS * 32) : NUM_NEURONS;
-    localparam int NP_ACC_WIDTH = (LAYER_INPUTS > 1) ? $clog2(LAYER_INPUTS + 1) : 1;
-    localparam int NEURON_BASE_WIDTH = (NUM_NEURONS + PARALLEL_NEURONS > 1) ? $clog2(NUM_NEURONS + PARALLEL_NEURONS) : 1;
-    localparam int CHUNK_COUNT_WIDTH = (CHUNKS_PER_NEURON > 1) ? $clog2(CHUNKS_PER_NEURON) : 1;
+    localparam int NP_ACC_WIDTH = clog2_safe(LAYER_INPUTS + 1);
+    localparam int NEURON_BASE_WIDTH = clog2_safe(NUM_NEURONS + PARALLEL_NEURONS);
+    localparam int CHUNK_COUNT_WIDTH = clog2_safe(CHUNKS_PER_NEURON);
     localparam int PADDED_INPUT_BITS = CHUNKS_PER_NEURON * CONFIG_BUS_WIDTH;
 
     function automatic logic [PARALLEL_NEURONS-1:0] calc_lane_mask(
@@ -169,6 +170,8 @@ module compute_layer #(
             if (state == PRELOAD_BATCH || state == COMPUTE_BATCH) begin
                 np_x_q <= selected_input_chunk;
                 for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                    // For BNN padding semantics, unused bits must behave like weight=1 so they do not
+                    // affect the XNOR result. OR with ~valid_mask forces those masked-off bits to 1.
                     np_w_q[lane] <= mem_weight_data[lane] | ~selected_valid_mask;
                 end
             end

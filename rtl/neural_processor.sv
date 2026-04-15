@@ -16,8 +16,9 @@ module neural_processor #(
     output logic                 valid_out,
     output logic [       31:0]   popcount_out
 );
+    import bnn_util_pkg::*;
 
-    localparam POPCOUNT_W = (N > 1) ? $clog2(N + 1) : 1;
+    localparam int POPCOUNT_W = clog2_safe(N + 1);
 
     logic [N-1:0] xnor_result;
     logic [POPCOUNT_W-1:0] popcount;

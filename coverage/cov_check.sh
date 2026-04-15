@@ -1,7 +1,12 @@
 #!/usr/bin/bash
 set -euo pipefail
 
-source ../activate.sh
+COV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${COV_DIR}/.." && pwd)"
+
+source "${ROOT_DIR}/activate.sh"
+
+cd "${COV_DIR}"
 
 make clean
 make sim

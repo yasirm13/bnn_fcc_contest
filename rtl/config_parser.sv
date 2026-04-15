@@ -22,11 +22,12 @@ module config_parser #(
 );
 
     import bnn_types_pkg::*;
+    import bnn_util_pkg::*;
 
     localparam int BYTES_PER_BEAT = CONFIG_BUS_WIDTH / 8;
     localparam int HEADER_BEATS = 128 / CONFIG_BUS_WIDTH;
-    localparam int HEADER_IDX_WIDTH = (HEADER_BEATS > 1) ? $clog2(HEADER_BEATS) : 1;
-    localparam int BEAT_ADDR_SHIFT = $clog2(BYTES_PER_BEAT);
+    localparam int HEADER_IDX_WIDTH = clog2_safe(HEADER_BEATS);
+    localparam int BEAT_ADDR_SHIFT = clog2_safe(BYTES_PER_BEAT);
 
     typedef enum logic {
         ST_HEADER,

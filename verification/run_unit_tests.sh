@@ -29,22 +29,26 @@ run_tb() {
 
 run_tb \
     config_parser_unit_tb \
+    "$ROOT_DIR/rtl/bnn_util_pkg.sv" \
     "$ROOT_DIR/rtl/bnn_types_pkg.sv" \
     "$ROOT_DIR/rtl/config_parser.sv" \
     "$ROOT_DIR/verification/config_parser_unit_tb.sv"
 
 run_tb \
     layer_memory_unit_tb \
+    "$ROOT_DIR/rtl/bnn_util_pkg.sv" \
     "$ROOT_DIR/rtl/layer_memory.sv" \
     "$ROOT_DIR/verification/layer_memory_unit_tb.sv"
 
 run_tb \
     neural_processor_unit_tb \
+    "$ROOT_DIR/rtl/bnn_util_pkg.sv" \
     "$ROOT_DIR/rtl/neural_processor.sv" \
     "$ROOT_DIR/verification/neural_processor_unit_tb.sv"
 
 run_tb \
     compute_layer_unit_tb \
+    "$ROOT_DIR/rtl/bnn_util_pkg.sv" \
     "$ROOT_DIR/rtl/neural_processor.sv" \
     "$ROOT_DIR/rtl/compute_layer.sv" \
     "$ROOT_DIR/verification/compute_layer_unit_tb.sv"
