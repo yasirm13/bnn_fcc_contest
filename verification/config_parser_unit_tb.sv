@@ -149,6 +149,12 @@ module config_parser_unit_tb;
         @(posedge clk);
     endtask
 
+    task automatic drive_idle_cycles(input int count);
+        for (int i = 0; i < count; i++) begin
+            drive_idle_cycle();
+        end
+    endtask
+
     task automatic reset_dut();
         rst          <= 1'b1;
         config_valid <= 1'b0;
@@ -181,6 +187,18 @@ module config_parser_unit_tb;
         logic [63:0] invalid_header0;
         logic [63:0] invalid_header1;
         logic [63:0] invalid_payload0;
+        logic [63:0] short_header0;
+        logic [63:0] short_header1;
+        logic [63:0] short_payload0;
+        logic [63:0] layer2_header0;
+        logic [63:0] layer2_header1;
+        logic [63:0] layer2_payload0;
+        logic [63:0] early_last_header0;
+        logic [63:0] early_last_header1;
+        logic [63:0] early_last_payload0;
+        logic [63:0] unknown_type_header0;
+        logic [63:0] unknown_type_header1;
+        logic [63:0] unknown_type_payload0;
 
         weights_header0 = make_header_word0(MSG_TYPE_WEIGHTS, 8'd0, 16'd13, 16'd4, 16'd4);
         weights_header1 = make_header_word1(32'd16);
@@ -195,9 +213,33 @@ module config_parser_unit_tb;
         invalid_header1 = make_header_word1(32'd8);
         invalid_payload0 = 64'hcafe_f00d_1234_5678;
 
+        // total_bytes <= BYTES_PER_BEAT triggers payload_last_addr=0 and the parser should
+        // return to header state after the first payload beat even if TLAST is not asserted.
+        short_header0 = make_header_word0(MSG_TYPE_WEIGHTS, 8'd0, 16'd8, 16'd1, 16'd1);
+        short_header1 = make_header_word1(32'd8);
+        short_payload0 = 64'h1111_2222_3333_4444;
+
+        // Last valid layer_id is TOTAL_LAYERS-2, which maps to layer_wr_en_* at index +1.
+        layer2_header0 = make_header_word0(MSG_TYPE_WEIGHTS, 8'd2, 16'd8, 16'd1, 16'd1);
+        layer2_header1 = make_header_word1(32'd8);
+        layer2_payload0 = 64'h9999_aaaa_bbbb_cccc;
+
+        // If TLAST is asserted early, the parser should terminate the payload immediately.
+        early_last_header0 = make_header_word0(MSG_TYPE_WEIGHTS, 8'd0, 16'd13, 16'd4, 16'd4);
+        early_last_header1 = make_header_word1(32'd16);
+        early_last_payload0 = 64'h0123_4567_89ab_cdef;
+
+        // Unknown msg_type should not assert any write enables.
+        unknown_type_header0 = make_header_word0(msg_type_e'(8'd2), 8'd0, 16'd13, 16'd4, 16'd4);
+        unknown_type_header1 = make_header_word1(32'd8);
+        unknown_type_payload0 = 64'h1357_9bdf_2468_ace0;
+
         reset_dut();
 
+        // Idle cycles between beats must not affect header/payload sequencing.
+        drive_idle_cycles(2);
         send_beat_no_write(weights_header0, 8'hff, 1'b0, "weights header word 0");
+        drive_idle_cycles(1);
         send_beat_no_write(weights_header1, 8'hff, 1'b0, "weights header word 1");
         send_beat_with_write(weights_payload0, 8'hff, 1'b0, 4'b0010, 4'b0000, 32'd0, "weights payload beat 0");
         send_beat_with_write(weights_payload1, 8'hff, 1'b1, 4'b0010, 4'b0000, 32'd1, "weights payload beat 1");
@@ -206,6 +248,30 @@ module config_parser_unit_tb;
         send_beat_no_write(thresh_header0, 8'hff, 1'b0, "threshold header word 0");
         send_beat_no_write(thresh_header1, 8'hff, 1'b0, "threshold header word 1");
         send_beat_with_write(thresh_payload0, 8'h0f, 1'b0, 4'b0000, 4'b0100, 32'd0, "threshold payload beat 0");
+        drive_idle_cycle();
+
+        // Short payload should auto-terminate after one beat even without TLAST.
+        send_beat_no_write(short_header0, 8'hff, 1'b0, "short header word 0");
+        send_beat_no_write(short_header1, 8'hff, 1'b0, "short header word 1");
+        send_beat_with_write(short_payload0, 8'hff, 1'b0, 4'b0010, 4'b0000, 32'd0, "short payload beat 0 (no tlast)");
+        drive_idle_cycle();
+
+        // Verify layer_id=2 maps to enable at index 3 (TOTAL_LAYERS=4).
+        send_beat_no_write(layer2_header0, 8'hff, 1'b0, "layer2 header word 0");
+        send_beat_no_write(layer2_header1, 8'hff, 1'b0, "layer2 header word 1");
+        send_beat_with_write(layer2_payload0, 8'hff, 1'b1, 4'b1000, 4'b0000, 32'd0, "layer2 payload beat 0");
+        drive_idle_cycle();
+
+        // Early TLAST should terminate message after first payload beat.
+        send_beat_no_write(early_last_header0, 8'hff, 1'b0, "early-last header word 0");
+        send_beat_no_write(early_last_header1, 8'hff, 1'b0, "early-last header word 1");
+        send_beat_with_write(early_last_payload0, 8'hff, 1'b1, 4'b0010, 4'b0000, 32'd0, "early-last payload beat 0 (tlast)");
+        drive_idle_cycle();
+
+        // Unknown message type should not write.
+        send_beat_no_write(unknown_type_header0, 8'hff, 1'b0, "unknown-type header word 0");
+        send_beat_no_write(unknown_type_header1, 8'hff, 1'b0, "unknown-type header word 1");
+        send_beat_no_write(unknown_type_payload0, 8'hff, 1'b1, "unknown-type payload beat 0");
         drive_idle_cycle();
 
         send_beat_no_write(invalid_header0, 8'hff, 1'b0, "invalid header word 0");
