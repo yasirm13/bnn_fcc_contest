@@ -15,7 +15,7 @@ This folder contains a parameterized SystemVerilog testbench for verifying the f
 | Scope | Primary files | Purpose |
 | :--- | :--- | :--- |
 | Standard contest regression | `bnn_fcc_tb.sv`, `bnn_fcc_tb_pkg.sv` | End-to-end verification of the trained contest topology and the required pass/fail submission result. |
-| Supplemental coverage regression | `../coverage/bnn_fcc_cat1_tb.sv` | Apple-style functional coverage, reset/reconfiguration stress, and code-coverage collection. |
+| Supplemental coverage regression | `bnn_fcc_coverage_tb.sv`, `cov_check.sh` | Apple-style functional coverage, reset/reconfiguration stress, and code-coverage collection from the submission-safe `verification/` directory. |
 | Module-level unit tests | `config_parser_unit_tb.sv`, `layer_memory_unit_tb.sv`, `neural_processor_unit_tb.sv`, `compute_layer_unit_tb.sv` | Focused self-checking tests for protocol parsing, memory mapping, chunk accumulation, and layer scheduling. |
 
 ---
@@ -52,12 +52,12 @@ Use the repository scripts for the three verification layers:
    ```
 3. **Supplemental coverage regression**
    ```bash
-   cd ../coverage
-   make sim
+   cd ../verification
    ./cov_check.sh
    ```
 
 `run_unit_tests.sh` automatically sources `../activate.sh`, creates an isolated `verification/.unit_sim/` work area, and checks for an explicit success banner from each bench before reporting a pass.
+`cov_check.sh` similarly builds inside `verification/.coverage_sim/` so the submission sources stay self-contained, while the legacy `coverage/` folder remains available as a reference flow.
 ---
 
 ## Testbench Parameters

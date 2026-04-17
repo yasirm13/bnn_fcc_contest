@@ -6,7 +6,6 @@
 !/rtl/
 !/doc/
 !/verification/
-!/coverage/
 !report.pdf
 
 # Also don't ignore .gitignore itself
@@ -20,3 +19,4 @@
 /sim/work/
 /coverage/work/
 /verification/.unit_sim/
+/verification/.coverage_sim/
