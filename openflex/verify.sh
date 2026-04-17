@@ -12,7 +12,7 @@ source "${ROOT_DIR}/activate.sh" >/dev/null
 
 # Ensure OpenFlex is available (use local venv if needed).
 if ! command -v openflex >/dev/null 2>&1; then
-  if [[ ! -x "${VENV_DIR}/bin/activate" ]]; then
+  if [[ ! -f "${VENV_DIR}/bin/activate" ]]; then
     echo "[verify] Creating venv at ${VENV_DIR}"
     python3.11 -m venv "${VENV_DIR}"
   fi

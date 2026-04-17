@@ -1,6 +1,8 @@
 # vsim -c -voptargs="+acc" work.bnn_fcc_tb -do "run -all; quit -f" 
-# Start time: 19:47:32 on Apr 15,2026
-# ** Note: (vsim-8009) Loading existing optimized design _opt
+# Start time: 12:57:29 on Apr 17,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
 # //  Questa Sim-64
 # //  Version 2023.3 linux_x86_64 Jul 17 2023
 # //
@@ -46,62 +48,62 @@
 # [95 ns] Streaming weights and thresholds.
 # [55415 ns] Streaming image 0.
 # [56605 ns] Streaming image 1.
-# [63635 ns] Streaming image 2.
-# [70575 ns] Streaming image 3.
-# [77605 ns] Streaming image 4.
-# [84585 ns] Streaming image 5.
-# [91515 ns] Streaming image 6.
-# [98515 ns] Streaming image 7.
-# [105515 ns] Streaming image 8.
-# [112535 ns] Streaming image 9.
-# [119655 ns] Streaming image 10.
-# [126705 ns] Streaming image 11.
-# [133715 ns] Streaming image 12.
-# [140795 ns] Streaming image 13.
-# [147705 ns] Streaming image 14.
-# [154705 ns] Streaming image 15.
-# [161605 ns] Streaming image 16.
-# [168605 ns] Streaming image 17.
-# [175695 ns] Streaming image 18.
-# [182605 ns] Streaming image 19.
-# [189605 ns] Streaming image 20.
-# [196545 ns] Streaming image 21.
-# [203525 ns] Streaming image 22.
-# [210495 ns] Streaming image 23.
-# [217495 ns] Streaming image 24.
-# [224505 ns] Streaming image 25.
-# [231625 ns] Streaming image 26.
-# [238755 ns] Streaming image 27.
-# [245725 ns] Streaming image 28.
-# [252745 ns] Streaming image 29.
-# [259815 ns] Streaming image 30.
-# [266785 ns] Streaming image 31.
-# [273855 ns] Streaming image 32.
-# [280815 ns] Streaming image 33.
-# [287815 ns] Streaming image 34.
-# [294805 ns] Streaming image 35.
-# [301775 ns] Streaming image 36.
-# [308755 ns] Streaming image 37.
-# [315735 ns] Streaming image 38.
-# [322705 ns] Streaming image 39.
-# [329635 ns] Streaming image 40.
-# [336645 ns] Streaming image 41.
-# [343725 ns] Streaming image 42.
-# [350755 ns] Streaming image 43.
-# [357715 ns] Streaming image 44.
-# [364735 ns] Streaming image 45.
-# [371675 ns] Streaming image 46.
-# [378645 ns] Streaming image 47.
-# [385655 ns] Streaming image 48.
-# [392695 ns] Streaming image 49.
-# [399635 ns] All images loaded, waiting for outputs.
-# [408585 ns] SUCCESS: all 50 tests completed successfully.
+# [63955 ns] Streaming image 2.
+# [71215 ns] Streaming image 3.
+# [78565 ns] Streaming image 4.
+# [85865 ns] Streaming image 5.
+# [93115 ns] Streaming image 6.
+# [100435 ns] Streaming image 7.
+# [107755 ns] Streaming image 8.
+# [115095 ns] Streaming image 9.
+# [122535 ns] Streaming image 10.
+# [129905 ns] Streaming image 11.
+# [137235 ns] Streaming image 12.
+# [144635 ns] Streaming image 13.
+# [151865 ns] Streaming image 14.
+# [159185 ns] Streaming image 15.
+# [166405 ns] Streaming image 16.
+# [173725 ns] Streaming image 17.
+# [181135 ns] Streaming image 18.
+# [188365 ns] Streaming image 19.
+# [195685 ns] Streaming image 20.
+# [202945 ns] Streaming image 21.
+# [210245 ns] Streaming image 22.
+# [217535 ns] Streaming image 23.
+# [224855 ns] Streaming image 24.
+# [232185 ns] Streaming image 25.
+# [239625 ns] Streaming image 26.
+# [247075 ns] Streaming image 27.
+# [254365 ns] Streaming image 28.
+# [261705 ns] Streaming image 29.
+# [269095 ns] Streaming image 30.
+# [276385 ns] Streaming image 31.
+# [283775 ns] Streaming image 32.
+# [291055 ns] Streaming image 33.
+# [298375 ns] Streaming image 34.
+# [305685 ns] Streaming image 35.
+# [312975 ns] Streaming image 36.
+# [320275 ns] Streaming image 37.
+# [327575 ns] Streaming image 38.
+# [334865 ns] Streaming image 39.
+# [342115 ns] Streaming image 40.
+# [349445 ns] Streaming image 41.
+# [356845 ns] Streaming image 42.
+# [364195 ns] Streaming image 43.
+# [371475 ns] Streaming image 44.
+# [378815 ns] Streaming image 45.
+# [386075 ns] Streaming image 46.
+# [393365 ns] Streaming image 47.
+# [400695 ns] Streaming image 48.
+# [408055 ns] Streaming image 49.
+# [415315 ns] All images loaded, waiting for outputs.
+# [424915 ns] SUCCESS: all 50 tests completed successfully.
 # 
 # Stats:
-# Avg latency (cycles) per image: 10118.0 cycles
-# Avg latency (time) per image: 101180.0 ns
-# Avg throughput (outputs/sec): 14160.3
-# Avg throughput (cycles/output): 7062.0
+# Avg latency (cycles) per image: 10766.0 cycles
+# Avg latency (time) per image: 107660.0 ns
+# Avg throughput (outputs/sec): 13534.4
+# Avg throughput (cycles/output): 7388.6
 #  quit -f
-# End time: 19:47:34 on Apr 15,2026, Elapsed time: 0:00:02
-# Errors: 0, Warnings: 0
+# End time: 12:57:33 on Apr 17,2026, Elapsed time: 0:00:04
+# Errors: 0, Warnings: 1

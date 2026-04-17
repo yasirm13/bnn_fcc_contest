@@ -115,8 +115,8 @@ module layer_memory #(
     function automatic logic [WEIGHT_ADDR_WIDTH-1:0] next_weight_addr(
         input logic [WEIGHT_ADDR_WIDTH-1:0] curr_addr
     );
-        logic [WEIGHT_ADDR_WIDTH:0] next_addr_ext;
         begin
+            logic [WEIGHT_ADDR_WIDTH:0] next_addr_ext;
             next_addr_ext = {1'b0, curr_addr} + 1'b1;
             return clamp_weight_addr(next_addr_ext);
         end

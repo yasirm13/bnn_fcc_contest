@@ -5,6 +5,7 @@ clock: clk
 
 files:
   # Add all required source files.
+  - ../rtl/bnn_util_pkg.sv
   - ../rtl/bnn_types_pkg.sv
   - ../rtl/layer_memory.sv
   - ../rtl/compute_layer.sv

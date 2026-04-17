@@ -19,9 +19,22 @@ module neural_processor #(
     import bnn_util_pkg::*;
 
     localparam int POPCOUNT_W = clog2_safe(N + 1);
+    localparam int POPCOUNT_SEGMENTS = 4;
+    localparam int SEG_WIDTH = N / POPCOUNT_SEGMENTS;
+    localparam int SEG_COUNT_W = clog2_safe(SEG_WIDTH + 1);
+
+    initial begin
+        if (N % POPCOUNT_SEGMENTS)
+            $fatal(1, "neural_processor requires N divisible by %0d (got %0d)", POPCOUNT_SEGMENTS, N);
+    end
 
     logic [N-1:0] xnor_result;
-    logic [POPCOUNT_W-1:0] popcount;
+    logic [POPCOUNT_SEGMENTS-1:0][SEG_COUNT_W-1:0] seg_popcounts;
+    logic [POPCOUNT_SEGMENTS-1:0][SEG_COUNT_W-1:0] seg_popcounts_q;
+    logic seg_valid_q;
+    logic seg_last_q;
+    logic [31:0] seg_threshold_q;
+    logic [POPCOUNT_W-1:0] popcount_pipe;
     logic [ACC_WIDTH-1:0] acc;
     logic pop_valid_q;
     logic pop_last_q;
@@ -35,7 +48,16 @@ module neural_processor #(
 
     always_comb begin
         xnor_result = ~(x ^ w);
-        popcount = $countones(xnor_result);
+        for (int seg = 0; seg < POPCOUNT_SEGMENTS; seg++) begin
+            seg_popcounts[seg] = SEG_COUNT_W'($countones(xnor_result[seg*SEG_WIDTH +: SEG_WIDTH]));
+        end
+    end
+
+    always_comb begin
+        popcount_pipe = '0;
+        for (int seg = 0; seg < POPCOUNT_SEGMENTS; seg++) begin
+            popcount_pipe = popcount_pipe + POPCOUNT_W'(seg_popcounts_q[seg]);
+        end
     end
 
     assign popcount_extended_q = ACC_WIDTH'(popcount_q);
@@ -47,6 +69,12 @@ module neural_processor #(
             y <= 1'b0;
             valid_out <= 1'b0;
             popcount_out <= '0;
+            seg_valid_q <= 1'b0;
+            seg_last_q <= 1'b0;
+            seg_threshold_q <= '0;
+            for (int seg = 0; seg < POPCOUNT_SEGMENTS; seg++) begin
+                seg_popcounts_q[seg] <= '0;
+            end
             pop_valid_q <= 1'b0;
             pop_last_q <= 1'b0;
             popcount_q <= '0;
@@ -75,11 +103,20 @@ module neural_processor #(
                 end
             end
 
-            pop_valid_q <= valid_in;
+            pop_valid_q <= seg_valid_q;
+            if (seg_valid_q) begin
+                pop_last_q <= seg_last_q;
+                popcount_q <= popcount_pipe;
+                threshold_q <= seg_threshold_q;
+            end
+
+            seg_valid_q <= valid_in;
             if (valid_in) begin
-                pop_last_q <= last;
-                popcount_q <= popcount;
-                threshold_q <= threshold;
+                seg_last_q <= last;
+                seg_threshold_q <= threshold;
+                for (int seg = 0; seg < POPCOUNT_SEGMENTS; seg++) begin
+                    seg_popcounts_q[seg] <= seg_popcounts[seg];
+                end
             end
         end
     end
