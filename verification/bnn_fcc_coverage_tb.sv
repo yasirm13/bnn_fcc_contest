@@ -1,9 +1,30 @@
+// Supplemental coverage-oriented regression for the BNN FCC design.
+//
+// This testbench is intended for Apple-style functional coverage evaluation via
+// `verification/cov_check.sh` and is separate from the standard contest
+// end-to-end regression (`verification/bnn_fcc_tb.sv`).
+//
+// Key ideas:
+// - Uses a small custom topology (13->10->10->5) so runs are fast, while
+//   intentionally forcing partial final beats on the AXI4-Stream image input
+//   (exercising `TKEEP`/`TLAST` handling).
+// - Drives randomized valid/ready patterns and output backpressure to stress
+//   AXI4-Stream handshakes and internal control.
+// - Generates a "diverse" configuration (weight density + threshold ranges) and
+//   directed stimulus so all output classes are hit for classification coverage.
+// - Injects reconfiguration and reset scenarios at different phases of
+//   operation to cover edge cases beyond steady-state streaming.
 package bnn_fcc_coverage_pkg;
     import bnn_fcc_tb_pkg::*;
 
+    // Extends the reference model with helpers for:
+    // - building deterministic "diverse" weights/thresholds for coverage bins
+    // - encoding config streams while randomizing header "don't-care" fields
+    //   and `keep` patterns (partial last beats)
     class Extended_BNN_FCC_Model #(
         int BUS_WIDTH = 32
     ) extends BNN_FCC_Model #(BUS_WIDTH);
+        // Weight "density" classes used by the config-diversity covergroup.
         localparam int DENSITY_ALL_ZERO = 0;
         localparam int DENSITY_SPARSE   = 1;
         localparam int DENSITY_BALANCED = 2;
@@ -72,6 +93,10 @@ package bnn_fcc_coverage_pkg;
             endcase
         endfunction
 
+        // Construct a deterministic-but-diverse model:
+        // - weights span multiple density regimes (all-0, sparse, balanced, dense, all-1)
+        // - hidden-layer thresholds span small/medium/large ranges
+        // - output-layer thresholds are unused (the DUT outputs raw popcounts), so set to 0
         function void create_diverse_config(int user_topology[]);
             this.topology   = user_topology;
             this.num_layers = user_topology.size() - 1;
@@ -136,6 +161,9 @@ package bnn_fcc_coverage_pkg;
             output bus_stream_t stream,
             output keep_stream_t keep
         );
+            // Build a single layer's configuration message as an AXI4-Stream word/keep stream.
+            // For threshold messages, some header fields are intentionally randomized to
+            // ensure the DUT ignores "don't-care" bits as expected.
             bit [7:0] byte_q[$];
             bus_word_t word_q[$];
             bus_keep_t keep_q[$];
@@ -161,6 +189,8 @@ package bnn_fcc_coverage_pkg;
 
             if (is_threshold) begin
                 bytes_per_neuron = 4;
+                // Some threshold header fields are not used by the DUT; toggle them to
+                // create header diversity without changing functional thresholds.
                 layer_inputs     = (layer_idx % 2 == 0) ? 16'd32 : $urandom_range(0, 16'hffff);
             end else begin
                 bytes_per_neuron = (fan_in + 7) / 8;
@@ -185,6 +215,8 @@ package bnn_fcc_coverage_pkg;
                     t_val = this.threshold[layer_idx][n];
                     for (int i = 0; i < 4; i++) byte_q.push_back(t_val[i*8+:8]);
                 end else begin
+                    // Pack weight bits into bytes; padded bits beyond fan_in are filled
+                    // to avoid X-propagation and to ensure padding does not impact results.
                     w_idx = 0;
                     for (int b = 0; b < bytes_per_neuron; b++) begin
                         for (int k = 0; k < 8; k++) begin
@@ -216,6 +248,7 @@ package bnn_fcc_coverage_pkg;
             if (byte_count > 0) begin
                 word_q.push_back(current_word);
                 current_keep = '0;
+                // Partial last beat: assert keep only for the bytes that were produced.
                 for (int k = 0; k < byte_count; k++) current_keep[k] = 1'b1;
                 keep_q.push_back(current_keep);
             end
@@ -232,7 +265,8 @@ package bnn_fcc_coverage_pkg;
             bus_stream_t layer_stream;
             keep_stream_t layer_keep;
 
-            // Randomize layer order
+            // Build a full configuration by concatenating per-layer messages.
+            // Hidden layers may stream weights/thresholds in either order to stress parser sequencing.
             int layer_indices[];
 
             layer_indices = new[num_layers];
@@ -246,6 +280,7 @@ package bnn_fcc_coverage_pkg;
                 bit do_weights_first;
 
                 if (l == num_layers - 1) begin
+                    // Output layer: weights only (thresholds are not used for popcount outputs).
                     get_layer_config_randomized_fields(l, 0, layer_stream, layer_keep);
                     full_stream = {full_stream, layer_stream};
                     full_keep   = {full_keep, layer_keep};
@@ -277,7 +312,9 @@ endpackage
 `timescale 1ns / 100ps
 
 module bnn_fcc_coverage_tb #(
-    // Testbench configuration (Using custom topology to test TKEEP edge cases)
+    // Testbench configuration.
+    // Uses a small custom topology to keep runs fast and to force image-input partial beats
+    // so `TKEEP` handling is exercised in a controlled way.
     parameter int      USE_CUSTOM_TOPOLOGY                      = 1'b1,
     parameter int      CUSTOM_LAYERS                            = 4,
     parameter int      CUSTOM_TOPOLOGY          [CUSTOM_LAYERS] = '{13, 10, 10, 5}, // 13 inputs forces TKEEP edge cases on data stream
@@ -318,16 +355,21 @@ module bnn_fcc_coverage_tb #(
         else $fatal(1, "TB ERROR: INPUT_DATA_WIDTH must be 8");
     end
 
+    // Probability helper for randomized valid insertion/gaps.
     function automatic bit chance(real p);
         if (p > 1.0 || p < 0.0) $fatal(1, "Invalid probability in chance()");
         return ($urandom < (p * (2.0 ** 32)));
     endfunction
 
-    // Pattern parameters that change over time to simulate bursts, intermittent, continuous
+    // Pattern parameters that change over time to simulate continuous, intermittent, and bursty traffic.
     real current_config_prob = 1.0;
     real current_data_prob = 1.0;
 
     task update_probabilities();
+        // Rotate config/image duty cycles to create a mixture of:
+        // - continuous streaming
+        // - intermittent gaps (valid deasserted while ready is high)
+        // - bursty behavior (short runs of high probability)
         // 0=continuous, 1=intermittent, 2=burst
         int mode;
         mode = $urandom_range(0, 2);
@@ -370,6 +412,11 @@ module bnn_fcc_coverage_tb #(
     axi4_stream_if #(.DATA_WIDTH(INPUT_BUS_WIDTH)) data_in (.aclk(clk), .aresetn(!rst));
     axi4_stream_if #(.DATA_WIDTH(OUTPUT_BUS_WIDTH)) data_out (.aclk(clk), .aresetn(!rst));
 
+    // -------------------------------------------------------------------------
+    // Covergroups (see verification/coverage_plan.txt for intended bin mapping)
+    // -------------------------------------------------------------------------
+
+    // Category 1: AXI4-Stream protocol patterns on config stream.
     covergroup cg_axi_config @(posedge clk);
         option.per_instance = 1;
         cp_valid: coverpoint config_in.tvalid;
@@ -380,6 +427,7 @@ module bnn_fcc_coverage_tb #(
         }
     endgroup
 
+    // Category 1: AXI4-Stream protocol patterns on image input stream.
     covergroup cg_axi_image @(posedge clk);
         option.per_instance = 1;
         cp_valid: coverpoint data_in.tvalid;
@@ -388,6 +436,7 @@ module bnn_fcc_coverage_tb #(
         cr_valid_ready: cross cp_valid, cp_ready;
     endgroup
 
+    // Category 1: AXI4-Stream protocol patterns on output stream (with backpressure).
     covergroup cg_axi_output @(posedge clk);
         option.per_instance = 1;
         cp_valid: coverpoint data_out.tvalid;
@@ -395,6 +444,7 @@ module bnn_fcc_coverage_tb #(
         cr_valid_ready: cross cp_valid, cp_ready;
     endgroup
 
+    // Category 2: configuration diversity (density/threshold classes and header DC randomization).
     covergroup cg_config_diversity with function sample(
         int layer_idx,
         int weight_density_class,
@@ -434,6 +484,7 @@ module bnn_fcc_coverage_tb #(
         cr_layer_threshold: cross cp_hidden_layer, cp_threshold_range;
     endgroup
 
+    // Category 3: ensure every output class is produced, and exercise repeated/varying class sequences.
     covergroup cg_classification with function sample(
         int output_class,
         bit has_prev,
@@ -451,6 +502,7 @@ module bnn_fcc_coverage_tb #(
         }
     endgroup
 
+    // Category 4: reconfiguration coverage (full vs partial updates, weights vs thresholds, layer index).
     covergroup cg_reconfiguration with function sample(
         bit full_config,
         int update_kind,
@@ -481,6 +533,7 @@ module bnn_fcc_coverage_tb #(
         }
     endgroup
 
+    // Category 5: reset coverage (when reset occurs, whether config changes, and workload intensity).
     covergroup cg_reset with function sample(
         int reset_phase,
         bit same_config_after_reset,
@@ -529,6 +582,7 @@ module bnn_fcc_coverage_tb #(
     input_vector_t test_vectors[$];
     int total_test_vectors;
 
+    // Helper: classify weight rows into coarse density buckets for cg_config_diversity bins.
     function automatic int classify_weight_density(input int layer_idx, input int neuron_idx);
         int ones;
         int fan_in;
@@ -546,6 +600,7 @@ module bnn_fcc_coverage_tb #(
         return 2;
     endfunction
 
+    // Helper: classify thresholds into small/medium/large ranges relative to fan-in.
     function automatic int classify_threshold_range(input int layer_idx, input int neuron_idx);
         int fan_in;
         int threshold_val;
@@ -558,6 +613,7 @@ module bnn_fcc_coverage_tb #(
         return 1;
     endfunction
 
+    // Sample the per-layer/per-neuron diversity covergroup after a new config is built.
     task automatic sample_cat2_coverage();
         for (int l = 0; l < NON_INPUT_LAYERS; l++) begin
             for (int n = 0; n < model.weight[l].size(); n++) begin
@@ -571,6 +627,7 @@ module bnn_fcc_coverage_tb #(
         end
     endtask
 
+    // Convert a bitmask into an 8-bit-per-input activation vector (0x00/0xFF per input).
     function automatic input_vector_t make_vector_from_mask(input int mask);
         input_vector_t vec;
 
@@ -581,6 +638,7 @@ module bnn_fcc_coverage_tb #(
         return vec;
     endfunction
 
+    // Compare hidden-layer codes (arrays) for uniqueness checks in Category 3 retuning.
     function automatic bit hidden_code_equal(input int a[], input int b[]);
         if (a.size() != b.size()) return 1'b0;
         for (int i = 0; i < a.size(); i++) begin
@@ -592,6 +650,10 @@ module bnn_fcc_coverage_tb #(
     task automatic retune_model_for_cat3(
         output input_vector_t class_examples[OUTPUT_CLASSES]
     );
+        // Category 3 (computational stimulus):
+        // Find a set of reachable hidden-layer activation codes, then rewrite the output
+        // layer so each class maps to a unique reachable code. This yields directed
+        // example vectors that deterministically hit each output class.
         int reachable_codes   [OUTPUT_CLASSES][];
         input_vector_t examples[OUTPUT_CLASSES];
         int num_codes;
@@ -651,6 +713,9 @@ module bnn_fcc_coverage_tb #(
     endtask
 
     task automatic build_test_vector_database();
+        // Build the complete image stimulus database:
+        // - first, a directed class sequence (including repeats and changes) for cg_classification
+        // - then, random vectors to broaden Cat1 protocol activity
         input_vector_t class_examples[OUTPUT_CLASSES];
         int class_sequence[$];
 
@@ -701,6 +766,8 @@ module bnn_fcc_coverage_tb #(
         input config_bus_keep_t keep_stream[],
         input string phase_label
     );
+        // Drive a config stream (data+keep) with randomized gaps to hit AXI protocol bins.
+        // `tlast` asserts on the final beat; `tkeep` matches the pre-encoded keep stream.
         $display("[%0t] %s", $realtime, phase_label);
 
         for (int i = 0; i < data_stream.size(); i++) begin
@@ -731,6 +798,9 @@ module bnn_fcc_coverage_tb #(
         input Extended_BNN_FCC_Model #(CONFIG_BUS_WIDTH) src_model,
         input string phase_label
     );
+        // Category 4: apply either a full reconfiguration (all layers) or a partial
+        // reconfiguration (one layer, weights and/or thresholds). The test waits for the
+        // output queue to drain to avoid mixing old/new expectations.
         config_bus_word_t local_stream[];
         config_bus_keep_t local_keep[];
         config_bus_word_t temp_stream[];
@@ -775,6 +845,8 @@ module bnn_fcc_coverage_tb #(
     endtask
 
     task automatic discard_pending_expectations();
+        // When a reset/reconfig is injected mid-stream, drop any expected outputs that
+        // are no longer meaningful (since the model/DUT state has been reset).
         if (expected_outputs.size() > 0) begin
             num_tests -= expected_outputs.size();
             expected_outputs.delete();
@@ -789,6 +861,9 @@ module bnn_fcc_coverage_tb #(
         input Extended_BNN_FCC_Model #(CONFIG_BUS_WIDTH) src_model,
         input string phase_label
     );
+        // Category 5: inject a reset and then stream a full configuration.
+        // The covergroup captures when the reset happened and whether the config is
+        // kept the same or changed after the reset.
         config_bus_word_t local_stream[];
         config_bus_keep_t local_keep[];
 
@@ -869,6 +944,7 @@ module bnn_fcc_coverage_tb #(
     end
 
     initial begin : l_init_model
+        // Build the initial model, configs, and stimulus database before driving the DUT.
         model = new();
         reconfig_model_a = new();
         reconfig_model_b = new();
@@ -906,6 +982,11 @@ module bnn_fcc_coverage_tb #(
     assign data_in.tstrb   = data_in.tkeep;
 
     initial begin : l_sequencer_and_driver
+        // Main sequencer:
+        // - stream an initial configuration (including a partial pre-reset config)
+        // - optionally inject resets and partial/full reconfigurations at chosen image indices
+        // - stream images with randomized gaps and proper `keep`/`last` signaling
+        // - push expected outputs into a queue that the output monitor drains
         $timeformat(-9, 0, " ns", 0);
 
         rst              <= 1'b1;
@@ -1073,6 +1154,8 @@ module bnn_fcc_coverage_tb #(
     end
 
     initial begin : l_toggle_ready
+        // Randomize downstream backpressure to exercise output AXI handshakes and ensure
+        // the DUT handles stalls correctly.
         int throttle_len;
         data_out.tready <= 1'b1;
         @(posedge clk iff !rst);
@@ -1104,6 +1187,10 @@ module bnn_fcc_coverage_tb #(
     end
 
     initial begin : l_output_monitor
+        // Scoreboard/monitor:
+        // - compares DUT outputs against the reference model's expected class
+        // - samples classification coverpoints (hit all classes + repeats/varying)
+        // - records latency/throughput statistics
         automatic int output_count = 0;
         automatic logic [OUTPUT_DATA_WIDTH-1:0] expected_output;
         automatic logic [OUTPUT_DATA_WIDTH-1:0] actual_output;
@@ -1139,6 +1226,7 @@ module bnn_fcc_coverage_tb #(
     end
 
     initial begin : l_timeout
+        // Guardrail: if something deadlocks, fail rather than hanging indefinitely.
         #TIMEOUT;
         $fatal(1, $sformatf("Simulation failed due to timeout of %0t.", TIMEOUT));
     end

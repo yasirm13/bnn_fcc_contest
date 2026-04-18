@@ -1,3 +1,5 @@
+// Unit testbench for config_parser at CONFIG_BUS_WIDTH=32.
+// Focuses on header beat splitting, TKEEP-to-strobe propagation, and invalid layer_id rejection.
 `timescale 1ns / 1ps
 
 module config_parser_unit_tb_32;
@@ -173,4 +175,3 @@ module config_parser_unit_tb_32;
         $finish;
     end
 endmodule
-

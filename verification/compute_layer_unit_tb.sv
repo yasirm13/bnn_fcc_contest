@@ -1,3 +1,6 @@
+// Unit testbench for compute_layer single-chunk operation.
+// Runs both hidden-layer and output-layer modes; checks mem_layer_start,
+// output formatting, and that no extra memory reads are requested in the single-chunk case.
 `timescale 1ns / 1ps
 
 module compute_layer_unit_tb;

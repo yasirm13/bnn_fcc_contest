@@ -1,3 +1,6 @@
+// Unit testbench for config_parser (CONFIG_BUS_WIDTH=64).
+// Covers header/payload sequencing, TKEEP-to-strobe propagation, address sequencing,
+// idle gaps between beats, early/absent TLAST termination, and rejecting invalid messages.
 `timescale 1ns / 1ps
 
 module config_parser_unit_tb;

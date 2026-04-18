@@ -1,3 +1,6 @@
+// Unit testbench for compute_layer multi-chunk operation (CHUNKS_PER_NEURON=5).
+// Uses a simple pipelined memory model; checks mem_read_weight activity, padding-bit don't-cares,
+// X-free outputs, and valid_out/result stability under backpressure.
 `timescale 1ns / 1ps
 
 module compute_layer_multichunk_unit_tb;

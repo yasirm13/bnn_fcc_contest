@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Runs the supplemental functional-coverage regression (bnn_fcc_coverage_tb) under Questa/ModelSim.
+# - Builds in verification/.coverage_sim and writes a UCDB plus a text coverage report
+# - Exits nonzero unless TOTAL COVERGROUP COVERAGE reports 100.00%
+# Usage: ./cov_check.sh [report_filename_or_absolute_path]
 set -euo pipefail
 
 VERIF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -1,3 +1,5 @@
+// Edge-case unit testbench for layer_memory with WEIGHT_MEM_DEPTH=1 (tiny model).
+// Verifies packed single-byte weights, partial threshold writes, and zero outputs on out-of-range lanes.
 `timescale 1ns / 1ps
 
 module layer_memory_edge_unit_tb;

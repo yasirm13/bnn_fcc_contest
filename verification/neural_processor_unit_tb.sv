@@ -1,3 +1,6 @@
+// Unit testbench for neural_processor (N=8).
+// Checks XNOR-popcount accumulation across 1+ chunks, threshold compare behavior,
+// one-cycle valid_out pulses, and accumulator reset between transactions.
 `timescale 1ns / 1ps
 
 module neural_processor_unit_tb;

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Runs the module-level unit testbenches under Questa/ModelSim.
+# - Builds each TB in an isolated directory under verification/.unit_sim/<tb_name>
+# - Requires each sim log to contain a "SUCCESS:" banner to pass
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

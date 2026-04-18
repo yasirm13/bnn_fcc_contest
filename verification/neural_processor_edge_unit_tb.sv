@@ -1,3 +1,6 @@
+// Edge-case unit testbench for neural_processor.
+// Stresses back-to-back valid_in chunks for N=4 and N=8, threshold changes between chunks,
+// and clean accumulator reset at transaction boundaries.
 `timescale 1ns / 1ps
 
 module neural_processor_edge_unit_tb;

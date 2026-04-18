@@ -1,3 +1,6 @@
+// Unit testbench for layer_memory (batched reads across multiple neuron lanes).
+// Verifies weight slice alignment (including cross-word boundaries), threshold packing,
+// partial threshold updates via strobes, and reset clearing of outputs.
 `timescale 1ns / 1ps
 
 module layer_memory_unit_tb;
