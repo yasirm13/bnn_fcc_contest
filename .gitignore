@@ -6,6 +6,10 @@
 !/rtl/
 !/doc/
 !/verification/
+!/openflex/
+# Track only the dataset CSV; ignore other OpenFlex outputs/artifacts.
+/openflex/*
+!/openflex/bnn_fcc.csv
 !report.pdf
 
 # Also don't ignore .gitignore itself
