@@ -1,5 +1,6 @@
 package bnn_util_pkg;
 
+    // Integer ceil division for compile-time sizing.
     function automatic int div_ceil(
         input int n,
         input int d
@@ -15,6 +16,9 @@ package bnn_util_pkg;
         end
     endfunction
 
+    // Safe $clog2 wrapper:
+    // - Returns 1 for v <= 1 so zero-width vectors are avoided.
+    // - Fatal on negative values to catch parameter bugs early.
     function automatic int clog2_safe(
         input int v
     );
@@ -29,6 +33,7 @@ package bnn_util_pkg;
         end
     endfunction
 
+    // Unsigned-style max for ints used in parameter math.
     function automatic int max_u(
         input int a,
         input int b
@@ -38,6 +43,7 @@ package bnn_util_pkg;
         end
     endfunction
 
+    // Unsigned-style min for ints used in parameter math.
     function automatic int min_u(
         input int a,
         input int b

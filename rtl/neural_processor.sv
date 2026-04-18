@@ -1,6 +1,22 @@
+// -----------------------------------------------------------------------------
 // Chunk-level neuron primitive.
-// Each valid chunk performs XNOR+popcount, accumulates across chunks until `last`,
-// then emits both the raw population count and the threshold comparison result.
+//
+// Inputs are provided as a stream of fixed-width chunks:
+// - Each `valid_in` beat provides one chunk of activation bits `x` and weights `w`.
+// - `last` marks the final chunk for the neuron.
+//
+// For each chunk:
+//   XNOR(x, w) -> popcount(chunk) -> accumulate across chunks
+//
+// On the cycle after receiving the final chunk (`last=1`):
+// - `popcount_out` emits the full-neuron population count
+// - `y` emits (popcount >= threshold)
+// - `valid_out` pulses for 1 cycle
+//
+// Notes:
+// - Popcount is split into 4 segments to shorten the combinational adder chain.
+// - ACC_WIDTH should be wide enough for the maximum sum across all chunks.
+// -----------------------------------------------------------------------------
 module neural_processor #(
     parameter N = 8,  // input parallel vector width // Pw
     parameter ACC_WIDTH = 16  // threshold register size // population count register width
@@ -18,6 +34,9 @@ module neural_processor #(
 );
     import bnn_util_pkg::*;
 
+    // -------------------------------------------------------------------------
+    // Popcount sizing
+    // -------------------------------------------------------------------------
     localparam int POPCOUNT_W = clog2_safe(N + 1);
     localparam int POPCOUNT_SEGMENTS = 4;
     localparam int SEG_WIDTH = N / POPCOUNT_SEGMENTS;
@@ -28,6 +47,12 @@ module neural_processor #(
             $fatal(1, "neural_processor requires N divisible by %0d (got %0d)", POPCOUNT_SEGMENTS, N);
     end
 
+    // -------------------------------------------------------------------------
+    // Stage 0: XNOR + per-segment popcount (combinational)
+    // Stage 1: register segment counts + last/threshold
+    // Stage 2: sum segments -> popcount_q, accumulate across chunks
+    // Stage 3: register final sum and emit output pulse
+    // -------------------------------------------------------------------------
     logic [N-1:0] xnor_result;
     logic [POPCOUNT_SEGMENTS-1:0][SEG_COUNT_W-1:0] seg_popcounts;
     logic [POPCOUNT_SEGMENTS-1:0][SEG_COUNT_W-1:0] seg_popcounts_q;

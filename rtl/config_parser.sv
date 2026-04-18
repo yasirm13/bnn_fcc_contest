@@ -1,6 +1,24 @@
+// -----------------------------------------------------------------------------
 // AXI4-Stream configuration parser.
-// Consumes the 128-bit message header over CONFIG_BUS_WIDTH beats, tracks payload
-// addresses, and emits per-layer write enables plus aligned payload data/strb.
+//
+// Consumes:
+// - A fixed 128-bit header (spread across CONFIG_BUS_WIDTH beats)
+// - Followed by a payload of `total_bytes` bytes (TKEEP-valid), with TLAST on the
+//   final beat.
+//
+// Produces a simple, word-oriented write interface that is convenient for on-chip
+// RAMs:
+// - `layer_wr_addr` increments once per accepted beat (word address)
+// - `layer_wr_data` is the raw bus beat
+// - `layer_wr_strb` mirrors TKEEP so unused bytes are ignored
+// - `layer_wr_en_*` is a per-layer one-hot that targets either weights or
+//   thresholds for the message currently being parsed.
+//
+// Layer indexing:
+// - The message header's `layer_id` is 0-based *excluding* the input layer.
+//   i.e. layer_id=0 targets TOPOLOGY[1] (the first hidden layer), so this parser
+//   asserts write-enables at [layer_id + 1].
+// -----------------------------------------------------------------------------
 module config_parser #(
     parameter int CONFIG_BUS_WIDTH = 64,
     parameter int TOTAL_LAYERS = 4
@@ -24,6 +42,9 @@ module config_parser #(
     import bnn_types_pkg::*;
     import bnn_util_pkg::*;
 
+    // -------------------------------------------------------------------------
+    // Header/payload bookkeeping
+    // -------------------------------------------------------------------------
     localparam int BYTES_PER_BEAT = CONFIG_BUS_WIDTH / 8;
     localparam int HEADER_BEATS = 128 / CONFIG_BUS_WIDTH;
     localparam int HEADER_IDX_WIDTH = clog2_safe(HEADER_BEATS);
@@ -44,6 +65,8 @@ module config_parser #(
     function automatic logic [31:0] calc_payload_last_addr(
         input logic [31:0] total_bytes
     );
+        // Convert payload size in bytes into a 0-based "last word address" where
+        // a word is one CONFIG_BUS_WIDTH beat.
         begin
             if (total_bytes <= BYTES_PER_BEAT) begin
                 return '0;
@@ -52,8 +75,11 @@ module config_parser #(
         end
     endfunction
 
+    // Pass-through payload data with byte enables derived from AXI TKEEP.
     assign layer_wr_data = config_data;
     assign layer_wr_strb = config_keep;
+
+    // End payload either by explicit TLAST, or by reaching the computed size.
     assign payload_done = config_last || (layer_wr_addr == payload_last_addr);
 
     // Decode only the fields used during payload handling so the parser avoids
@@ -85,6 +111,9 @@ module config_parser #(
             case (state)
                 ST_HEADER: begin
                     if (config_valid) begin
+                        // Parse only what we need:
+                        // - Beat 0: msg_type + layer_id
+                        // - Beat containing total_bytes
                         if (CONFIG_BUS_WIDTH == 64) begin
                             if (header_word_idx == 0) begin
                                 active_msg_type <= msg_type_e'(config_data[7:0]);
@@ -135,6 +164,7 @@ module config_parser #(
         end
     end
 
+    // This parser never backpressures configuration traffic (outside reset).
     assign config_ready = !rst;
 
     initial begin

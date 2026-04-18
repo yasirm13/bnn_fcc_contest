@@ -1,5 +1,7 @@
 package bnn_types_pkg;
     
+    // Types shared across the BNN_FCC RTL.
+
     // Message type from configuration header
     typedef enum logic [7:0] {
         MSG_TYPE_WEIGHTS    = 8'd0,

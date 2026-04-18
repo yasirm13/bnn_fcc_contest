@@ -1,7 +1,27 @@
-// Per-layer storage and read scheduler for weights and thresholds.
-// Weights are stored as bus-width words and served in aligned slices for each
-// PARALLEL_NEURONS lane, while thresholds are packed into bus-width words so the
-// configuration path stays word-oriented and timing-friendly.
+// -----------------------------------------------------------------------------
+// Per-layer weight/threshold storage + read scheduler.
+//
+// Configuration writes (from config_parser):
+// - `wr_addr` is a word address (one CONFIG_BUS_WIDTH beat per word).
+// - `wr_strb` mirrors AXI TKEEP so partial beats only update valid bytes.
+//
+// Inference reads (to compute_layer):
+// - Presents `PARALLEL_NEURONS` aligned weight chunks per cycle.
+// - Presents `PARALLEL_NEURONS` 32-bit thresholds (one per lane).
+//
+// Weight layout notes:
+// - Each neuron stores BYTES_PER_NEURON bytes of weights (byte-padded so each
+//   neuron's weights begin on a byte boundary).
+// - Because lane offsets are byte-granular, the start of a lane's weight stream
+//   may not be aligned to CONFIG_BUS_WIDTH boundaries.
+// - This module maintains an address + bit-offset per lane, reads a (lo,hi)
+//   word pair, concatenates them, and shifts right to produce an aligned chunk.
+//
+// Read control:
+// - `layer_start`     : reset to neuron 0 / chunk 0.
+// - `read_weight_chunk`: advance within a neuron by one CONFIG_BUS_WIDTH chunk.
+// - `read_threshold`  : advance to the next neuron batch (base += PARALLEL_NEURONS).
+// -----------------------------------------------------------------------------
 module layer_memory #(
     parameter int CONFIG_BUS_WIDTH = 64,
     parameter int LAYER_INPUTS = 784,
@@ -27,6 +47,9 @@ module layer_memory #(
 );
     import bnn_util_pkg::*;
 
+    // -------------------------------------------------------------------------
+    // Derived constants
+    // -------------------------------------------------------------------------
     localparam int BUS_BYTES = CONFIG_BUS_WIDTH / 8;
     localparam int BYTES_PER_NEURON = div_ceil(LAYER_INPUTS, 8);
     localparam int CHUNKS_PER_NEURON = div_ceil(BYTES_PER_NEURON, BUS_BYTES);
@@ -45,6 +68,7 @@ module layer_memory #(
     localparam int THRESH_SUBWORD_WIDTH = clog2_safe(THRESH_WORDS_PER_BEAT);
 
     initial begin
+        // Parameter sanity checks.
         if (PARALLEL_NEURONS <= 0)
             $fatal(1, "layer_memory requires PARALLEL_NEURONS > 0");
         if (CONFIG_BUS_WIDTH % 8)
@@ -80,6 +104,9 @@ module layer_memory #(
     logic [CONFIG_BUS_WIDTH-1:0]                      wr_data_q;
     logic [CONFIG_BUS_WIDTH/8-1:0]                    wr_strb_q;
 
+    // -------------------------------------------------------------------------
+    // Threshold storage
+    // -------------------------------------------------------------------------
     // Pack thresholds into bus-width words so the config path writes one aligned
     // memory word at a time instead of updating many individual 32-bit registers.
     (* ram_style = "distributed" *) logic [CONFIG_BUS_WIDTH-1:0] threshold_mem [0:THRESH_MEM_DEPTH-1];
@@ -157,6 +184,9 @@ module layer_memory #(
     endfunction
 
     always_comb begin
+        // neuron_base_idx is the first neuron index for the current batch.
+        // - reset on layer_start
+        // - advance by PARALLEL_NEURONS at end-of-batch (read_threshold)
         neuron_base_idx_req = neuron_base_idx;
         if (rst || layer_start) begin
             neuron_base_idx_req = '0;
@@ -166,10 +196,6 @@ module layer_memory #(
     end
 
     for (genvar lane = 0; lane < PARALLEL_NEURONS; lane++) begin : gen_batch_addrs
-        localparam int LANE_BYTE_OFFSET = lane * BYTES_PER_NEURON;
-        localparam int LANE_WORD_OFFSET = LANE_BYTE_OFFSET / BUS_BYTES;
-        localparam int LANE_REM_BYTES = LANE_BYTE_OFFSET % BUS_BYTES;
-
         always_comb begin
             logic [THRESH_ADDR_WIDTH-1:0] threshold_word_addr_tmp;
             logic [THRESH_SUBWORD_WIDTH-1:0] threshold_subword_tmp;
@@ -213,6 +239,7 @@ module layer_memory #(
             wr_strb_q <= wr_strb;
 
             if (wr_en_thresholds_q) begin
+                // Honor byte strobes so partial beats don't clobber other slots.
                 threshold_mem[wr_addr_q[THRESH_ADDR_WIDTH-1:0]] <= apply_byte_wstrb(
                     threshold_mem[wr_addr_q[THRESH_ADDR_WIDTH-1:0]],
                     wr_data_q,
@@ -221,6 +248,7 @@ module layer_memory #(
             end
 
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                // 1-cycle registered threshold read.
                 if (threshold_valid_q[lane])
                     rd_data_threshold[lane] <= select_threshold_word(
                         threshold_word_q[lane],
@@ -236,11 +264,20 @@ module layer_memory #(
         end
     end
 
+    // -------------------------------------------------------------------------
+    // Weight storage + alignment per lane
+    // -------------------------------------------------------------------------
     for (genvar lane = 0; lane < PARALLEL_NEURONS; lane++) begin : gen_weight_ports
         localparam int LANE_BYTE_OFFSET = lane * BYTES_PER_NEURON;
         localparam int LANE_WORD_OFFSET = LANE_BYTE_OFFSET / BUS_BYTES;
         localparam int LANE_REM_BYTES = LANE_BYTE_OFFSET % BUS_BYTES;
         logic [CONFIG_BUS_WIDTH-1:0] aligned_word;
+
+        // Replicated memories:
+        // - mem_weights_lo is read at address for the "low" word
+        // - mem_weights_hi is read at address for the "high" word
+        // Replication provides two independent read ports so we can assemble a
+        // shifted aligned chunk in a single cycle.
         logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [0:WEIGHT_MEM_DEPTH-1];
         logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [0:WEIGHT_MEM_DEPTH-1];
         logic [WEIGHT_ADDR_WIDTH-1:0] batch_word_addr_q;
@@ -286,6 +323,7 @@ module layer_memory #(
                 rd_data_weights[lane] <= aligned_word;
 
                 if (layer_start) begin
+                    // Start at the first neuron batch.
                     issue_lo_addr = clamp_weight_addr((WEIGHT_ADDR_WIDTH + 1)'(LANE_WORD_OFFSET));
                     batch_word_addr_q <= issue_lo_addr;
                     batch_byte_offset_q <= BYTE_OFFSET_WIDTH'(LANE_REM_BYTES);
@@ -294,6 +332,8 @@ module layer_memory #(
                     weight_hi_valid_issue[lane] <= (issue_lo_addr != WEIGHT_ADDR_WIDTH'(WEIGHT_MEM_DEPTH - 1));
                     weight_bit_offset_issue[lane] <= BIT_OFFSET_WIDTH'(BYTE_OFFSET_WIDTH'(LANE_REM_BYTES) << 3);
                 end else if (read_threshold) begin
+                    // End-of-batch: jump to the next base neuron (stride by
+                    // PARALLEL_NEURONS * BYTES_PER_NEURON).
                     next_batch_lo_addr = advance_weight_batch_addr(batch_word_addr_q, batch_byte_offset_q);
                     next_batch_byte_offset = advance_weight_batch_byte_offset(batch_byte_offset_q);
 
@@ -304,6 +344,7 @@ module layer_memory #(
                     weight_hi_valid_issue[lane] <= (next_batch_lo_addr != WEIGHT_ADDR_WIDTH'(WEIGHT_MEM_DEPTH - 1));
                     weight_bit_offset_issue[lane] <= BIT_OFFSET_WIDTH'(next_batch_byte_offset << 3);
                 end else if (read_weight_chunk) begin
+                    // Within a neuron: advance to the next CONFIG_BUS_WIDTH chunk.
                     next_lo_addr = next_weight_addr(weight_word_addr_lo_issue[lane]);
                     next_hi_addr = next_weight_addr(next_lo_addr);
 
@@ -319,6 +360,8 @@ module layer_memory #(
             logic [2*CONFIG_BUS_WIDTH-1:0] double_word_q;
             logic [2*CONFIG_BUS_WIDTH-1:0] shifted_double_word_q;
 
+            // If the high word is out-of-range, treat it as 0s and rely on the
+            // downstream padding rules (compute_layer ORs masked bits to 1s).
             weights_word_hi_q = weights_hi_valid_pipe_q[lane] ? weights_word_hi_raw_pipe_q[lane] : '0;
             double_word_q = {weights_word_hi_q, weights_word_lo_pipe_q[lane]};
             shifted_double_word_q = (double_word_q >> bit_offset_pipe_q[lane]);
