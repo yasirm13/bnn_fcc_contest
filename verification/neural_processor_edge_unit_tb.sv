@@ -6,8 +6,8 @@ module neural_processor_edge_unit_tb;
     logic clk = 1'b0;
     logic rst;
 
-    // N=1 edge case
-    localparam int N1 = 1;
+    // Minimal supported N: neural_processor requires N divisible by 4.
+    localparam int N1 = 4;
     localparam int ACC1 = 4;
 
     logic           valid_in_1;
@@ -66,7 +66,7 @@ module neural_processor_edge_unit_tb;
 
     always #HALF_CLK_PERIOD clk = ~clk;
 
-    function automatic int matches1(input logic [0:0] xw, input logic [0:0] ww);
+    function automatic int matches1(input logic [N1-1:0] xw, input logic [N1-1:0] ww);
         return $countones(~(xw ^ ww));
     endfunction
 
@@ -92,8 +92,8 @@ module neural_processor_edge_unit_tb;
     endtask
 
     task automatic drive_bb_1(
-        input logic [0:0] x0, input logic [0:0] w0, input logic [31:0] t0, input logic l0,
-        input logic [0:0] x1, input logic [0:0] w1, input logic [31:0] t1, input logic l1
+        input logic [N1-1:0] x0, input logic [N1-1:0] w0, input logic [31:0] t0, input logic l0,
+        input logic [N1-1:0] x1, input logic [N1-1:0] w1, input logic [31:0] t1, input logic l1
     );
         @(negedge clk);
         valid_in_1 <= 1'b1;
@@ -174,11 +174,11 @@ module neural_processor_edge_unit_tb;
 
         reset_all();
 
-        // N=1: two back-to-back chunks with last asserted on second.
-        exp1 = matches1(1'b0, 1'b1) + matches1(1'b1, 1'b1);
-        drive_bb_1(1'b0, 1'b1, 32'd2, 1'b0,
-                   1'b1, 1'b1, 32'd2, 1'b1);
-        wait_out_1(exp1, (exp1 >= 2), "N=1 back-to-back");
+        // N=4: two back-to-back chunks with last asserted on second.
+        exp1 = matches1(4'b0101, 4'b1100) + matches1(4'b1111, 4'b0011);
+        drive_bb_1(4'b0101, 4'b1100, 32'd5, 1'b0,
+                   4'b1111, 4'b0011, 32'd5, 1'b1);
+        wait_out_1(exp1, (exp1 >= 5), "N=4 back-to-back");
 
         // N=8: three back-to-back chunks, last on third, threshold changes (final uses last chunk).
         exp8 = matches8(8'hff, 8'h00) + matches8(8'h0f, 8'h33) + matches8(8'ha5, 8'h5a);
@@ -202,4 +202,3 @@ module neural_processor_edge_unit_tb;
         $finish;
     end
 endmodule
-

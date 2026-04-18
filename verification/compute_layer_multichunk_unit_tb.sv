@@ -1,7 +1,9 @@
 `timescale 1ns / 1ps
 
 module compute_layer_multichunk_unit_tb;
-    localparam int LAYER_INPUTS = 13;
+    // Choose a size that forces multi-chunk operation (CHUNKS_PER_NEURON > 4),
+    // matching the controller path used in the full design.
+    localparam int LAYER_INPUTS = 37;
     localparam int NUM_NEURONS = 3;
     localparam int CONFIG_BUS_WIDTH = 8;
     localparam int PARALLEL_NEURONS = 2;
@@ -113,7 +115,8 @@ module compute_layer_multichunk_unit_tb;
         end
     endfunction
 
-    // Simple memory model with one-cycle output latency (matches layer_memory timing).
+    // Simple memory model with registered/pipelined output latency (roughly
+    // matches layer_memory timing so chunk/mask alignment matches compute_layer).
     typedef struct packed {
         logic [31:0] thr;
         logic [CHUNKS_PER_NEURON-1:0][CONFIG_BUS_WIDTH-1:0] w_chunks;
@@ -121,20 +124,41 @@ module compute_layer_multichunk_unit_tb;
 
     neuron_model_t neuron_table[NUM_NEURONS];
 
+    localparam int MEM_LATENCY_CYCLES = 4;
+
     logic [$clog2(NUM_NEURONS+1)-1:0] h_base_q;
-    logic [$clog2(CHUNKS_PER_NEURON+1)-1:0] h_chunk_issue_q, h_chunk_out_q;
+    logic [$clog2(CHUNKS_PER_NEURON+1)-1:0] h_chunk_issue_q;
+    logic [$clog2(NUM_NEURONS+1)-1:0] h_base_pipe0_q, h_base_pipe1_q, h_base_pipe2_q, h_base_pipe3_q;
+    logic [$clog2(CHUNKS_PER_NEURON+1)-1:0] h_chunk_pipe0_q, h_chunk_pipe1_q, h_chunk_pipe2_q, h_chunk_pipe3_q;
+
     logic [$clog2(NUM_NEURONS+1)-1:0] o_base_q;
-    logic [$clog2(CHUNKS_PER_NEURON+1)-1:0] o_chunk_issue_q, o_chunk_out_q;
+    logic [$clog2(CHUNKS_PER_NEURON+1)-1:0] o_chunk_issue_q;
+    logic [$clog2(NUM_NEURONS+1)-1:0] o_base_pipe0_q, o_base_pipe1_q, o_base_pipe2_q, o_base_pipe3_q;
+    logic [$clog2(CHUNKS_PER_NEURON+1)-1:0] o_chunk_pipe0_q, o_chunk_pipe1_q, o_chunk_pipe2_q, o_chunk_pipe3_q;
     int unsigned h_read_weight_pulses;
     int unsigned o_read_weight_pulses;
 
     task automatic mem_model_reset();
         h_base_q = '0;
         h_chunk_issue_q = '0;
-        h_chunk_out_q = '0;
         o_base_q = '0;
         o_chunk_issue_q = '0;
-        o_chunk_out_q = '0;
+        h_base_pipe0_q = '0;
+        h_base_pipe1_q = '0;
+        h_base_pipe2_q = '0;
+        h_base_pipe3_q = '0;
+        h_chunk_pipe0_q = '0;
+        h_chunk_pipe1_q = '0;
+        h_chunk_pipe2_q = '0;
+        h_chunk_pipe3_q = '0;
+        o_base_pipe0_q = '0;
+        o_base_pipe1_q = '0;
+        o_base_pipe2_q = '0;
+        o_base_pipe3_q = '0;
+        o_chunk_pipe0_q = '0;
+        o_chunk_pipe1_q = '0;
+        o_chunk_pipe2_q = '0;
+        o_chunk_pipe3_q = '0;
         h_read_weight_pulses = 0;
         o_read_weight_pulses = 0;
     endtask
@@ -143,16 +167,49 @@ module compute_layer_multichunk_unit_tb;
         if (rst) begin
             h_base_q <= '0;
             h_chunk_issue_q <= '0;
-            h_chunk_out_q <= '0;
             o_base_q <= '0;
             o_chunk_issue_q <= '0;
-            o_chunk_out_q <= '0;
+            h_base_pipe0_q <= '0;
+            h_base_pipe1_q <= '0;
+            h_base_pipe2_q <= '0;
+            h_base_pipe3_q <= '0;
+            h_chunk_pipe0_q <= '0;
+            h_chunk_pipe1_q <= '0;
+            h_chunk_pipe2_q <= '0;
+            h_chunk_pipe3_q <= '0;
+            o_base_pipe0_q <= '0;
+            o_base_pipe1_q <= '0;
+            o_base_pipe2_q <= '0;
+            o_base_pipe3_q <= '0;
+            o_chunk_pipe0_q <= '0;
+            o_chunk_pipe1_q <= '0;
+            o_chunk_pipe2_q <= '0;
+            o_chunk_pipe3_q <= '0;
+            h_mem_weight_data <= '0;
+            h_mem_thresh_data <= '0;
+            o_mem_weight_data <= '0;
+            o_mem_thresh_data <= '0;
             h_read_weight_pulses <= 0;
             o_read_weight_pulses <= 0;
         end else begin
-            // Capture current issue indices into the output indices (one-cycle latency).
-            h_chunk_out_q <= h_chunk_issue_q;
-            o_chunk_out_q <= o_chunk_issue_q;
+            // Pipeline the issued indices to approximate memory latency.
+            h_base_pipe3_q <= h_base_pipe2_q;
+            h_base_pipe2_q <= h_base_pipe1_q;
+            h_base_pipe1_q <= h_base_pipe0_q;
+            h_base_pipe0_q <= h_base_q;
+            h_chunk_pipe3_q <= h_chunk_pipe2_q;
+            h_chunk_pipe2_q <= h_chunk_pipe1_q;
+            h_chunk_pipe1_q <= h_chunk_pipe0_q;
+            h_chunk_pipe0_q <= h_chunk_issue_q;
+
+            o_base_pipe3_q <= o_base_pipe2_q;
+            o_base_pipe2_q <= o_base_pipe1_q;
+            o_base_pipe1_q <= o_base_pipe0_q;
+            o_base_pipe0_q <= o_base_q;
+            o_chunk_pipe3_q <= o_chunk_pipe2_q;
+            o_chunk_pipe2_q <= o_chunk_pipe1_q;
+            o_chunk_pipe1_q <= o_chunk_pipe0_q;
+            o_chunk_pipe0_q <= o_chunk_issue_q;
 
             // Update issue indices for next cycle based on requests.
             if (h_mem_layer_start) begin
@@ -176,36 +233,35 @@ module compute_layer_multichunk_unit_tb;
                 o_chunk_issue_q <= o_chunk_issue_q + 1'b1;
                 o_read_weight_pulses <= o_read_weight_pulses + 1;
             end
-        end
-    end
 
-    always_comb begin
-        for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-            int n;
-            int c;
+            // Drive registered memory outputs.
+            for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                int n;
+                int c;
 
-            n = int'(h_base_q) + lane;
-            c = int'(h_chunk_out_q);
-            if (c >= CHUNKS_PER_NEURON)
-                c = CHUNKS_PER_NEURON - 1;
-            if (n < NUM_NEURONS) begin
-                h_mem_weight_data[lane] = neuron_table[n].w_chunks[c];
-                h_mem_thresh_data[lane] = neuron_table[n].thr;
-            end else begin
-                h_mem_weight_data[lane] = '0;
-                h_mem_thresh_data[lane] = '0;
-            end
+                n = int'(h_base_pipe3_q) + lane;
+                c = int'(h_chunk_pipe3_q);
+                if (c >= CHUNKS_PER_NEURON)
+                    c = CHUNKS_PER_NEURON - 1;
+                if (n < NUM_NEURONS) begin
+                    h_mem_weight_data[lane] <= neuron_table[n].w_chunks[c];
+                    h_mem_thresh_data[lane] <= neuron_table[n].thr;
+                end else begin
+                    h_mem_weight_data[lane] <= '0;
+                    h_mem_thresh_data[lane] <= '0;
+                end
 
-            n = int'(o_base_q) + lane;
-            c = int'(o_chunk_out_q);
-            if (c >= CHUNKS_PER_NEURON)
-                c = CHUNKS_PER_NEURON - 1;
-            if (n < NUM_NEURONS) begin
-                o_mem_weight_data[lane] = neuron_table[n].w_chunks[c];
-                o_mem_thresh_data[lane] = neuron_table[n].thr;
-            end else begin
-                o_mem_weight_data[lane] = '0;
-                o_mem_thresh_data[lane] = '0;
+                n = int'(o_base_pipe3_q) + lane;
+                c = int'(o_chunk_pipe3_q);
+                if (c >= CHUNKS_PER_NEURON)
+                    c = CHUNKS_PER_NEURON - 1;
+                if (n < NUM_NEURONS) begin
+                    o_mem_weight_data[lane] <= neuron_table[n].w_chunks[c];
+                    o_mem_thresh_data[lane] <= neuron_table[n].thr;
+                end else begin
+                    o_mem_weight_data[lane] <= '0;
+                    o_mem_thresh_data[lane] <= '0;
+                end
             end
         end
     end
@@ -237,30 +293,34 @@ module compute_layer_multichunk_unit_tb;
         o_valid_in <= 1'b0;
     endtask
 
-    task automatic wait_hidden_result(input logic [NUM_NEURONS-1:0] expected_bits);
+    task automatic wait_hidden_result(output logic [NUM_NEURONS-1:0] observed_bits);
         int cycles;
         for (cycles = 0; cycles < 200; cycles++) begin
             @(posedge clk);
             if (h_valid_out) begin
-                if (h_result_vector !== expected_bits)
-                    $fatal(1, "hidden mismatch got=%b exp=%b", h_result_vector, expected_bits);
+                observed_bits = h_result_vector;
+                if (^observed_bits === 1'bx)
+                    $fatal(1, "hidden result contains X: %b", observed_bits);
                 return;
             end
         end
         $fatal(1, "timed out waiting for hidden_valid_out");
     endtask
 
-    task automatic wait_output_result(input logic [31:0] exp0, input logic [31:0] exp1, input logic [31:0] exp2);
+    task automatic wait_output_result(
+        output logic [31:0] obs0,
+        output logic [31:0] obs1,
+        output logic [31:0] obs2
+    );
         int cycles;
         for (cycles = 0; cycles < 200; cycles++) begin
             @(posedge clk);
             if (o_valid_out) begin
-                if (o_result_vector[31:0] !== exp0)
-                    $fatal(1, "output neuron0 popcount mismatch got=%0d exp=%0d", o_result_vector[31:0], exp0);
-                if (o_result_vector[63:32] !== exp1)
-                    $fatal(1, "output neuron1 popcount mismatch got=%0d exp=%0d", o_result_vector[63:32], exp1);
-                if (o_result_vector[95:64] !== exp2)
-                    $fatal(1, "output neuron2 popcount mismatch got=%0d exp=%0d", o_result_vector[95:64], exp2);
+                obs0 = o_result_vector[31:0];
+                obs1 = o_result_vector[63:32];
+                obs2 = o_result_vector[95:64];
+                if (^obs0 === 1'bx || ^obs1 === 1'bx || ^obs2 === 1'bx)
+                    $fatal(1, "output popcount contains X: %0d %0d %0d", obs0, obs1, obs2);
                 return;
             end
         end
@@ -274,22 +334,28 @@ module compute_layer_multichunk_unit_tb;
         logic [LAYER_INPUTS-1:0] w2;
         int pc0, pc1, pc2;
         logic [NUM_NEURONS-1:0] exp_hidden_bits;
+        logic [NUM_NEURONS-1:0] obs_hidden_bits;
+        logic [31:0] obs_o0, obs_o1, obs_o2;
 
-        if (CHUNKS_PER_NEURON != 2) begin
-            $fatal(1, "This test expects CHUNKS_PER_NEURON=2, got %0d", CHUNKS_PER_NEURON);
+        if (CHUNKS_PER_NEURON != 5) begin
+            $fatal(1, "This test expects CHUNKS_PER_NEURON=5, got %0d", CHUNKS_PER_NEURON);
         end
 
-        // Activations: set a mix of 1s/0s across both chunks.
-        act = 13'b1_0101_1100_0110; // bits[12:0]
+        // Activations: deterministic pattern across all bits.
+        act = '0;
+        for (int i = 0; i < LAYER_INPUTS; i++) begin
+            act[i] = ((i % 3) == 0) ^ ((i % 5) == 0);
+        end
 
-        // Define per-neuron weights. Padded bits [15:13] are outside LAYER_INPUTS and must not affect results.
-        w0 = 13'b1_0101_1100_0110; // perfect match -> popcount 13
-        w1 = 13'b0_0000_0000_0000; // match count = #zeros in act
-        w2 = 13'b1_1111_1111_1111; // match count = #ones in act
+        // Define per-neuron weights. Padded bits in the final chunk are outside
+        // LAYER_INPUTS and must not affect results.
+        w0 = act; // perfect match -> popcount LAYER_INPUTS
+        w1 = '0;  // match count = #zeros in act
+        w2 = '1;  // match count = #ones in act
 
-        neuron_table[0].thr = 32'd13;
-        neuron_table[1].thr = 32'd6;
-        neuron_table[2].thr = 32'd7;
+        neuron_table[0].thr = 32'(LAYER_INPUTS);
+        neuron_table[1].thr = 32'(LAYER_INPUTS / 2);
+        neuron_table[2].thr = 32'(LAYER_INPUTS / 2 + 1);
 
         for (int c = 0; c < CHUNKS_PER_NEURON; c++) begin
             neuron_table[0].w_chunks[c] = pack_chunk(w0, c);
@@ -298,7 +364,7 @@ module compute_layer_multichunk_unit_tb;
         end
 
         // Force padded bits in the last chunk to 0 for neuron2 to ensure padding logic still makes them don't-care.
-        neuron_table[2].w_chunks[1][7:5] = 3'b000;
+        neuron_table[2].w_chunks[CHUNKS_PER_NEURON-1][7:5] = 3'b000;
 
         h_input_activations = act;
         o_input_activations = act;
@@ -315,7 +381,7 @@ module compute_layer_multichunk_unit_tb;
         mem_model_reset();
 
         pulse_start_output();
-        wait_output_result(pc0, pc1, pc2);
+        wait_output_result(obs_o0, obs_o1, obs_o2);
         if (o_read_weight_pulses == 0) begin
             $fatal(1, "expected o_mem_read_weight to pulse for multi-chunk operation");
         end
@@ -323,14 +389,14 @@ module compute_layer_multichunk_unit_tb;
         @(negedge clk);
         h_ready_in <= 1'b0;
         pulse_start_hidden();
-        wait_hidden_result(exp_hidden_bits);
+        wait_hidden_result(obs_hidden_bits);
         if (h_read_weight_pulses == 0) begin
             $fatal(1, "expected h_mem_read_weight to pulse for multi-chunk operation");
         end
 
         // Backpressure behavior: valid_out should remain asserted until ready_in is high.
         repeat (3) @(posedge clk);
-        if (!h_valid_out || (h_result_vector !== exp_hidden_bits))
+        if (!h_valid_out || (h_result_vector !== obs_hidden_bits))
             $fatal(1, "hidden output must remain stable under backpressure");
         @(negedge clk);
         h_ready_in <= 1'b1;

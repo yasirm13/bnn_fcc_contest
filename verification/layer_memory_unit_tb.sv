@@ -149,6 +149,10 @@ module layer_memory_unit_tb;
         input logic [CONFIG_BUS_WIDTH-1:0] exp_w1,
         input string phase
     );
+        // layer_memory weight alignment is pipelined; rd_data_weights lags
+        // control strobes by multiple cycles (issue -> pipe -> output).
+        // Wait long enough for rd_data_* to reflect the newly requested batch.
+        repeat (2) @(posedge clk);
         #1;
         if (rd_data_threshold[0] !== exp_thr0) begin
             $fatal(1, "%s: threshold lane 0 mismatch. got=%h exp=%h", phase, rd_data_threshold[0], exp_thr0);
