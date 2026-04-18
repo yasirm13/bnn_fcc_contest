@@ -181,11 +181,12 @@ module bnn_fcc #(
             localparam bit L_IS_OUTPUT_LAYER = (l == LAYERS);
             localparam int L_RESULT_WIDTH = L_IS_OUTPUT_LAYER ? (TOPOLOGY[l] * 32) : TOPOLOGY[l];
 
-            logic                        mem_layer_start;
-            logic                        mem_read_weight;
-            logic                        mem_read_thresh;
-            logic [L_PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] mem_weight_data;
-            logic [L_PARALLEL_NEURONS-1:0][31:0]                 mem_thresh_data;
+                logic                        mem_layer_start;
+                logic                        mem_read_weight;
+                logic                        mem_read_thresh;
+                logic [L_PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] mem_weight_data_raw;
+                logic [L_PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] mem_weight_data_q;
+                logic [L_PARALLEL_NEURONS-1:0][31:0]                 mem_thresh_data;
 
             logic                        layer_done;
             logic [L_RESULT_WIDTH-1:0]   result_vector;
@@ -196,44 +197,53 @@ module bnn_fcc #(
                 .NUM_NEURONS     (TOPOLOGY[l]),
                 .PARALLEL_NEURONS(L_PARALLEL_NEURONS),
                 .PARALLEL_INPUTS (PARALLEL_INPUTS)
-            ) mem_inst (
-                .clk              (clk),
-                .rst              (rst_int),
-                .wr_en_weights    (layer_wr_en_weights[l]),
-                .wr_en_thresholds (layer_wr_en_thresholds[l]),
-                .wr_addr          (layer_wr_addr),
-                .wr_data          (layer_wr_data),
-                .wr_strb          (layer_wr_strb),
-                .layer_start      (mem_layer_start),
-                .read_weight_chunk(mem_read_weight),
-                .read_threshold   (mem_read_thresh),
-                .rd_data_weights  (mem_weight_data),
-                .rd_data_threshold(mem_thresh_data)
-            );
+                ) mem_inst (
+                    .clk              (clk),
+                    .rst              (rst_int),
+                    .wr_en_weights    (layer_wr_en_weights[l]),
+                    .wr_en_thresholds (layer_wr_en_thresholds[l]),
+                    .wr_addr          (layer_wr_addr),
+                    .wr_data          (layer_wr_data),
+                    .wr_strb          (layer_wr_strb),
+                    .layer_start      (mem_layer_start),
+                    .read_weight_chunk(mem_read_weight),
+                    .read_threshold   (mem_read_thresh),
+                    .rd_data_weights  (mem_weight_data_raw),
+                    .rd_data_threshold(mem_thresh_data)
+                );
 
-            compute_layer #(
-                .LAYER_ID        (l),
-                .LAYER_INPUTS    (TOPOLOGY[l-1]),
-                .NUM_NEURONS     (TOPOLOGY[l]),
-                .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
-                .PARALLEL_INPUTS (PARALLEL_INPUTS),
-                .PARALLEL_NEURONS(L_PARALLEL_NEURONS),
-                .IS_OUTPUT_LAYER (L_IS_OUTPUT_LAYER)
-            ) comp_inst (
-                .clk              (clk),
-                .rst              (rst_int),
-                .valid_in         (layer_valid_reg[l-1]),
-                .ready_out        (comp_ready_out[l]),
-                .valid_out        (comp_valid_out[l]),
-                .ready_in         (comp_ready_in[l]),
-                .result_vector    (result_vector),
-                .input_activations(layer_activations[l-1][TOPOLOGY[l-1]-1:0]),
-                .mem_layer_start  (mem_layer_start),
-                .mem_read_weight  (mem_read_weight),
-                .mem_read_thresh  (mem_read_thresh),
-                .mem_weight_data  (mem_weight_data),
-                .mem_thresh_data  (mem_thresh_data)
-            );
+                // Register the layer_memory weight output to cut the long URAM→align→compute path.
+                always_ff @(posedge clk) begin
+                    if (rst_int) begin
+                        mem_weight_data_q <= '0;
+                    end else begin
+                        mem_weight_data_q <= mem_weight_data_raw;
+                    end
+                end
+
+                compute_layer #(
+                    .LAYER_ID        (l),
+                    .LAYER_INPUTS    (TOPOLOGY[l-1]),
+                    .NUM_NEURONS     (TOPOLOGY[l]),
+                    .CONFIG_BUS_WIDTH(CONFIG_BUS_WIDTH),
+                    .PARALLEL_INPUTS (PARALLEL_INPUTS),
+                    .PARALLEL_NEURONS(L_PARALLEL_NEURONS),
+                    .IS_OUTPUT_LAYER (L_IS_OUTPUT_LAYER)
+                ) comp_inst (
+                    .clk              (clk),
+                    .rst              (rst_int),
+                    .valid_in         (layer_valid_reg[l-1]),
+                    .ready_out        (comp_ready_out[l]),
+                    .valid_out        (comp_valid_out[l]),
+                    .ready_in         (comp_ready_in[l]),
+                    .result_vector    (result_vector),
+                    .input_activations(layer_activations[l-1][TOPOLOGY[l-1]-1:0]),
+                    .mem_layer_start  (mem_layer_start),
+                    .mem_read_weight  (mem_read_weight),
+                    .mem_read_thresh  (mem_read_thresh),
+                    .mem_weight_data  (mem_weight_data_q),
+                    .mem_thresh_data  (mem_thresh_data)
+                );
 
             if (L_RESULT_WIDTH == ACTIVATION_STORAGE_BITS) begin : gen_store_exact
                 always_ff @(posedge clk) begin

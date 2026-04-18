@@ -58,13 +58,14 @@ module compute_layer #(
         end
     endfunction
 
-    typedef enum logic [2:0] {
-        IDLE,
-        PRELOAD_BATCH,
-        COMPUTE_BATCH,
-        FINISH_BATCH,
-        DONE_STATE
-    } state_t;
+        typedef enum logic [2:0] {
+            IDLE,
+            PRIME_BATCH,
+            PRELOAD_BATCH,
+            COMPUTE_BATCH,
+            FINISH_BATCH,
+            DONE_STATE
+        } state_t;
 
     state_t state;
 
@@ -109,22 +110,31 @@ module compute_layer #(
 
     logic [PARALLEL_NEURONS-1:0] lane_active_q;
     logic                        last_batch_q;
-    logic [PARALLEL_NEURONS-1:0] np_valid_in_q;
-    logic                        np_last_q;
-    logic [CONFIG_BUS_WIDTH-1:0] np_x_q;
-    logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] np_w_q;
-    logic [PARALLEL_NEURONS-1:0][31:0] np_thresh_q;
-    logic [PARALLEL_NEURONS-1:0] np_y;
-    logic [PARALLEL_NEURONS-1:0] np_valid_out;
-    logic [PARALLEL_NEURONS-1:0][31:0] np_popcount_out;
-    logic [PARALLEL_NEURONS-1:0] np_done_mask;
-    logic batch_valid_out;
+        logic [PARALLEL_NEURONS-1:0] np_valid_in_q;
+        logic                        np_last_q;
+        logic [CONFIG_BUS_WIDTH-1:0] np_x_q;
+        logic [CONFIG_BUS_WIDTH-1:0] valid_mask_q;
+        logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] np_w;
+        logic [PARALLEL_NEURONS-1:0][31:0] np_thresh_q;
+        logic [PARALLEL_NEURONS-1:0] np_y;
+        logic [PARALLEL_NEURONS-1:0] np_valid_out;
+        logic [PARALLEL_NEURONS-1:0][31:0] np_popcount_out;
+        logic [PARALLEL_NEURONS-1:0] np_done_mask;
+        logic batch_valid_out;
 
-    always_comb begin
-        for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-            np_done_mask[lane] = np_valid_out[lane] | ~lane_active_q[lane];
+        always_comb begin
+            for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                // For BNN padding semantics, unused bits must behave like weight=1 so they do not
+                // affect the XNOR result. OR with ~valid_mask forces those masked-off bits to 1.
+                np_w[lane] = mem_weight_data[lane] | ~valid_mask_q;
+            end
         end
-    end
+
+        always_comb begin
+            for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                np_done_mask[lane] = np_valid_out[lane] | ~lane_active_q[lane];
+            end
+        end
 
     assign batch_valid_out = &np_done_mask;
 
@@ -132,19 +142,19 @@ module compute_layer #(
         neural_processor #(
             .N(CONFIG_BUS_WIDTH),
             .ACC_WIDTH(NP_ACC_WIDTH)
-        ) np_inst (
-            .clk(clk),
-            .rst(rst),
-            .valid_in(np_valid_in_q[lane]),
-            .last(np_last_q),
-            .x(np_x_q),
-            .w(np_w_q[lane]),
-            .threshold(np_thresh_q[lane]),
-            .y(np_y[lane]),
-            .valid_out(np_valid_out[lane]),
-            .popcount_out(np_popcount_out[lane])
-        );
-    end
+            ) np_inst (
+                .clk(clk),
+                .rst(rst),
+                .valid_in(np_valid_in_q[lane]),
+                .last(np_last_q),
+                .x(np_x_q),
+                .w(np_w[lane]),
+                .threshold(np_thresh_q[lane]),
+                .y(np_y[lane]),
+                .valid_out(np_valid_out[lane]),
+                .popcount_out(np_popcount_out[lane])
+            );
+        end
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -152,29 +162,25 @@ module compute_layer #(
             neuron_base_cnt <= '0;
             chunk_cnt <= '0;
             results <= '0;
-            lane_active_q <= '0;
-            last_batch_q <= 1'b0;
-            np_x_q <= '0;
-            np_last_q <= 1'b0;
-            for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-                np_valid_in_q[lane] <= 1'b0;
-                np_w_q[lane] <= '0;
-                np_thresh_q[lane] <= '0;
-            end
-        end else begin
-            np_last_q <= 1'b0;
+                lane_active_q <= '0;
+                last_batch_q <= 1'b0;
+                np_x_q <= '0;
+                valid_mask_q <= '0;
+                np_last_q <= 1'b0;
+                for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
+                    np_valid_in_q[lane] <= 1'b0;
+                    np_thresh_q[lane] <= '0;
+                end
+            end else begin
+                np_last_q <= 1'b0;
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
                 np_valid_in_q[lane] <= 1'b0;
             end
 
-            if (state == PRELOAD_BATCH || state == COMPUTE_BATCH) begin
-                np_x_q <= selected_input_chunk;
-                for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-                    // For BNN padding semantics, unused bits must behave like weight=1 so they do not
-                    // affect the XNOR result. OR with ~valid_mask forces those masked-off bits to 1.
-                    np_w_q[lane] <= mem_weight_data[lane] | ~selected_valid_mask;
+                if (state == PRELOAD_BATCH || state == COMPUTE_BATCH) begin
+                    np_x_q <= selected_input_chunk;
+                    valid_mask_q <= selected_valid_mask;
                 end
-            end
 
             if (state == PRELOAD_BATCH) begin
                 for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
@@ -189,20 +195,24 @@ module compute_layer #(
                 end
             end
 
-            case (state)
-                IDLE: begin
-                    if (valid_in) begin
-                        state <= PRELOAD_BATCH;
-                        neuron_base_cnt <= '0;
-                        chunk_cnt <= '0;
-                        lane_active_q <= calc_lane_mask('0);
-                        last_batch_q <= calc_last_batch('0);
+                case (state)
+                    IDLE: begin
+                        if (valid_in) begin
+                            state <= PRIME_BATCH;
+                            neuron_base_cnt <= '0;
+                            chunk_cnt <= '0;
+                            lane_active_q <= calc_lane_mask('0);
+                            last_batch_q <= calc_last_batch('0);
+                        end
                     end
-                end
 
-                PRELOAD_BATCH: begin
-                    state <= COMPUTE_BATCH;
-                end
+                    PRIME_BATCH: begin
+                        state <= PRELOAD_BATCH;
+                    end
+    
+                    PRELOAD_BATCH: begin
+                        state <= COMPUTE_BATCH;
+                    end
 
                 COMPUTE_BATCH: begin
                     if (chunk_cnt < CHUNKS_PER_NEURON - 1) begin
@@ -211,9 +221,9 @@ module compute_layer #(
                         state <= FINISH_BATCH;
                     end
                 end
-
-                FINISH_BATCH: begin
-                    if (batch_valid_out) begin
+    
+                    FINISH_BATCH: begin
+                        if (batch_valid_out) begin
                         for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
                             if (lane_active_q[lane]) begin
                                 if (IS_OUTPUT_LAYER) begin
@@ -223,18 +233,18 @@ module compute_layer #(
                                 end
                             end
                         end
-
-                        if (last_batch_q) begin
-                            state <= DONE_STATE;
-                        end else begin
-                            state <= PRELOAD_BATCH;
-                            neuron_base_cnt <= NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS);
-                            chunk_cnt <= '0;
-                            lane_active_q <= calc_lane_mask(NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS));
-                            last_batch_q <= calc_last_batch(NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS));
+    
+                            if (last_batch_q) begin
+                                state <= DONE_STATE;
+                            end else begin
+                                state <= PRIME_BATCH;
+                                neuron_base_cnt <= NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS);
+                                chunk_cnt <= '0;
+                                lane_active_q <= calc_lane_mask(NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS));
+                                last_batch_q <= calc_last_batch(NEURON_BASE_WIDTH'(neuron_base_cnt + PARALLEL_NEURONS));
+                            end
                         end
                     end
-                end
 
                 DONE_STATE: begin
                     if (ready_in) begin
@@ -243,11 +253,12 @@ module compute_layer #(
                 end
             endcase
         end
-    end
-
-    assign mem_read_weight = ((state == PRELOAD_BATCH) && (CHUNKS_PER_NEURON > 1)) ||
-                             ((state == COMPUTE_BATCH) && (CHUNKS_PER_NEURON > 2) &&
-                              (chunk_cnt < (CHUNKS_PER_NEURON - 2)));
-    assign mem_read_thresh = (state == FINISH_BATCH) && batch_valid_out && !last_batch_q;
-
-endmodule
+        end
+    
+        assign mem_read_weight = ((state == PRIME_BATCH) && (CHUNKS_PER_NEURON > 1)) ||
+                                 ((state == PRELOAD_BATCH) && (CHUNKS_PER_NEURON > 2)) ||
+                                 ((state == COMPUTE_BATCH) && (CHUNKS_PER_NEURON > 3) &&
+                                  (chunk_cnt < (CHUNKS_PER_NEURON - 3)));
+        assign mem_read_thresh = (state == FINISH_BATCH) && batch_valid_out && !last_batch_q;
+    
+    endmodule
