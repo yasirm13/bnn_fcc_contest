@@ -51,6 +51,7 @@ module bnn_fcc #(
     localparam int OUTPUT_LAYER = TOTAL_LAYERS - 1;
     localparam int OUTPUT_NEURONS = TOPOLOGY[OUTPUT_LAYER];
     localparam int OUTPUT_INDEX_WIDTH = clog2_safe(OUTPUT_NEURONS);
+    localparam int OUTPUT_SCORE_WIDTH = clog2_safe(TOPOLOGY[OUTPUT_LAYER-1] + 1);
     localparam int INPUT_BUFFER_WORDS = div_ceil(TOPOLOGY[0], INPUT_BUS_ELEMENTS);
     localparam int INPUT_WORD_IDX_WIDTH = clog2_safe(INPUT_BUFFER_WORDS);
 
@@ -167,10 +168,12 @@ module bnn_fcc #(
     logic                          argmax_active;
     logic [OUTPUT_INDEX_WIDTH-1:0] argmax_scan_idx;
     logic [OUTPUT_INDEX_WIDTH-1:0] argmax_best_idx;
-    logic signed [31:0]            argmax_best_score;
-    logic signed [31:0]            argmax_scan_score;
+    logic [OUTPUT_SCORE_WIDTH-1:0] argmax_best_score;
+    logic [OUTPUT_INDEX_WIDTH-1:0] argmax_stage_idx;
+    logic [OUTPUT_SCORE_WIDTH-1:0] argmax_stage_score;
+    logic                          argmax_stage_valid;
     logic [OUTPUT_INDEX_WIDTH-1:0] argmax_next_best_idx;
-    logic signed [31:0]            argmax_next_best_score;
+    logic [OUTPUT_SCORE_WIDTH-1:0] argmax_next_best_score;
     logic                          out_valid_reg;
     logic [OUTPUT_BUS_WIDTH-1:0]   out_data_reg;
 
@@ -290,16 +293,11 @@ module bnn_fcc #(
     endgenerate
 
     always_comb begin
-        if (argmax_scan_idx < OUTPUT_NEURONS)
-            argmax_scan_score = $signed(layer_activations[LAYERS][argmax_scan_idx*32 +: 32]);
-        else
-            argmax_scan_score = '0;
-
         argmax_next_best_idx = argmax_best_idx;
         argmax_next_best_score = argmax_best_score;
-        if (argmax_scan_score > argmax_best_score) begin
-            argmax_next_best_idx = argmax_scan_idx;
-            argmax_next_best_score = argmax_scan_score;
+        if (argmax_stage_valid && (argmax_stage_score > argmax_best_score)) begin
+            argmax_next_best_idx = argmax_stage_idx;
+            argmax_next_best_score = argmax_stage_score;
         end
     end
 
@@ -311,6 +309,9 @@ module bnn_fcc #(
             argmax_scan_idx <= '0;
             argmax_best_idx <= '0;
             argmax_best_score <= '0;
+            argmax_stage_idx <= '0;
+            argmax_stage_score <= '0;
+            argmax_stage_valid <= 1'b0;
             out_valid_reg <= 1'b0;
             out_data_reg  <= '0;
         end else begin
@@ -322,23 +323,32 @@ module bnn_fcc #(
                 argmax_active <= 1'b1;
                 argmax_scan_idx <= OUTPUT_INDEX_WIDTH'(1);
                 argmax_best_idx <= '0;
-                argmax_best_score <= $signed(layer_activations[LAYERS][31:0]);
+                argmax_best_score <= layer_activations[LAYERS][0 +: OUTPUT_SCORE_WIDTH];
+                argmax_stage_idx <= '0;
+                argmax_stage_score <= '0;
+                argmax_stage_valid <= 1'b0;
             end else if (argmax_active) begin
-                if (argmax_scan_idx < OUTPUT_NEURONS) begin
+                if (argmax_stage_valid) begin
                     argmax_best_idx <= argmax_next_best_idx;
                     argmax_best_score <= argmax_next_best_score;
+                end
 
-                    if (argmax_scan_idx == OUTPUT_NEURONS - 1) begin
+                if (argmax_scan_idx < OUTPUT_NEURONS) begin
+                    argmax_stage_idx <= argmax_scan_idx;
+                    argmax_stage_score <= layer_activations[LAYERS][argmax_scan_idx*32 +: OUTPUT_SCORE_WIDTH];
+                    argmax_stage_valid <= 1'b1;
+                    argmax_scan_idx <= argmax_scan_idx + OUTPUT_INDEX_WIDTH'(1);
+                end else begin
+                    argmax_stage_valid <= 1'b0;
+                    if (argmax_stage_valid) begin
                         argmax_active <= 1'b0;
                         out_valid_reg <= 1'b1;
                         out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_next_best_idx);
                     end else begin
-                        argmax_scan_idx <= argmax_scan_idx + OUTPUT_INDEX_WIDTH'(1);
+                        argmax_active <= 1'b0;
+                        out_valid_reg <= 1'b1;
+                        out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_best_idx);
                     end
-                end else begin
-                    argmax_active <= 1'b0;
-                    out_valid_reg <= 1'b1;
-                    out_data_reg <= OUTPUT_BUS_WIDTH'(argmax_best_idx);
                 end
             end
         end

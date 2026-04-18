@@ -71,6 +71,9 @@ module layer_memory #(
     logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] weights_word_hi_raw_pipe_q;
     logic [PARALLEL_NEURONS-1:0]                       weights_hi_valid_pipe_q;
     logic [PARALLEL_NEURONS-1:0][BIT_OFFSET_WIDTH-1:0] bit_offset_pipe_q;
+    logic [PARALLEL_NEURONS-1:0][CONFIG_BUS_WIDTH-1:0] threshold_word_q;
+    logic [PARALLEL_NEURONS-1:0][THRESH_SUBWORD_WIDTH-1:0] threshold_subword_q;
+    logic [PARALLEL_NEURONS-1:0] threshold_valid_q;
     logic                                             wr_en_weights_q;
     logic                                             wr_en_thresholds_q;
     logic [31:0]                                      wr_addr_q;
@@ -174,7 +177,7 @@ module layer_memory #(
             threshold_word_addr_tmp = '0;
             threshold_subword_tmp = '0;
 
-                threshold_idx_req[lane] = THRESH_IDX_WIDTH'(neuron_base_idx + lane);
+            threshold_idx_req[lane] = THRESH_IDX_WIDTH'(neuron_base_idx_req + lane);
             if (THRESH_WORDS_PER_BEAT == 1) begin
                 threshold_word_addr_tmp = THRESH_ADDR_WIDTH'(threshold_idx_req[lane]);
             end else begin
@@ -197,6 +200,9 @@ module layer_memory #(
             wr_strb_q <= '0;
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
                 rd_data_threshold[lane] <= '0;
+                threshold_word_q[lane] <= '0;
+                threshold_subword_q[lane] <= '0;
+                threshold_valid_q[lane] <= 1'b0;
             end
         end else begin
             neuron_base_idx <= neuron_base_idx_req;
@@ -206,18 +212,26 @@ module layer_memory #(
             wr_data_q <= wr_data;
             wr_strb_q <= wr_strb;
 
-            if (wr_en_thresholds_q && (wr_addr_q < THRESH_MEM_DEPTH)) begin
-                threshold_mem[wr_addr_q] <= apply_byte_wstrb(threshold_mem[wr_addr_q], wr_data_q, wr_strb_q);
+            if (wr_en_thresholds_q) begin
+                threshold_mem[wr_addr_q[THRESH_ADDR_WIDTH-1:0]] <= apply_byte_wstrb(
+                    threshold_mem[wr_addr_q[THRESH_ADDR_WIDTH-1:0]],
+                    wr_data_q,
+                    wr_strb_q
+                );
             end
 
             for (int lane = 0; lane < PARALLEL_NEURONS; lane++) begin
-                if (threshold_idx_req[lane] < NUM_NEURONS)
+                if (threshold_valid_q[lane])
                     rd_data_threshold[lane] <= select_threshold_word(
-                        threshold_mem[threshold_word_addr_req[lane]],
-                        threshold_subword_req[lane]
+                        threshold_word_q[lane],
+                        threshold_subword_q[lane]
                     );
                 else
                     rd_data_threshold[lane] <= '0;
+
+                threshold_word_q[lane] <= threshold_mem[threshold_word_addr_req[lane]];
+                threshold_subword_q[lane] <= threshold_subword_req[lane];
+                threshold_valid_q[lane] <= (threshold_idx_req[lane] < NUM_NEURONS);
             end
         end
     end
@@ -226,6 +240,7 @@ module layer_memory #(
         localparam int LANE_BYTE_OFFSET = lane * BYTES_PER_NEURON;
         localparam int LANE_WORD_OFFSET = LANE_BYTE_OFFSET / BUS_BYTES;
         localparam int LANE_REM_BYTES = LANE_BYTE_OFFSET % BUS_BYTES;
+        logic [CONFIG_BUS_WIDTH-1:0] aligned_word;
         logic [CONFIG_BUS_WIDTH-1:0] mem_weights_lo [0:WEIGHT_MEM_DEPTH-1];
         logic [CONFIG_BUS_WIDTH-1:0] mem_weights_hi [0:WEIGHT_MEM_DEPTH-1];
         logic [WEIGHT_ADDR_WIDTH-1:0] batch_word_addr_q;
@@ -243,30 +258,32 @@ module layer_memory #(
                 batch_byte_offset_q <= '0;
                 weight_word_addr_lo_issue[lane] <= '0;
                 weight_word_addr_hi_issue[lane] <= '0;
-                    weight_hi_valid_issue[lane] <= 1'b0;
-                    weight_bit_offset_issue[lane] <= '0;
-                    weights_word_lo_q[lane] <= '0;
-                    weights_word_hi_raw_q[lane] <= '0;
-                    weights_hi_valid_q[lane] <= 1'b0;
-                    bit_offset_q[lane] <= '0;
-                    weights_word_lo_pipe_q[lane] <= '0;
-                    weights_word_hi_raw_pipe_q[lane] <= '0;
-                    weights_hi_valid_pipe_q[lane] <= 1'b0;
-                    bit_offset_pipe_q[lane] <= '0;
-                end else begin
-                    if (wr_en_weights_q && (wr_addr_q < WEIGHT_MEM_DEPTH)) begin
-                        mem_weights_lo[wr_addr_q] <= wr_data_q;
-                        mem_weights_hi[wr_addr_q] <= wr_data_q;
-                    end
+                weight_hi_valid_issue[lane] <= 1'b0;
+                weight_bit_offset_issue[lane] <= '0;
+                weights_word_lo_q[lane] <= '0;
+                weights_word_hi_raw_q[lane] <= '0;
+                weights_hi_valid_q[lane] <= 1'b0;
+                bit_offset_q[lane] <= '0;
+                weights_word_lo_pipe_q[lane] <= '0;
+                weights_word_hi_raw_pipe_q[lane] <= '0;
+                weights_hi_valid_pipe_q[lane] <= 1'b0;
+                bit_offset_pipe_q[lane] <= '0;
+                rd_data_weights[lane] <= '0;
+            end else begin
+                if (wr_en_weights_q) begin
+                    mem_weights_lo[wr_addr_q[WEIGHT_ADDR_WIDTH-1:0]] <= wr_data_q;
+                    mem_weights_hi[wr_addr_q[WEIGHT_ADDR_WIDTH-1:0]] <= wr_data_q;
+                end
     
-                    weights_word_lo_q[lane] <= mem_weights_lo[weight_word_addr_lo_issue[lane]];
-                    weights_word_hi_raw_q[lane] <= mem_weights_hi[weight_word_addr_hi_issue[lane]];
-                    weights_hi_valid_q[lane] <= weight_hi_valid_issue[lane];
-                    bit_offset_q[lane] <= weight_bit_offset_issue[lane];
-                    weights_word_lo_pipe_q[lane] <= weights_word_lo_q[lane];
-                    weights_word_hi_raw_pipe_q[lane] <= weights_word_hi_raw_q[lane];
-                    weights_hi_valid_pipe_q[lane] <= weights_hi_valid_q[lane];
-                    bit_offset_pipe_q[lane] <= bit_offset_q[lane];
+                weights_word_lo_q[lane] <= mem_weights_lo[weight_word_addr_lo_issue[lane]];
+                weights_word_hi_raw_q[lane] <= mem_weights_hi[weight_word_addr_hi_issue[lane]];
+                weights_hi_valid_q[lane] <= weight_hi_valid_issue[lane];
+                bit_offset_q[lane] <= weight_bit_offset_issue[lane];
+                weights_word_lo_pipe_q[lane] <= weights_word_lo_q[lane];
+                weights_word_hi_raw_pipe_q[lane] <= weights_word_hi_raw_q[lane];
+                weights_hi_valid_pipe_q[lane] <= weights_hi_valid_q[lane];
+                bit_offset_pipe_q[lane] <= bit_offset_q[lane];
+                rd_data_weights[lane] <= aligned_word;
 
                 if (layer_start) begin
                     issue_lo_addr = clamp_weight_addr((WEIGHT_ADDR_WIDTH + 1)'(LANE_WORD_OFFSET));
@@ -297,16 +314,16 @@ module layer_memory #(
             end
         end
 
-            always_comb begin
-                logic [CONFIG_BUS_WIDTH-1:0] weights_word_hi_q;
-                logic [2*CONFIG_BUS_WIDTH-1:0] double_word_q;
-                logic [2*CONFIG_BUS_WIDTH-1:0] shifted_double_word_q;
-    
-                weights_word_hi_q = weights_hi_valid_pipe_q[lane] ? weights_word_hi_raw_pipe_q[lane] : '0;
-                double_word_q = {weights_word_hi_q, weights_word_lo_pipe_q[lane]};
-                shifted_double_word_q = (double_word_q >> bit_offset_pipe_q[lane]);
-                rd_data_weights[lane] = shifted_double_word_q[CONFIG_BUS_WIDTH-1:0];
-            end
+        always_comb begin
+            logic [CONFIG_BUS_WIDTH-1:0] weights_word_hi_q;
+            logic [2*CONFIG_BUS_WIDTH-1:0] double_word_q;
+            logic [2*CONFIG_BUS_WIDTH-1:0] shifted_double_word_q;
+
+            weights_word_hi_q = weights_hi_valid_pipe_q[lane] ? weights_word_hi_raw_pipe_q[lane] : '0;
+            double_word_q = {weights_word_hi_q, weights_word_lo_pipe_q[lane]};
+            shifted_double_word_q = (double_word_q >> bit_offset_pipe_q[lane]);
+            aligned_word = shifted_double_word_q[CONFIG_BUS_WIDTH-1:0];
         end
+    end
 
 endmodule

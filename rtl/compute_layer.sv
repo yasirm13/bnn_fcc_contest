@@ -61,6 +61,7 @@ module compute_layer #(
         typedef enum logic [2:0] {
             IDLE,
             PRIME_BATCH,
+            PRIME2_BATCH,
             PRELOAD_BATCH,
             COMPUTE_BATCH,
             FINISH_BATCH,
@@ -207,9 +208,13 @@ module compute_layer #(
                     end
 
                     PRIME_BATCH: begin
+                        state <= PRIME2_BATCH;
+                    end
+
+                    PRIME2_BATCH: begin
                         state <= PRELOAD_BATCH;
                     end
-    
+	    
                     PRELOAD_BATCH: begin
                         state <= COMPUTE_BATCH;
                     end
@@ -256,9 +261,10 @@ module compute_layer #(
         end
     
         assign mem_read_weight = ((state == PRIME_BATCH) && (CHUNKS_PER_NEURON > 1)) ||
-                                 ((state == PRELOAD_BATCH) && (CHUNKS_PER_NEURON > 2)) ||
-                                 ((state == COMPUTE_BATCH) && (CHUNKS_PER_NEURON > 3) &&
-                                  (chunk_cnt < (CHUNKS_PER_NEURON - 3)));
+                                 ((state == PRIME2_BATCH) && (CHUNKS_PER_NEURON > 2)) ||
+                                 ((state == PRELOAD_BATCH) && (CHUNKS_PER_NEURON > 3)) ||
+                                 ((state == COMPUTE_BATCH) && (CHUNKS_PER_NEURON > 4) &&
+                                  (chunk_cnt < (CHUNKS_PER_NEURON - 4)));
         assign mem_read_thresh = (state == FINISH_BATCH) && batch_valid_out && !last_batch_q;
-    
+	    
     endmodule
